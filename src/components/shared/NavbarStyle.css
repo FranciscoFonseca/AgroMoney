@@ -1,0 +1,8 @@
+.nav-link {
+	color: #000; /* Color predeterminado */
+	transition: color 0.3s; /* Transición suave */
+  }
+  
+  .nav-link:hover {
+	color: #245cdc; /* Cambia a tu color deseado al acercar el puntero */
+  }
