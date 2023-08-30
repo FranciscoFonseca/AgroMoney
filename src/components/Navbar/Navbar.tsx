@@ -61,6 +61,14 @@ const Navbar = () => {
 								>
 									Inicio
 								</a>
+								{usuariolog.perfil === 'A' && (
+									<a
+										href="/control-usuarios"
+										className="text-white px-3 py-2 rounded-md text-sm font-medium"
+									>
+										Control Usuarios
+									</a>
+								)}
 
 								<a
 									className="text-white px-3 py-2 rounded-md text-sm font-medium flex flex-row gap-x-1 hover:cursor-pointer"
