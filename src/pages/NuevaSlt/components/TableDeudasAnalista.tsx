@@ -10,15 +10,15 @@ export type DataDeudasAnalista = {
 	saldoActual: number;
 	formaDePago: string;
 	valorCuota: number;
-	fechaDeVencimiento: string;
+	fechaVencimiento: string;
 	estatus: string;
-	referencia: string;
+	refencia: string;
 	incluir: string;
 	saldoEnMora: number;
-	moraTreinta: number;
-	moraSesenta: number;
-	moraNoventa: number;
-	moraCientoVeinte: number;
+	mora30: number;
+	mora60: number;
+	mora90: number;
+	mora120: number;
 };
 interface TableComponentDeudasAnalistaProps {
 	data: DataDeudasAnalista[];
@@ -34,19 +34,19 @@ const TableComponentDeudasAnalista: React.FC<
 		() => [
 			{ Header: '', accessor: 'id' },
 			{ Header: 'Tipo', accessor: 'tipo' },
-			{ Header: 'Referencia', accessor: 'referencia' },
+			{ Header: 'Referencia', accessor: 'refencia' },
 			{ Header: 'Limite', accessor: 'limite' },
 			{ Header: 'Saldo Actual', accessor: 'saldoActual' },
 			{ Header: 'Forma de Pago', accessor: 'formaDePago' },
 			{ Header: 'Valor Cuota', accessor: 'valorCuota' },
-			{ Header: 'Fecha de Vencimiento', accessor: 'fechaDeVencimiento' },
+			{ Header: 'Fecha de Vencimiento', accessor: 'fechaVencimiento' },
 			{ Header: 'Estatus', accessor: 'estatus' },
 			{ Header: 'Saldo en Mora', accessor: 'saldoEnMora' },
 			{ Header: 'Incluir', accessor: 'incluir' },
-			{ Header: 'Mora 30', accessor: 'moraTreinta' },
-			{ Header: 'Mora 60', accessor: 'moraSesenta' },
-			{ Header: 'Mora 90', accessor: 'moraNoventa' },
-			{ Header: 'Mora 120', accessor: 'moraCientoVeinte' },
+			{ Header: 'Mora 30', accessor: 'mora30' },
+			{ Header: 'Mora 60', accessor: 'mora60' },
+			{ Header: 'Mora 90', accessor: 'mora90' },
+			{ Header: 'Mora 120', accessor: 'mora120' },
 			// Add other columns as needed
 		],
 		[]

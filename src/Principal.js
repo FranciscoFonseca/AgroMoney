@@ -65,7 +65,9 @@ function Principal() {
 		const url = `http://${API_IP}/api/Solicitudes/BuscarPorUsuario?idusuario=${
 			usuariolog.idUsuario
 		}&perfil=${
-			usuariolog.perfil === 'R' || usuariolog.perfil === 'M'
+			usuariolog.perfil === 'R' ||
+			usuariolog.perfil === 'M' ||
+			usuariolog.perfil === 'C'
 				? 'A'
 				: usuariolog.perfil
 		}`;
@@ -244,7 +246,13 @@ function Principal() {
 									onClick={() => handleSeleccionarSolicitud(user)}
 								>
 									<td>
-										<Link to={`/solicitud/${user.idSolicitud}`}>Ver Solicitud</Link>
+										{perfil === 'C' ? (
+											<Link to={`/solicitud-reporte/${user.idSolicitud}`}>
+												Ver Solicitud
+											</Link>
+										) : (
+											<Link to={`/solicitud/${user.idSolicitud}`}>Ver Solicitud</Link>
+										)}
 									</td>
 									<td>{user.idSolicitud}</td>
 									{/* <td>{format(new Date(user.fecha_Registro), 'dd/MM/yyyy HH:mm:ss')}</td> */}

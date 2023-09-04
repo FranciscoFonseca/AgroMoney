@@ -119,6 +119,27 @@ const NuevaSlt2 = (): JSX.Element => {
 				// Handle error
 			});
 	};
+
+	const handleSolicitud = (response: any) => {
+		// console.log('response', response.data.idSolicitud);
+		const idSolicitudValue = response.data.idSolicitud;
+		const modifiedArray = tableDeudas.map((item) => {
+			// Destructure the object to remove the "id" property
+			const { id, ...rest } = item;
+
+			// Add the "idSolicitud" property with the constant value
+			return {
+				...rest,
+				tipoCreada: false,
+				idSolicitud: idSolicitudValue,
+			};
+		});
+
+		axios.post(`http://${API_IP}/api/SolicitudesDeudas`, modifiedArray).then((response) => {
+			//navigate('/Principal');
+		});
+	};
+
 	const onSubmit: SubmitHandler<FormularioSolicitudes> = async (formData) => {
 		try {
 			trigger();
@@ -144,6 +165,8 @@ const NuevaSlt2 = (): JSX.Element => {
 				if (response.status === 201) {
 					toast.success('Solicitud Creada Correctamente.');
 					handleUpload(response);
+
+					handleSolicitud(response);
 				}
 			} else {
 				await fetch(
@@ -162,6 +185,7 @@ const NuevaSlt2 = (): JSX.Element => {
 						if (response.status === 201) {
 							toast.success('Solicitud Creada Correctamente.');
 							handleUpload(response);
+							handleSolicitud(response);
 							//Fnavigate('/Principal');
 						}
 					} else {
@@ -482,15 +506,18 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (data.tipo === '') {
 			return toast.warn('Debe seleccionar un tipo de deuda');
 		}
-		if (data.referencia === '') {
+		if (data.refencia === '') {
 			return toast.warn('Debe ingresar una referencia');
 		}
 		if (data.monto === 0) {
 			return toast.warn('Debe ingresar un monto');
 		}
 		setTableDeudas([...tableDeudas, data]);
+		console.log([...tableDeudas, data]);
 	};
-
+	useEffect(() => {
+		console.log(tableDeudas);
+	}, [tableDeudas]);
 	const handleEliminarDeuda = (id: string) => {
 		const newTableDeudas = tableDeudas.filter((item) => item.id !== id);
 		setTableDeudas(newTableDeudas);
@@ -1299,7 +1326,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												}}
 												render={({ field: { value, onChange } }) => (
 													<TextInput
-														label={'telefono de Jefe Inmediato'}
+														label={'Telefono de Jefe Inmediato'}
 														{...register('telJefeIn')}
 														disabled={step !== 1}
 													/>
@@ -1307,7 +1334,7 @@ const NuevaSlt2 = (): JSX.Element => {
 											/>
 											{errors.telJefeIn && (
 												<p className="text-xs mt-2 ml-2 text-red-600">
-													El telefono de jefe inmediato es requerido
+													El Telefono de jefe inmediato es requerido
 												</p>
 											)}
 										</div>
@@ -1415,11 +1442,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										control={control}
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
-											<TextInput
-												label="RTN"
-												disabled={step !== 1}
-												{...register('RTN')}
-											/>
+											<TextInput label="RTN" disabled={step !== 1} {...register('RTN')} />
 										)}
 									/>
 									{errors.RTN && (

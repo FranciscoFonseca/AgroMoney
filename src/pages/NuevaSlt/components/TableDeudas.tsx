@@ -6,7 +6,7 @@ import { useTable, Column } from 'react-table';
 export type DataDeudas = {
 	id: string;
 	tipo: string;
-	referencia: string;
+	refencia: string;
 	monto: number;
 	incluir: string;
 };
@@ -26,7 +26,7 @@ const TableComponentDeudas: React.FC<TableComponentDeudasProps> = ({
 		() => [
 			{ Header: '', accessor: 'id' },
 			{ Header: 'Tipo', accessor: 'tipo' },
-			{ Header: 'Referencia', accessor: 'referencia' },
+			{ Header: 'Referencia', accessor: 'refencia' },
 			{ Header: 'Monto', accessor: 'monto' },
 			{ Header: 'Incluir', accessor: 'incluir' },
 			// Add other columns as needed

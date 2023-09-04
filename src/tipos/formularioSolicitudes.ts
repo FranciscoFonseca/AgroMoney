@@ -54,6 +54,7 @@ export interface FormularioSolicitudes {
 	correo: string;
 	RTN: string;
 	contacto: string;
+	comentariosAnalista: string;
 }
 const estatusSolicitud = [
 	{ value: 'Nueva', label: 'Nueva' },
@@ -120,4 +121,5 @@ export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	correo: '',
 	RTN: '',
 	contacto: '',
+	comentariosAnalista: '',
 };

@@ -16,6 +16,7 @@ import AnalisisAgro from './View/AnalisisAgro';
 import VerSlt from './pages/NuevaSlt/VerSlt';
 import ControlUsuariosMenu from './pages/ControlUsuarios/ControlUsuariosMenu';
 import ControlUsuario from './pages/ControlUsuarios/ControlUsuario';
+import VerSltComite from './pages/NuevaSlt/VerSltComite';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement); // Create the root using createRoot
@@ -38,6 +39,7 @@ root.render(
 			<Route exact path="/control-usuario/:id" element={<ControlUsuario />} />
 			<Route exact path="/control-usuarios" element={<ControlUsuariosMenu />} />
 			<Route exact path="/solicitud/:id" element={<VerSlt />} />
+			<Route exact path="/solicitud-reporte/:id" element={<VerSltComite />} />
 		</Routes>
 	</Router>
 );

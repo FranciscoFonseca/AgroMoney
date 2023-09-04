@@ -7,6 +7,7 @@ import API_IP from '../../config';
 import Button from '../../components/Button/Button';
 import { useNavigate } from 'react-router-dom';
 import ControlUsuarioModal from './ControlUsuarioModal';
+import { set } from 'lodash';
 
 const ControlUsuariosMenu = () => {
 	const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -37,15 +38,16 @@ const ControlUsuariosMenu = () => {
 	return (
 		<>
 			<LayoutCustom>
-				<div>
-					<h1>ControlUsuariosMenu</h1>
-				</div>
 				<div className="flex gap-y-2 flex-col items-center bg-gray-100 p-4 rounded-lg shadow-lg relative mb-2 mt-2">
 					<div className="absolute end-2">
 						<>
 							<Button
 								type="button"
 								customClassName="bg-green-700 text-white font-semibold"
+								onClick={() => {
+									setSelectedUsuario(undefined);
+									setIsOpenEditar(true);
+								}}
 							>
 								Nuevo Usuario
 							</Button>

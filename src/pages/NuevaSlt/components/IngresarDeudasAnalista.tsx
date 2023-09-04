@@ -8,30 +8,33 @@ import TableComponentDeudasAnalista, {
 	DataDeudasAnalista,
 } from './TableDeudasAnalista';
 import { toast } from 'react-toastify';
+import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from 'react-datepicker';
 
 interface IngresarDeudasAnalistaProps {
 	data: DataDeudasAnalista[];
 	id: string;
 	handleAgregarDeuda: (deuda: DataDeudasAnalista) => void;
 	handleEliminarDeuda: (id: string) => void;
+	disabled?: boolean;
 }
 
 const defaultData: DataDeudasAnalista = {
 	id: '',
 	tipo: '',
-	referencia: '',
+	refencia: '',
 	incluir: 'Si',
 	limite: 0,
 	saldoActual: 0,
 	formaDePago: '',
 	valorCuota: 0,
-	fechaDeVencimiento: '',
+	fechaVencimiento: new Date().toISOString(),
 	estatus: '',
 	saldoEnMora: 0,
-	moraTreinta: 0,
-	moraSesenta: 0,
-	moraNoventa: 0,
-	moraCientoVeinte: 0,
+	mora30: 0,
+	mora60: 0,
+	mora90: 0,
+	mora120: 0,
 };
 
 const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
@@ -39,13 +42,14 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	id,
 	handleAgregarDeuda,
 	handleEliminarDeuda,
+	disabled,
 }) => {
 	const [deuda, setDeuda] = useState<DataDeudasAnalista>(defaultData);
 	const agregarDeuda = (deuda: DataDeudasAnalista) => {
 		if (deuda.tipo === '') {
 			return toast.warn('Debe seleccionar un tipo de deuda');
 		}
-		if (deuda.referencia === '') {
+		if (deuda.refencia === '') {
 			return toast.warn('Debe ingresar una referencia');
 		}
 		if (deuda.limite === 0) {
@@ -60,14 +64,11 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 		if (deuda.valorCuota === 0) {
 			return toast.warn('Debe ingresar un monto');
 		}
-		if (deuda.fechaDeVencimiento === '') {
+		if (deuda.fechaVencimiento === '') {
 			return toast.warn('Debe ingresar una fecha de vencimiento');
 		}
 		if (deuda.estatus === '') {
 			return toast.warn('Debe ingresar un estatus');
-		}
-		if (deuda.saldoEnMora === 0) {
-			return toast.warn('Debe ingresar un monto');
 		}
 
 		handleAgregarDeuda(deuda);
@@ -121,150 +122,156 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	data.forEach((debt) => {
 		if (debt.incluir === 'Si') {
 			if (debt.tipo === 'Institución') {
-				countMoraTreintaInstitucion += debt.moraTreinta > 0 ? 1 : 0;
-				countMoraSesentaInstitucion += debt.moraSesenta > 0 ? 1 : 0;
-				countMoraNoventaInstitucion += debt.moraNoventa > 0 ? 1 : 0;
-				countMoraCientoVeinteInstitucion += debt.moraCientoVeinte > 0 ? 1 : 0;
+				countMoraTreintaInstitucion += debt.mora30 > 0 ? 1 : 0;
+				countMoraSesentaInstitucion += debt.mora60 > 0 ? 1 : 0;
+				countMoraNoventaInstitucion += debt.mora90 > 0 ? 1 : 0;
+				countMoraCientoVeinteInstitucion += debt.mora120 > 0 ? 1 : 0;
 			} else if (debt.tipo === 'Comercial') {
-				countMoraTreintaComercial += debt.moraTreinta > 0 ? 1 : 0;
-				countMoraSesentaComercial += debt.moraSesenta > 0 ? 1 : 0;
-				countMoraNoventaComercial += debt.moraNoventa > 0 ? 1 : 0;
-				countMoraCientoVeinteComercial += debt.moraCientoVeinte > 0 ? 1 : 0;
+				countMoraTreintaComercial += debt.mora30 > 0 ? 1 : 0;
+				countMoraSesentaComercial += debt.mora60 > 0 ? 1 : 0;
+				countMoraNoventaComercial += debt.mora90 > 0 ? 1 : 0;
+				countMoraCientoVeinteComercial += debt.mora120 > 0 ? 1 : 0;
 			} else if (debt.tipo === 'Internos') {
-				countMoraTreintaInternos += debt.moraTreinta > 0 ? 1 : 0;
-				countMoraSesentaInternos += debt.moraSesenta > 0 ? 1 : 0;
-				countMoraNoventaInternos += debt.moraNoventa > 0 ? 1 : 0;
-				countMoraCientoVeinteInternos += debt.moraCientoVeinte > 0 ? 1 : 0;
+				countMoraTreintaInternos += debt.mora30 > 0 ? 1 : 0;
+				countMoraSesentaInternos += debt.mora60 > 0 ? 1 : 0;
+				countMoraNoventaInternos += debt.mora90 > 0 ? 1 : 0;
+				countMoraCientoVeinteInternos += debt.mora120 > 0 ? 1 : 0;
 			}
 		}
 	});
 
 	// Display the counts for each tipo
-	console.log('Institución - Count Mora 30:', countMoraTreintaInstitucion);
-	console.log('Institución - Count Mora 60:', countMoraSesentaInstitucion);
-	console.log('Institución - Count Mora 90:', countMoraNoventaInstitucion);
-	console.log('Institución - Count Mora 120:', countMoraCientoVeinteInstitucion);
-
-	console.log('Comercial - Count Mora 30:', countMoraTreintaComercial);
-	console.log('Comercial - Count Mora 60:', countMoraSesentaComercial);
-	console.log('Comercial - Count Mora 90:', countMoraNoventaComercial);
-	console.log('Comercial - Count Mora 120:', countMoraCientoVeinteComercial);
-
-	console.log('Internos - Count Mora 30:', countMoraTreintaInternos);
-	console.log('Internos - Count Mora 60:', countMoraSesentaInternos);
-	console.log('Internos - Count Mora 90:', countMoraNoventaInternos);
-	console.log('Internos - Count Mora 120:', countMoraCientoVeinteInternos);
 
 	return (
 		<>
-			<div className="mt-2 border-b-2 w-full flex justify-center border-black">
-				<p className="text-xl font-semibold">Ingresar las Deudas (Analista)</p>
-			</div>
-			<div className="flex flex-row gap-2 w-full flex-wrap justify-center">
-				<div className="flex flex-col  w-full sm:w-1/6">
-					<Select
-						options={[
-							{ label: 'Seleccione', value: '0' },
-							{ label: 'Financiera', value: 'Financiera' },
-							{ label: 'Comercial', value: 'Comercial' },
-							{ label: 'Deudas con Grupo Cadelga', value: 'Internos' },
-						]}
-						label="Tipo"
-						name={'Tipo'}
-						value={deuda.tipo}
-						onChange={(e) => {
-							setDeuda({ ...deuda, tipo: e.target.value });
-						}}
-					/>
+			{!disabled && (
+				<div className="mt-2 border-b-2 w-full flex justify-center border-black">
+					<p className="text-xl font-semibold">Ingresar las Deudas (Analista)</p>
 				</div>
-				<div className="flex flex-col w-full sm:w-1/6">
-					<TextInput
-						label="Referencia"
-						value={deuda.referencia}
-						onChange={(e) => {
-							setDeuda({ ...deuda, referencia: e.target.value });
-						}}
-					/>
+			)}
+			{disabled && (
+				<div className="mt-2 border-b-2 w-full flex justify-center border-black">
+					<p className="text-xl font-semibold">Deudas Ingresadas (Analista)</p>
 				</div>
-				<div className="flex flex-col w-full sm:w-1/6 ">
-					<TextInput
-						label="Limite"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								limite: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.limite}
-					/>
-				</div>
-				<div className="flex flex-col w-full sm:w-1/6 ">
-					<TextInput
-						label="Saldo Actual"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								saldoActual: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.saldoActual}
-					/>
-				</div>
-				<div className="flex flex-col w-full sm:w-1/6 ">
-					<TextInput
-						label="Forma de Pago"
-						onChange={(e) => {
-							setDeuda({ ...deuda, formaDePago: e.target.value });
-						}}
-						value={deuda.formaDePago}
-					/>
-				</div>
-				<div className="flex flex-col w-full sm:w-1/6 ">
-					<TextInput
-						label="Valor Cuota"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								valorCuota: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.valorCuota}
-					/>
-				</div>
+			)}
+			{!disabled && (
+				<>
+					<div className="flex flex-row gap-2 w-full flex-wrap justify-center">
+						<div className="flex flex-col  w-full sm:w-1/6">
+							<Select
+								options={[
+									{ label: 'Seleccione', value: '0' },
+									{ label: 'Financiera', value: 'Financiera' },
+									{ label: 'Comercial', value: 'Comercial' },
+									{ label: 'Deudas con Grupo Cadelga', value: 'Internos' },
+								]}
+								label="Tipo"
+								name={'Tipo'}
+								value={deuda.tipo}
+								onChange={(e) => {
+									setDeuda({ ...deuda, tipo: e.target.value });
+								}}
+							/>
+						</div>
+						<div className="flex flex-col w-full sm:w-1/6">
+							<TextInput
+								label="Referencia"
+								value={deuda.refencia}
+								onChange={(e) => {
+									setDeuda({ ...deuda, refencia: e.target.value });
+								}}
+							/>
+						</div>
+						<div className="flex flex-col w-full sm:w-1/6 ">
+							<TextInput
+								label="Limite"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										limite: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.limite}
+							/>
+						</div>
+						<div className="flex flex-col w-full sm:w-1/6 ">
+							<TextInput
+								label="Saldo Actual"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										saldoActual: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.saldoActual}
+							/>
+						</div>
+						<div className="flex flex-col w-full sm:w-1/6 ">
+							<TextInput
+								label="Forma de Pago"
+								onChange={(e) => {
+									setDeuda({ ...deuda, formaDePago: e.target.value });
+								}}
+								value={deuda.formaDePago}
+							/>
+						</div>
+						<div className="flex flex-col w-full sm:w-1/6 ">
+							<TextInput
+								label="Valor Cuota"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										valorCuota: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.valorCuota}
+							/>
+						</div>
 
-				<div className="flex flex-col w-full sm:w-1/6 ">
-					<TextInput
-						label="Fecha de Vencimiento"
-						textCustomClassName="truncate"
-						onChange={(e) => {
-							setDeuda({ ...deuda, fechaDeVencimiento: e.target.value });
-						}}
-						value={deuda.fechaDeVencimiento}
-					/>
-				</div>
-				<div className="flex flex-col w-full sm:w-1/6 ">
-					<TextInput
-						label="Estatus"
-						onChange={(e) => {
-							setDeuda({ ...deuda, estatus: e.target.value });
-						}}
-						value={deuda.estatus}
-					/>
-				</div>
-				<div className="flex flex-col w-full sm:w-1/6 ">
-					<TextInput
-						label="Saldo en Mora"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								saldoEnMora: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.saldoEnMora}
-					/>
-				</div>
+						<div className="flex flex-col w-full sm:w-1/6 ">
+							{/* <DatePicker
+								className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+								maxDate={new Date()}
+								showYearDropdown
+								selected={new Date(deuda.fechaVencimiento)}
+								onChange={(date) => {
+									setDeuda({ ...deuda, fechaVencimiento: date?.toISOString() || '' });
+								}}
+							/> */}
+							<label>Fecha de Constitución</label>
+							<DatePicker
+								className="block h-12 w-full rounded-lg mt-1 border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+								maxDate={new Date()}
+								showYearDropdown
+								selected={new Date(deuda.fechaVencimiento)}
+								onChange={(date) => {
+									setDeuda({ ...deuda, fechaVencimiento: date?.toISOString() || '' });
+								}}
+							/>
+						</div>
+						<div className="flex flex-col w-full sm:w-1/6 ">
+							<TextInput
+								label="Estatus"
+								onChange={(e) => {
+									setDeuda({ ...deuda, estatus: e.target.value });
+								}}
+								value={deuda.estatus}
+							/>
+						</div>
+						<div className="flex flex-col w-full sm:w-1/6 ">
+							<TextInput
+								label="Saldo en Mora"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										saldoEnMora: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.saldoEnMora}
+							/>
+						</div>
 
-				{/* <div className="flex flex-col w-full">
+						{/* <div className="flex flex-col w-full">
 					<TextInput
 						label="Monto"
 						onChange={(e) => {
@@ -273,82 +280,84 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 						value={deuda.monto.toString()}
 					/>
 				</div> */}
-				<div className="flex flex-col w-full sm:w-1/12 ">
-					<Select
-						options={[
-							{ label: 'Si', value: 'Si' },
-							{ label: 'No', value: 'No' },
-						]}
-						value={deuda.incluir}
-						label="Incluir"
-						name={'Incluir'}
-						onChange={(e) => {
-							setDeuda({ ...deuda, incluir: e.target.value });
-						}}
-					/>
-				</div>
-				<div className="flex flex-col justify-center mt-3 w-full sm:w-1/12 ">
-					<Button
-						type="button"
-						customClassName="bg-green-700 font-semibold text-white"
-						onClick={() => {
-							agregarDeuda({ ...deuda, id: uuidv4() });
-						}}
-					>
-						Agregar
-					</Button>
-				</div>
-			</div>
-			<div className="flex flex-row gap-2 w-full px-16 justify-center">
-				<div className="flex flex-col justify-center w-full  ">
-					<TextInput
-						label="Mora 30"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								moraTreinta: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.moraTreinta}
-					/>
-				</div>
-				<div className="flex flex-col justify-center w-full  ">
-					<TextInput
-						label="Mora 60"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								moraSesenta: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.moraSesenta}
-					/>
-				</div>
-				<div className="flex flex-col justify-center w-full  ">
-					<TextInput
-						label="Mora 90"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								moraNoventa: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.moraNoventa}
-					/>
-				</div>
-				<div className="flex flex-col justify-center w-full  ">
-					<TextInput
-						label="Mora 120"
-						onChange={(e) => {
-							setDeuda({
-								...deuda,
-								moraCientoVeinte: Number(e.target.value.replace(/[^0-9]/g, '')),
-							});
-						}}
-						value={deuda.moraCientoVeinte}
-					/>
-				</div>
-			</div>
+						<div className="flex flex-col w-full sm:w-1/12 ">
+							<Select
+								options={[
+									{ label: 'Si', value: 'Si' },
+									{ label: 'No', value: 'No' },
+								]}
+								value={deuda.incluir}
+								label="Incluir"
+								name={'Incluir'}
+								onChange={(e) => {
+									setDeuda({ ...deuda, incluir: e.target.value });
+								}}
+							/>
+						</div>
+						<div className="flex flex-col justify-center mt-3 w-full sm:w-1/12 ">
+							<Button
+								type="button"
+								customClassName="bg-green-700 font-semibold text-white"
+								onClick={() => {
+									agregarDeuda({ ...deuda, id: uuidv4() });
+								}}
+							>
+								Agregar
+							</Button>
+						</div>
+					</div>
+					<div className="flex flex-row gap-2 w-full px-16 justify-center">
+						<div className="flex flex-col justify-center w-full  ">
+							<TextInput
+								label="Mora 30"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										mora30: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.mora30}
+							/>
+						</div>
+						<div className="flex flex-col justify-center w-full  ">
+							<TextInput
+								label="Mora 60"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										mora60: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.mora60}
+							/>
+						</div>
+						<div className="flex flex-col justify-center w-full  ">
+							<TextInput
+								label="Mora 90"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										mora90: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.mora90}
+							/>
+						</div>
+						<div className="flex flex-col justify-center w-full  ">
+							<TextInput
+								label="Mora 120"
+								onChange={(e) => {
+									setDeuda({
+										...deuda,
+										mora120: Number(e.target.value.replace(/[^0-9]/g, '')),
+									});
+								}}
+								value={deuda.mora120}
+							/>
+						</div>
+					</div>
+				</>
+			)}
 			<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 				<div className="flex flex-col w-full">
 					<TableComponentDeudasAnalista

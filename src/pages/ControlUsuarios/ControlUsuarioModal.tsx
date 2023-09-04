@@ -49,6 +49,10 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 	useEffect(() => {
 		setIsLoading(true);
 		if (usuario) fetchUsuarios();
+		else {
+			reset(exampleUsuario);
+			setIsLoading(false);
+		}
 	}, [usuario]);
 	const perfiles = [
 		{ value: 'A', label: 'Administrador' },

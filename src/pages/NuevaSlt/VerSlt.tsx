@@ -41,6 +41,7 @@ import IngresarDeudasAnalista from './components/IngresarDeudasAnalista';
 import { DataDeudasAnalista } from './components/TableDeudasAnalista';
 import ModalRRHH from './components/ModalRRHH';
 import { Usuario } from '../../tipos/Usuario';
+import clsx from 'clsx';
 
 const NuevaSlt2 = (): JSX.Element => {
 	const {
@@ -288,6 +289,27 @@ const NuevaSlt2 = (): JSX.Element => {
 			.catch((error) => {
 				console.error('Error fetching user data:', error);
 			});
+		try {
+			axios
+				.get(`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=false`)
+				.then((data: AxiosResponse<DataDeudas[]>) => {
+					console.log(data.data);
+					setTableDeudas(data.data);
+				});
+		} catch (error) {
+			console.log(error);
+		}
+		try {
+			axios
+				.get(`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=true`)
+				.then((data: AxiosResponse<DataDeudasAnalista[]>) => {
+					console.log(data.data);
+					setTableDeudasAnalista(data.data);
+				});
+		} catch (error) {
+			console.log(error);
+		}
+
 		fetchDocumentMetadataByAssociatedId(Number(id)).then((documentMetadata) => {
 			setDocumentMetadata(documentMetadata);
 		});
@@ -485,7 +507,7 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (data.tipo === '') {
 			return toast.warn('Debe seleccionar un tipo de deuda');
 		}
-		if (data.referencia === '') {
+		if (data.refencia === '') {
 			return toast.warn('Debe ingresar una referencia');
 		}
 		if (data.monto === 0) {
@@ -499,7 +521,7 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (data.tipo === '') {
 			return toast.warn('Debe seleccionar un tipo de deuda');
 		}
-		if (data.referencia === '') {
+		if (data.refencia === '') {
 			return toast.warn('Debe ingresar una referencia');
 		}
 
@@ -526,7 +548,34 @@ const NuevaSlt2 = (): JSX.Element => {
 	const closeModal = () => {
 		setModalIsOpen(false);
 	};
+	const [comentarioAnalista, setComentarioAnalista] = useState<string>('');
+	const handleSubmitDeudasAnalista = () => {
+		const idSolicitudValue = id;
+		const modifiedArray = tableDeudasAnalista.map((item) => {
+			// Destructure the object to remove the "id" property
+			const { id, ...rest } = item;
 
+			// Add the "idSolicitud" property with the constant value
+			return {
+				...rest,
+				tipoCreada: true,
+				idSolicitud: idSolicitudValue,
+			};
+		});
+
+		axios
+			.post(`http://${API_IP}/api/SolicitudesDeudas`, modifiedArray)
+			.then((response) => {
+				//navigate('/Principal');
+			});
+
+		let formData = getValues();
+		axios.patch('http://' + API_IP + '/api/Solicitudes/' + id, formData, {
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+	};
 	return (
 		<>
 			<ModalRRHH
@@ -1256,7 +1305,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										}}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												label={'telefono de Jefe Inmediato'}
+												label={'Telefono de Jefe Inmediato'}
 												{...register('telJefeIn')}
 											/>
 										)}
@@ -1338,12 +1387,51 @@ const NuevaSlt2 = (): JSX.Element => {
 						handleEliminarDeuda={handleEliminarDeuda}
 						disabled
 					/>
-					<IngresarDeudasAnalista
-						data={tableDeudasAnalista}
-						id="tableDeudasAnalista"
-						handleAgregarDeuda={handleAgregarDeudaAnalista}
-						handleEliminarDeuda={handleEliminarDeudaAnalista}
-					/>
+					{usuariolog?.perfil === 'M' && getValues('estatus') === 'Nueva' && (
+						<>
+							<IngresarDeudasAnalista
+								data={tableDeudasAnalista}
+								id="tableDeudasAnalista"
+								handleAgregarDeuda={handleAgregarDeudaAnalista}
+								handleEliminarDeuda={handleEliminarDeudaAnalista}
+							/>
+							{/* textinput that saves a coment */}
+							<div className="flex flex-col w-full">
+								<Controller
+									name="comentariosAnalista"
+									control={control}
+									rules={{
+										required: true,
+									}}
+									render={({ field: { value, onChange } }) => (
+										<TextInput
+											label="Comentarios"
+											value={value}
+											{...register('comentariosAnalista')}
+										/>
+									)}
+								/>
+							</div>
+							<div className="flex flex-row gap-2 w-full justify-center flex-wrap sm:flex-nowrap">
+								<Button
+									type="button"
+									customClassName={clsx('font-semibold text-white', 'bg-green-700 ')}
+									onClick={() => handleSubmitDeudasAnalista()}
+								>
+									Salvar
+								</Button>
+								<Button
+									type="button"
+									customClassName="bg-green-700 font-semibold text-white"
+									onClick={() => {
+										navigate('/Principal');
+									}}
+								>
+									Cancelar
+								</Button>
+							</div>
+						</>
+					)}
 				</form>
 			</LayoutCustom>
 		</>

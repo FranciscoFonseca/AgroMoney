@@ -17,7 +17,7 @@ interface IngresarDeudasProps {
 const defaultData: DataDeudas = {
 	id: '',
 	tipo: '',
-	referencia: '',
+	refencia: '',
 	monto: 0,
 	incluir: 'Si',
 };
@@ -33,12 +33,16 @@ const IngresarDeudas: React.FC<IngresarDeudasProps> = ({
 
 	return (
 		<>
-			{(disabled && data.length > 0) ||
-				(!disabled && (
-					<div className="mt-2 border-b-2 w-full flex justify-center border-black">
-						<p className="text-xl font-semibold">Ingresar las Deudas</p>
-					</div>
-				))}
+			{!disabled && (
+				<div className="mt-2 border-b-2 w-full flex justify-center border-black">
+					<p className="text-xl font-semibold">Ingresar las Deudas</p>
+				</div>
+			)}
+			{disabled && (
+				<div className="mt-2 border-b-2 w-full flex justify-center border-black">
+					<p className="text-xl font-semibold">Deudas Ingresadas</p>
+				</div>
+			)}
 			{!disabled && (
 				<>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
@@ -46,7 +50,7 @@ const IngresarDeudas: React.FC<IngresarDeudasProps> = ({
 							<Select
 								options={[
 									{ label: 'Seleccione', value: '0' },
-									{ label: 'Financierass', value: 'Financierass' },
+									{ label: 'Financieras', value: 'Financieras' },
 									{ label: 'Comercial', value: 'Comercial' },
 									{ label: 'Deudas con Grupo Cadelga', value: 'Internos' },
 								]}
@@ -61,9 +65,9 @@ const IngresarDeudas: React.FC<IngresarDeudasProps> = ({
 						<div className="flex flex-col w-full">
 							<TextInput
 								label="Referencia"
-								value={deuda.referencia}
+								value={deuda.refencia}
 								onChange={(e) => {
-									setDeuda({ ...deuda, referencia: e.target.value });
+									setDeuda({ ...deuda, refencia: e.target.value });
 								}}
 							/>
 						</div>

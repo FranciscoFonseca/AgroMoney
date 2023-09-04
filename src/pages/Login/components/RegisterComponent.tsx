@@ -118,12 +118,12 @@ const RegisterComponent = ({
 							}}
 							render={({ field: { value, onChange } }) => (
 								<div className="w-full">
-									<label className="ml-1">telefono</label>
+									<label className="ml-1">Telefono</label>
 									<InputMask
 										mask="99999999"
 										value={value}
 										onChange={onChange}
-										placeholder="telefono"
+										placeholder="Telefono"
 										className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 									/>
 								</div>
