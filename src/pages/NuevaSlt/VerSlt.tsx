@@ -1029,6 +1029,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										onChange={(date) => {
 											onChange(date);
 										}}
+										
 									/>
 								)}
 							/>

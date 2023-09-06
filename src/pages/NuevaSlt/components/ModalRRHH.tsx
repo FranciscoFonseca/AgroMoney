@@ -198,12 +198,24 @@ const ModalRRHH: React.FC<ModalProps> = ({
 
 				<div className="flex justify-between">
 					<div className="flex flex-col">
-						<TextInput
+						<Controller
+							name="PorcentajeRRHH"
+							control={formMethods.control}
+							render={({ field }) => (
+								<TextInput
+									id="PorcentajeRRHH"
+									value={field.value}
+									onChange={field.onChange}
+									label={'Total'}
+								/>
+							)}
+						/>
+						{/* <TextInput
 							id="total"
 							value={`${total}`}
 							onChange={handleTotalChange}
 							label={'Total'}
-						/>
+						/> */}
 					</div>
 					<div className="flex flex-col">
 						<TextInput

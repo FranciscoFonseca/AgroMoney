@@ -19,6 +19,14 @@ interface IngresarDeudasAnalistaProps {
 	disabled?: boolean;
 }
 
+const tipoEstatus = [
+	{ label: 'Seleccione', value: '0' },
+	{ label: 'Vigente', value: 'Vigente' },
+	{ label: 'Atrasado', value: 'Atrasado' },
+	{ label: 'En Mora', value: 'En Mora' },
+	{ label: 'Jurídico', value: 'Jurídico' },
+	{ label: 'Castigo', value: 'Castigo' },
+];
 const defaultData: DataDeudasAnalista = {
 	id: '',
 	tipo: '',
@@ -238,25 +246,35 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 									setDeuda({ ...deuda, fechaVencimiento: date?.toISOString() || '' });
 								}}
 							/> */}
-							<label>Fecha de Constitución</label>
+							<label>Fecha de Vencimiento</label>
 							<DatePicker
 								className="block h-12 w-full rounded-lg mt-1 border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 								maxDate={new Date()}
 								showYearDropdown
 								selected={new Date(deuda.fechaVencimiento)}
 								onChange={(date) => {
-									setDeuda({ ...deuda, fechaVencimiento: date?.toISOString() || '' });
+									if (date)
+										setDeuda({ ...deuda, fechaVencimiento: date?.toISOString() || '' });
 								}}
 							/>
 						</div>
 						<div className="flex flex-col w-full sm:w-1/6 ">
-							<TextInput
+							<Select
+								options={tipoEstatus}
+								label="Estatus"
+								name={'Estatus'}
+								value={deuda.estatus}
+								onChange={(e) => {
+									setDeuda({ ...deuda, estatus: e.target.value });
+								}}
+							/>
+							{/* <TextInput
 								label="Estatus"
 								onChange={(e) => {
 									setDeuda({ ...deuda, estatus: e.target.value });
 								}}
 								value={deuda.estatus}
-							/>
+							/> */}
 						</div>
 						<div className="flex flex-col w-full sm:w-1/6 ">
 							<TextInput

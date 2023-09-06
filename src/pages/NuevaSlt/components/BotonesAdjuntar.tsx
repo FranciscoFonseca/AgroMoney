@@ -222,7 +222,7 @@ const BotonesAdjuntar = ({
 			</div>
 			<div className="w-11/12">
 				<p className="text-lg ">
-					<b>Instrucciones: </b>primero, descarga los formularios necesarios. Una vez
+					<b>Instrucciones: </b>Primero, descarga los formularios necesarios. Una vez
 					descargados, adjúntalos utilizando el botón correspondiente. ¡Gracias!
 				</p>
 			</div>

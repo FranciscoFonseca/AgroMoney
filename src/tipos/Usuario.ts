@@ -13,6 +13,7 @@ export interface Usuario {
 	sms: string;
 	sync: string;
 	empresa?: string;
+	token?: string;
 }
 
 export const exampleUsuario: Usuario = {

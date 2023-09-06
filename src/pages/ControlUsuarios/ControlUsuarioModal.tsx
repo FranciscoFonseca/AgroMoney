@@ -41,7 +41,11 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 			.get(`http://${API_IP}/api/Usuarios/${usuario?.idUsuario || 1}`)
 			.then((res) => {
 				setIsLoading(false);
-				reset(res.data);
+				const newData = {
+					...res.data,
+					password: '',
+				};
+				reset(newData);
 			});
 		//console.log(res.data);
 		//setUsuarioModal(res.data);
@@ -74,15 +78,12 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 
 	const onSubmit = async (data: Usuario) => {
 		if (data.idUsuario !== 0) {
-			console.log(data);
-			const res = await axios.put(
+			const res = await axios.patch(
 				`http://${API_IP}/api/Usuarios/${data.idUsuario}`,
 				data
 			);
-			console.log(res);
 		} else {
 			const res = await axios.post(`http://${API_IP}/api/Usuarios`, data);
-			console.log(res);
 		}
 		closeModal();
 	};
@@ -110,7 +111,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 					backgroundColor: '#fff',
 					margin: 'auto',
 					width: '520px',
-					height: 500,
+					height: 600,
 					border: '1px solid #ccc',
 					borderRadius: '4px',
 					outline: 'none',
@@ -267,6 +268,33 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 										{...field}
 										options={companies}
 									/>
+								)}
+							/>
+						</div>
+					</div>
+					<div className="flex gap-y-2 mt-2 flex-row w-full justify-between gap-x-4">
+						<div className="flex flex-col gap-y-1 w-full">
+							<Controller
+								name="password"
+								control={control}
+								rules={{ required: true }}
+								render={({ field }) => (
+									<TextInput
+										label="Contraseña"
+										placeholder="Contraseña"
+										type="password"
+										{...field}
+									/>
+								)}
+							/>
+						</div>
+						<div className="flex flex-col gap-y-1 w-full">
+							<Controller
+								name="token"
+								control={control}
+								rules={{ required: true }}
+								render={({ field }) => (
+									<TextInput label="Token" placeholder="Token" {...field} />
 								)}
 							/>
 						</div>

@@ -135,9 +135,11 @@ const NuevaSlt2 = (): JSX.Element => {
 			};
 		});
 
-		axios.post(`http://${API_IP}/api/SolicitudesDeudas`, modifiedArray).then((response) => {
-			//navigate('/Principal');
-		});
+		axios
+			.post(`http://${API_IP}/api/SolicitudesDeudas`, modifiedArray)
+			.then((response) => {
+				//navigate('/Principal');
+			});
 	};
 
 	const onSubmit: SubmitHandler<FormularioSolicitudes> = async (formData) => {
@@ -200,58 +202,73 @@ const NuevaSlt2 = (): JSX.Element => {
 		}
 	};
 
-	const handleExportToExcel = () => {
-		const modifiedData = amortizarData.map((item) => {
-			return {
-				...item,
-				// Modify numeric values as needed, for example, doubling them
-				saldoInicial:
-					typeof item.saldoInicial === 'number'
-						? formatNumber(item.saldoInicial.toFixed(2))
-						: item.saldoInicial,
-				pagoProgramado:
-					typeof item.pagoProgramado === 'number'
-						? formatNumber(item.pagoProgramado.toFixed(2))
-						: item.pagoProgramado,
+	const handleExportToExcel = async (monto: string, plazo: string) => {
+		// const modifiedData = amortizarData.map((item) => {
+		// 	return {
+		// 		...item,
+		// 		// Modify numeric values as needed, for example, doubling them
+		// 		saldoInicial:
+		// 			typeof item.saldoInicial === 'number'
+		// 				? formatNumber(item.saldoInicial.toFixed(2))
+		// 				: item.saldoInicial,
+		// 		pagoProgramado:
+		// 			typeof item.pagoProgramado === 'number'
+		// 				? formatNumber(item.pagoProgramado.toFixed(2))
+		// 				: item.pagoProgramado,
 
-				pagoTotal:
-					typeof item.pagoTotal === 'number'
-						? formatNumber(item.pagoTotal.toFixed(2))
-						: item.pagoTotal,
-				capital:
-					typeof item.capital === 'number'
-						? formatNumber(item.capital.toFixed(2))
-						: item.capital,
-				interes:
-					typeof item.interes === 'number'
-						? formatNumber(item.interes.toFixed(2))
-						: item.interes,
-				saldoFinal:
-					typeof item.saldoFinal === 'number'
-						? formatNumber(item.saldoFinal.toFixed(2))
-						: item.saldoFinal,
-				interesAcumulativo:
-					typeof item.interesAcumulativo === 'number'
-						? formatNumber(item.interesAcumulativo.toFixed(2))
-						: item.interesAcumulativo,
+		// 		pagoTotal:
+		// 			typeof item.pagoTotal === 'number'
+		// 				? formatNumber(item.pagoTotal.toFixed(2))
+		// 				: item.pagoTotal,
+		// 		capital:
+		// 			typeof item.capital === 'number'
+		// 				? formatNumber(item.capital.toFixed(2))
+		// 				: item.capital,
+		// 		interes:
+		// 			typeof item.interes === 'number'
+		// 				? formatNumber(item.interes.toFixed(2))
+		// 				: item.interes,
+		// 		saldoFinal:
+		// 			typeof item.saldoFinal === 'number'
+		// 				? formatNumber(item.saldoFinal.toFixed(2))
+		// 				: item.saldoFinal,
+		// 		interesAcumulativo:
+		// 			typeof item.interesAcumulativo === 'number'
+		// 				? formatNumber(item.interesAcumulativo.toFixed(2))
+		// 				: item.interesAcumulativo,
 
-				// Add similar logic for other numeric fields
-			};
-		});
+		// 		// Add similar logic for other numeric fields
+		// 	};
+		// });
 
-		const worksheet = XLSX.utils.json_to_sheet(modifiedData);
+		// const worksheet = XLSX.utils.json_to_sheet(modifiedData);
 
-		// const worksheet = XLSX.utils.json_to_sheet(amortizarData);
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-		const excelBuffer = XLSX.write(workbook, {
-			bookType: 'xlsx',
-			type: 'array',
-		});
-		saveAs(
-			new Blob([excelBuffer], { type: 'application/octet-stream' }),
-			'table.xlsx'
-		);
+		// // const worksheet = XLSX.utils.json_to_sheet(amortizarData);
+		// const workbook = XLSX.utils.book_new();
+		// XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+		// const excelBuffer = XLSX.write(workbook, {
+		// 	bookType: 'xlsx',
+		// 	type: 'array',
+		// });
+		// saveAs(
+		// 	new Blob([excelBuffer], { type: 'application/octet-stream' }),
+		// 	'table.xlsx'
+		// );
+		try {
+			const response = await axios.get(
+				`http://${API_IP}/api/Solicitudes/ExportToExcel?monto=${monto}&plazo=${plazo}`,
+				{ responseType: 'blob' }
+			);
+			const url = window.URL.createObjectURL(new Blob([response.data]));
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'solicitud_data.xlsx';
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error('Error exporting Excel file', error);
+		}
 	};
 
 	const handleExportToPDF = () => {
@@ -750,7 +767,9 @@ const NuevaSlt2 = (): JSX.Element => {
 							{amortizarData && amortizarData.length > 0 && (
 								<div className="flex flex-row justify-end">
 									<Button
-										onClick={handleExportToExcel}
+										onClick={() =>
+											handleExportToExcel(watchMonto.toString(), watchPlazo.toString())
+										}
 										type="button"
 										customClassName="bg-green-700 font-semibold text-white"
 									>

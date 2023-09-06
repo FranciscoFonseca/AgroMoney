@@ -31,6 +31,7 @@ const LoginComponent = (): JSX.Element => {
 				{
 					Telefono: data.Telefono,
 					Password: data.Password,
+					Token: data.Token,
 				}
 			);
 
@@ -114,7 +115,7 @@ const LoginComponent = (): JSX.Element => {
 							}}
 							render={({ field: { value, onChange } }) => (
 								<div className="w-full">
-									<label className="ml-1">token</label>
+									<label className="ml-1">Token</label>
 									<InputMask
 										mask="999999"
 										value={value}
