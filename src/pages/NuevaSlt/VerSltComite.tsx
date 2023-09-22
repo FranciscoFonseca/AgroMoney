@@ -24,6 +24,7 @@ import IngresarDeudasAnalista from './components/IngresarDeudasAnalista';
 import { DataDeudasAnalista } from './components/TableDeudasAnalista';
 import { Usuario } from '../../tipos/Usuario';
 import DisplayField from '../../components/DisplayField/DisplayField';
+import ModalRechazarAprobar from './components/ModalRechazarAprobar';
 
 const VerSltComite = (): JSX.Element => {
 	const { id } = useParams();
@@ -287,7 +288,10 @@ const VerSltComite = (): JSX.Element => {
 			estatus: 'Aprobado',
 		};
 		axios
-			.patch(`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`, data)
+			.patch(
+				`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
+				data
+			)
 			.then((response) => {
 				toast.success('Solicitud Aprobada');
 				navigate('/comite');
@@ -303,7 +307,10 @@ const VerSltComite = (): JSX.Element => {
 			estatus: 'Rechazado',
 		};
 		axios
-			.patch(`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`, data)
+			.patch(
+				`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
+				data
+			)
 			.then((response) => {
 				toast.success('Solicitud Rechazada');
 				navigate('/comite');
@@ -313,9 +320,37 @@ const VerSltComite = (): JSX.Element => {
 				toast.error('Error al rechazar la solicitud');
 			});
 	};
-
+	const [modalIsOpen, setModalIsOpen] = useState(true);
+	const [modalText, setModalText] = useState('');
+	const openModal = () => {
+		setModalIsOpen(true);
+	};
+	const closeModal = () => {
+		setModalIsOpen(false);
+	};
+	const handleModal = () => {
+		let user = usuariolog?.telefono;
+		axios.post(`http://${API_IP}/api/Notificaciones`).then((response) => {
+			if (response.status === 200) {
+				if (modalText === 'Aprobar') {
+					handleAprobar();
+				} else {
+					handleRechazar();
+				}
+			} else {
+				toast.error('Error al comprobar token');
+			}
+		});
+	};
 	return (
 		<>
+			<ModalRechazarAprobar
+				isOpen={modalIsOpen}
+				closeModal={closeModal}
+				titleText="Rechazar"
+				handler={handleModal}
+			/>
+
 			<LayoutCustom>
 				<div className="flex gap-y-2 flex-col items-center bg-gray-100 p-4 rounded-lg shadow-lg relative">
 					<div className="border-b-2 w-full flex justify-between items-center border-black">

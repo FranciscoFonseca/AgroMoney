@@ -88,8 +88,11 @@ const NuevaSlt2 = (): JSX.Element => {
 						const file = files[i];
 						//get mimetype
 						const mimeType = file.type;
+						const fileNameParts = file.name.split('.');
 
-						const newFileName = `${key}-${i + 1}.${mimeType}`; // Construct new filename
+						// The last part will be the file extension
+						const fileExtension = fileNameParts[fileNameParts.length - 1];
+						const newFileName = `${key}-${i + 1}.${fileExtension}`; // Construct new filename
 						// Create a new File object with updated filename
 						const modifiedFile = new File([file], newFileName, {
 							type: file.type,

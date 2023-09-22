@@ -577,11 +577,15 @@ const NuevaSlt2 = (): JSX.Element => {
 			pasoAgroMoney: true,
 		};
 
-		axios.patch('http://' + API_IP + '/api/Solicitudes/' + id, formData, {
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
+		axios
+			.patch('http://' + API_IP + '/api/Solicitudes/' + id, formData, {
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			})
+			.then((response) => {
+				navigate('/Principal');
+			});
 	};
 	return (
 		<>

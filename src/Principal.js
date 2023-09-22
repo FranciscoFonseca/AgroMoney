@@ -475,7 +475,7 @@ function Principal() {
 			<h5>Solicitudes</h5>
 			<div className="principal principal-form" style={{ marginBottom: '1%' }}>
 				<form className="principal-form">
-					<div className="inputs-container">
+					{/* <div className="inputs-container">
 						<div className="input-container">
 							<input
 								type="text"
@@ -512,7 +512,7 @@ function Principal() {
 								))}
 							</select>
 						</div>
-					</div>
+					</div> */}
 					<Table data={users} />
 				</form>
 				{perfil === 'E' && (
