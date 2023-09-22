@@ -188,7 +188,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 								control={control}
 								rules={{ required: true }}
 								render={({ field }) => (
-									<TextInput label="Telefono" placeholder="Telefono" {...field} />
+									<TextInput label="Teléfono" placeholder="Teléfono" {...field} />
 								)}
 							/>
 						</div>

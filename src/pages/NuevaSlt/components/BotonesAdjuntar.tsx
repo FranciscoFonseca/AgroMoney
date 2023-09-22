@@ -48,17 +48,17 @@ const arrayBotones: BotonesAdjuntarOptions[] = [
 	{ nombre: 'Receta', label: 'Receta/Orden' }, //10
 	{
 		nombre: 'Autorizacion-Persona-Juridica',
-		label: 'Autorizacion Persona Juridica',
+		label: 'Autorización Persona Juridica',
 		adjunto: handleDownloadJuridica,
 	}, //11
 	{
 		nombre: 'Autorizacion-Persona-natural',
-		label: 'Autorizacion Persona Natural',
+		label: 'Autorización Persona Natural',
 		adjunto: handleDownloadNatural,
 	}, //12
 	{
 		nombre: 'Autorizacion-Debito',
-		label: 'Autorizacion Debito',
+		label: 'Autorización Debito',
 		adjunto: handleDownloadAgroMoney,
 	}, //13
 ];

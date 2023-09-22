@@ -62,15 +62,7 @@ function Principal() {
 		// 	'R'
 		// 		? 'A'
 		// 		: usuariolog.perfil;
-		const url = `http://${API_IP}/api/Solicitudes/BuscarPorUsuario?idusuario=${
-			usuariolog.idUsuario
-		}&perfil=${
-			usuariolog.perfil === 'R' ||
-			usuariolog.perfil === 'M' ||
-			usuariolog.perfil === 'C'
-				? 'A'
-				: usuariolog.perfil
-		}`;
+		const url = `http://${API_IP}/api/Solicitudes/BuscarPorUsuario?idusuario=${usuariolog.idUsuario}&perfil=${usuariolog.perfil}`;
 		console.log('datadata', usuariolog.perfil);
 		console.log('datadataurl', url);
 		fetch(url)
@@ -231,9 +223,9 @@ function Principal() {
 								<th>Telefono</th>
 								<th>Destino</th>
 								<th>Estatus</th>
-								<th>Observacion</th>
+								<th>Observación</th>
 								<th>Monto</th>
-								<th>Interes</th>
+								<th>Interés</th>
 								<th>Cuota</th>
 								<th>Total Pagar</th>
 							</tr>
@@ -330,13 +322,13 @@ function Principal() {
 						</View>
 
 						<View style={styles.content}>
-							<Field label="Genero" value={data.genero} />
+							<Field label="Género" value={data.genero} />
 							<Field label="Nacionalidad" value={data.nacionalidad} />
 							<Field label="Profesión/Ocupación/Oficio" value={data.profesion} />
 						</View>
 
 						<View style={styles.content}>
-							<Field label="Pais" value={data.pais} />
+							<Field label="País" value={data.pais} />
 							<Field label="Departamento" value={data.departamento} />
 							<Field label="Municipio" value={data.municipio} />
 						</View>

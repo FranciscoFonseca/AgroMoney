@@ -3,7 +3,7 @@ import { useTable, Column } from 'react-table';
 import { formatCurrency, formatNumber } from '../../../functions';
 
 export type DataAmortizar = {
-	id: number;
+	id: string;
 	fechaDePago: string;
 	saldoInicial: number;
 	pagoProgramado: number;
@@ -29,7 +29,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ data, id }) => {
 			{ Header: 'Capital', accessor: 'capital' },
 			{ Header: 'Interés', accessor: 'interes' },
 			{ Header: 'Saldo Final', accessor: 'saldoFinal' },
-			{ Header: 'Interes Acumulativo', accessor: 'interesAcumulativo' },
+			{ Header: 'Interés Acumulativo', accessor: 'interesAcumulativo' },
 			// Add other columns as needed
 		],
 		[]

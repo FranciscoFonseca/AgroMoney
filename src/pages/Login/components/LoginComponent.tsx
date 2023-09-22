@@ -69,7 +69,7 @@ const LoginComponent = (): JSX.Element => {
 									<TextInput
 										type="number"
 										value={value}
-										label="Telefono"
+										label="Teléfono"
 										{...register('Telefono')}
 									/>
 								</div>

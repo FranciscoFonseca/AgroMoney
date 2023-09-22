@@ -39,6 +39,7 @@ const VerSltComite = (): JSX.Element => {
 
 	const locStorage = localStorage.getItem('logusuario');
 	const [usuariolog, setUsuariolog] = useState<Usuario>();
+	const navigate = useNavigate();
 	useEffect(() => {
 		console.log(locStorage);
 		if (locStorage) {
@@ -224,7 +225,7 @@ const VerSltComite = (): JSX.Element => {
 			interesAcumulativo += interes;
 			pagoProgramado = formularioSolicitudes.cuota_Maxima;
 			data.push({
-				id: i,
+				id: i.toString(),
 				fechaDePago: fechaPago,
 				saldoInicial: Number(saldoInicial.toFixed(2)),
 				pagoProgramado: Number(pagoProgramado.toFixed(2)),
@@ -280,6 +281,39 @@ const VerSltComite = (): JSX.Element => {
 		setTableDeudasAnalista(newTableDeudasAnalista);
 	};
 
+	const handleAprobar = () => {
+		const data = {
+			...formularioSolicitudes,
+			estatus: 'Aprobado',
+		};
+		axios
+			.patch(`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`, data)
+			.then((response) => {
+				toast.success('Solicitud Aprobada');
+				navigate('/comite');
+			})
+			.catch((error) => {
+				console.log(error);
+				toast.error('Error al aprobar la solicitud');
+			});
+	};
+	const handleRechazar = () => {
+		const data = {
+			...formularioSolicitudes,
+			estatus: 'Rechazado',
+		};
+		axios
+			.patch(`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`, data)
+			.then((response) => {
+				toast.success('Solicitud Rechazada');
+				navigate('/comite');
+			})
+			.catch((error) => {
+				console.log(error);
+				toast.error('Error al rechazar la solicitud');
+			});
+	};
+
 	return (
 		<>
 			<LayoutCustom>
@@ -288,6 +322,24 @@ const VerSltComite = (): JSX.Element => {
 						<p className="text-xl font-semibold flex-grow text-center">
 							Precalificado
 						</p>
+						<div className="absolute end-2 gap-2 bg-gray-100">
+							<Button
+								type="button"
+								customClassName="bg-red-700 text-white font-semibold "
+								// onClick={openModal}
+								onClick={handleRechazar}
+							>
+								Rechazar
+							</Button>
+							<Button
+								type="button"
+								customClassName="bg-green-700 text-white font-semibold ml-2"
+								// onClick={openModal}
+								onClick={handleAprobar}
+							>
+								Aprobar
+							</Button>
+						</div>
 					</div>
 
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
@@ -317,7 +369,7 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 						<div className="flex flex-col w-full">
 							<DisplayField
-								label="Cuota Maxima"
+								label="Cuota Máxima"
 								text={formatCurrency(formularioSolicitudes.cuota_Maxima)}
 							/>
 						</div>
@@ -403,13 +455,13 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 
 						<div className="flex flex-col w-full">
-							<DisplayField label="Telefono" text={formularioSolicitudes.telefono} />
+							<DisplayField label="Teléfono" text={formularioSolicitudes.telefono} />
 						</div>
 					</div>
 					<label className="flex w-full">Lugar y Fecha de Nacimiento</label>
 					<div className="flex flex-row gap-2 w-full flex-wrap p-2 rounded-lg border sm:flex-nowrap">
 						<div className="flex flex-col w-full">
-							<DisplayField label="Pais" text={formularioSolicitudes.pais} />
+							<DisplayField label="País" text={formularioSolicitudes.pais} />
 						</div>
 						<div className="flex flex-col w-full">
 							<DisplayField
@@ -437,12 +489,32 @@ const VerSltComite = (): JSX.Element => {
 							/>
 						</div>
 						<div className="flex flex-col w-full">
-							<DisplayField label="Genero" text={formularioSolicitudes.genero} />
+							<DisplayField label="Género" text={formularioSolicitudes.genero} />
 						</div>
 						<div className="flex flex-col w-full">
 							<DisplayField
 								label="Tipo de Persona"
 								text={formularioSolicitudes.tipoDePersona}
+							/>
+						</div>
+					</div>
+					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+						<div className="flex flex-col w-full">
+							<DisplayField
+								label="Estado Civil"
+								text={formularioSolicitudes.estadoCivil}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<DisplayField
+								label="Dependientes"
+								text={formularioSolicitudes.dependientes.toString()}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<DisplayField
+								label="Profesion Conyuge"
+								text={formularioSolicitudes.profesionConyuge}
 							/>
 						</div>
 					</div>

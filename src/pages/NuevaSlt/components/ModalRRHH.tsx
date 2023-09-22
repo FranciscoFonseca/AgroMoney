@@ -7,6 +7,8 @@ import { Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import axios from 'axios';
 import API_IP from '../../../config';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 Modal.setAppElement('#root');
 interface ModalProps {
@@ -37,6 +39,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 	const [salario, setSalario] = useState('');
 	const [comisiones, setComisiones] = useState(0);
 	const [total, setTotal] = useState('');
+	const navigate = useNavigate();
 
 	const handleCuotaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const newCuota = event.target.value;
@@ -93,8 +96,8 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		const salarioValue = parseFloat(ssalario) + ccomisiones;
 
 		if (!isNaN(cuotaValue) && !isNaN(salarioValue)) {
-			console.log('cuotaValue: ', cuotaValue);
-			console.log('salarioValue: ', salarioValue);
+			console.log('cuotaValue2: ', cuotaValue);
+			console.log('salarioValue2: ', salarioValue);
 			const newTotal = (cuotaValue / salarioValue) * 100;
 			setTotal(`${newTotal.toFixed(2)}`);
 		}
@@ -107,11 +110,14 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		setSalario('');
 	};
 	const handleGuardar = async () => {
+		let newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
 		const data = {
 			empresa: getValues('empresa'),
 			antiguedad: getValues('antiguedad'),
 			PorcentajeRRHH: total,
 			ComentariosRRHH: getValues('ComentariosRRHH'),
+			estatus: newStatus,
+			pasoRRHH: true,
 		};
 		// axios.patch('http://localhost:3001/rrhh', data);
 		let formData = getValues();
@@ -128,7 +134,8 @@ const ModalRRHH: React.FC<ModalProps> = ({
 				},
 			}
 		);
-		console.log('data: ', data);
+		navigate('/Principal');
+		toast.success('Solicitud actualizada con exito');
 		closeModal();
 	};
 
@@ -191,14 +198,14 @@ const ModalRRHH: React.FC<ModalProps> = ({
 							id="salario"
 							value={salario}
 							onChange={handleSalarioChange}
-							label={'Salario'}
+							label={'Salario Neto'}
 						/>
 					</div>
 				</div>
 
 				<div className="flex justify-between">
 					<div className="flex flex-col">
-						<Controller
+						{/* <Controller
 							name="PorcentajeRRHH"
 							control={formMethods.control}
 							render={({ field }) => (
@@ -209,13 +216,14 @@ const ModalRRHH: React.FC<ModalProps> = ({
 									label={'Total'}
 								/>
 							)}
-						/>
-						{/* <TextInput
+						/> */}
+						<TextInput
 							id="total"
 							value={`${total}`}
 							onChange={handleTotalChange}
-							label={'Total'}
-						/> */}
+							label={'Porcentaje Cuota/Salario'}
+							disabled
+						/>
 					</div>
 					<div className="flex flex-col">
 						<TextInput

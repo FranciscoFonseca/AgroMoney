@@ -94,8 +94,14 @@ export const handleDownloadBac = async (form: any) => {
 	//const usuariolog = JSON.parse(locStorage || '{}');
 
 	page.drawText(`${form?.dni || ''}`, {
-		x: 150,
-		y: page.getHeight() - 134,
+		x: 210,
+		y: page.getHeight() - 505,
+		size: 14,
+		color: rgb(0, 0, 0),
+	});
+	page.drawText(`${form?.cargo || ''}`, {
+		x: 210,
+		y: page.getHeight() - 525,
 		size: 14,
 		color: rgb(0, 0, 0),
 	});
@@ -141,7 +147,7 @@ export const handleDownloadNatural = async (form: any) => {
 		}`,
 		{
 			x: 100,
-			y: page.getHeight() - 120,
+			y: page.getHeight() - 195,
 			size: 14,
 			color: rgb(0, 0, 0),
 		}
@@ -149,7 +155,13 @@ export const handleDownloadNatural = async (form: any) => {
 
 	page.drawText(`${form?.dni || ''}`, {
 		x: 150,
-		y: page.getHeight() - 134,
+		y: page.getHeight() - 222,
+		size: 14,
+		color: rgb(0, 0, 0),
+	});
+	page.drawText(`Agromoney`, {
+		x: 400,
+		y: page.getHeight() - 222,
 		size: 14,
 		color: rgb(0, 0, 0),
 	});
@@ -161,20 +173,20 @@ export const handleDownloadNatural = async (form: any) => {
 	const last2 = anio.toString().slice(2, 4);
 
 	page.drawText(dia.toString(), {
-		x: 190,
-		y: page.getHeight() - 222,
+		x: 160,
+		y: page.getHeight() - 373,
 		size: 16,
 		color: rgb(0, 0, 0),
 	});
 	page.drawText(mes.toString(), {
-		x: 245,
-		y: page.getHeight() - 222,
+		x: 200,
+		y: page.getHeight() - 373,
 		size: 16,
 		color: rgb(0, 0, 0),
 	});
 	page.drawText(last2.toString(), {
-		x: 290,
-		y: page.getHeight() - 222,
+		x: 260,
+		y: page.getHeight() - 373,
 		size: 16,
 		color: rgb(0, 0, 0),
 	});
@@ -215,11 +227,16 @@ export const handleDownloadJuridica = async (form: any) => {
 	);
 	page.drawText(`Agromoney `, {
 		x: 100,
-		y: page.getHeight() - 158,
+		y: page.getHeight() - 257,
 		size: 14,
 		color: rgb(0, 0, 0),
 	});
-
+	page.drawText(form.nombre, {
+		x: 100,
+		y: page.getHeight() - 230,
+		size: 16,
+		color: rgb(0, 0, 0),
+	});
 	const fecha = new Date();
 	const dia = fecha.getDate();
 	const mes = fecha.getMonth() + 1;
@@ -227,21 +244,21 @@ export const handleDownloadJuridica = async (form: any) => {
 	const last2 = anio.toString().slice(2, 4);
 
 	page.drawText(dia.toString(), {
-		x: 190,
-		y: page.getHeight() - 235,
-		size: 16,
+		x: 165,
+		y: page.getHeight() - 385,
+		size: 14,
 		color: rgb(0, 0, 0),
 	});
 	page.drawText(mes.toString(), {
-		x: 245,
-		y: page.getHeight() - 235,
-		size: 16,
+		x: 210,
+		y: page.getHeight() - 385,
+		size: 14,
 		color: rgb(0, 0, 0),
 	});
 	page.drawText(last2.toString(), {
-		x: 292,
-		y: page.getHeight() - 235,
-		size: 16,
+		x: 265,
+		y: page.getHeight() - 385,
+		size: 14,
 		color: rgb(0, 0, 0),
 	});
 	// Save the modified PDF

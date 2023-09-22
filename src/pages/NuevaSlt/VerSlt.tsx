@@ -413,7 +413,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			interesAcumulativo += interes;
 			pagoProgramado = cuota;
 			data.push({
-				id: i,
+				id: i.toString(),
 				fechaDePago: fechaPago,
 				saldoInicial: Number(saldoInicial.toFixed(2)),
 				pagoProgramado: Number(pagoProgramado.toFixed(2)),
@@ -566,10 +566,17 @@ const NuevaSlt2 = (): JSX.Element => {
 		axios
 			.post(`http://${API_IP}/api/SolicitudesDeudas`, modifiedArray)
 			.then((response) => {
-				//navigate('/Principal');
+				// navigate('/Principal');
 			});
 
+		let newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
 		let formData = getValues();
+		formData = {
+			...formData,
+			estatus: newStatus,
+			pasoAgroMoney: true,
+		};
+
 		axios.patch('http://' + API_IP + '/api/Solicitudes/' + id, formData, {
 			headers: {
 				'Content-Type': 'application/json',
@@ -601,17 +608,19 @@ const NuevaSlt2 = (): JSX.Element => {
 					className="flex gap-y-2 flex-col items-center bg-gray-100 p-4 rounded-lg shadow-lg relative"
 				>
 					<div className="absolute end-2">
-						{usuariolog?.perfil === 'R' && getValues('estatus') === 'Nueva' && (
-							<>
-								<Button
-									type="button"
-									customClassName="bg-green-700 text-white font-semibold"
-									onClick={openModal}
-								>
-									Analisis RRHH
-								</Button>
-							</>
-						)}
+						{usuariolog?.perfil === 'R' &&
+							(getValues('estatus') === 'Nueva' ||
+								getValues('estatus') === 'En Analisis') && (
+								<>
+									<Button
+										type="button"
+										customClassName="bg-green-700 text-white font-semibold"
+										onClick={openModal}
+									>
+										Analisis RRHH
+									</Button>
+								</>
+							)}
 					</div>
 					<div className="border-b-2 w-full flex justify-between items-center border-black">
 						<p className="text-xl font-semibold flex-grow text-center">
@@ -683,11 +692,11 @@ const NuevaSlt2 = (): JSX.Element => {
 					</div>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-col w-full">
-							<TextInput label="Tiempo Maximo" disabled value={plazoRange.max} />
+							<TextInput label="Tiempo Máximo" disabled value={plazoRange.max} />
 						</div>
 						<div className="flex flex-col w-full">
 							<TextInput
-								label="Tasa de Interes"
+								label="Tasa de Interés"
 								disabled
 								value={`${tasaDeInteres}%`}
 							/>
@@ -701,7 +710,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								}}
 								render={({ field: { value, onChange } }) => (
 									<TextInput
-										label="Cuota Maxima"
+										label="Cuota Máxima"
 										value={formatCurrency(cuota.toFixed(2))}
 										disabled
 									/>
@@ -734,7 +743,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									<TextInput
 										disabled
 										value={formatCurrency(value)}
-										label="Total Interes"
+										label="Total Interés"
 										{...register('total_Interes')}
 									/>
 								)}
@@ -902,7 +911,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									required: true,
 								}}
 								render={({ field: { value, onChange } }) => (
-									<TextInput disabled label="Profesion" {...register('profesion')} />
+									<TextInput disabled label="Profesión" {...register('profesion')} />
 								)}
 							/>
 							{errors.profesion && (
@@ -920,7 +929,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									required: true,
 								}}
 								render={({ field: { value, onChange } }) => (
-									<TextInput disabled label="Telefono" {...register('telefono')} />
+									<TextInput disabled label="Teléfono" {...register('telefono')} />
 								)}
 							/>
 							{errors.telefono && (
@@ -948,7 +957,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										}))}
 										defaultValue={'Honduras'}
 										placeholder="se"
-										label="Pais"
+										label="País"
 										{...register('pais')}
 										onChange={handlePaisChange}
 									/>
@@ -1029,7 +1038,6 @@ const NuevaSlt2 = (): JSX.Element => {
 										onChange={(date) => {
 											onChange(date);
 										}}
-										
 									/>
 								)}
 							/>
@@ -1071,7 +1079,7 @@ const NuevaSlt2 = (): JSX.Element => {
 											{ label: 'Masculino', value: 'Masculino' },
 											{ label: 'Femenino', value: 'Femenino' },
 										]}
-										label="Genero"
+										label="Género"
 										{...register('genero')}
 									/>
 								)}
@@ -1117,7 +1125,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								render={({ field: { value, onChange } }) => (
 									<TextInput
 										disabled
-										label="Direccion de Vivienda"
+										label="Dirección de Vivienda"
 										{...register('direccion')}
 									/>
 								)}
@@ -1388,51 +1396,53 @@ const NuevaSlt2 = (): JSX.Element => {
 						handleEliminarDeuda={handleEliminarDeuda}
 						disabled
 					/>
-					{usuariolog?.perfil === 'M' && getValues('estatus') === 'Nueva' && (
-						<>
-							<IngresarDeudasAnalista
-								data={tableDeudasAnalista}
-								id="tableDeudasAnalista"
-								handleAgregarDeuda={handleAgregarDeudaAnalista}
-								handleEliminarDeuda={handleEliminarDeudaAnalista}
-							/>
-							{/* textinput that saves a coment */}
-							<div className="flex flex-col w-full">
-								<Controller
-									name="comentariosAnalista"
-									control={control}
-									rules={{
-										required: true,
-									}}
-									render={({ field: { value, onChange } }) => (
-										<TextInput
-											label="Comentarios"
-											value={value}
-											{...register('comentariosAnalista')}
-										/>
-									)}
+					{usuariolog?.perfil === 'M' &&
+						(getValues('estatus') === 'Nueva' ||
+							getValues('estatus') === 'En Analisis') && (
+							<>
+								<IngresarDeudasAnalista
+									data={tableDeudasAnalista}
+									id="tableDeudasAnalista"
+									handleAgregarDeuda={handleAgregarDeudaAnalista}
+									handleEliminarDeuda={handleEliminarDeudaAnalista}
 								/>
-							</div>
-							<div className="flex flex-row gap-2 w-full justify-center flex-wrap sm:flex-nowrap">
-								<Button
-									type="button"
-									customClassName={clsx('font-semibold text-white', 'bg-green-700 ')}
-									onClick={() => handleSubmitDeudasAnalista()}
-								>
-									Salvar
-								</Button>
-								<Button
-									type="button"
-									customClassName="bg-green-700 font-semibold text-white"
-									onClick={() => {
-										navigate('/Principal');
-									}}
-								>
-									Cancelar
-								</Button>
-							</div>
-						</>
-					)}
+								{/* textinput that saves a coment */}
+								<div className="flex flex-col w-full">
+									<Controller
+										name="comentariosAnalista"
+										control={control}
+										rules={{
+											required: true,
+										}}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												label="Comentarios"
+												value={value}
+												{...register('comentariosAnalista')}
+											/>
+										)}
+									/>
+								</div>
+								<div className="flex flex-row gap-2 w-full justify-center flex-wrap sm:flex-nowrap">
+									<Button
+										type="button"
+										customClassName={clsx('font-semibold text-white', 'bg-green-700 ')}
+										onClick={() => handleSubmitDeudasAnalista()}
+									>
+										Salvar
+									</Button>
+									<Button
+										type="button"
+										customClassName="bg-green-700 font-semibold text-white"
+										onClick={() => {
+											navigate('/Principal');
+										}}
+									>
+										Cancelar
+									</Button>
+								</div>
+							</>
+						)}
 				</form>
 			</LayoutCustom>
 		</>

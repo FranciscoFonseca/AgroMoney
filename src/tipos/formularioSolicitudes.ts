@@ -55,6 +55,8 @@ export interface FormularioSolicitudes {
 	RTN: string;
 	contacto: string;
 	comentariosAnalista: string;
+	pasoRRHH?: boolean;
+	pasoAgroMoney?: boolean;
 }
 const estatusSolicitud = [
 	{ value: 'Nueva', label: 'Nueva' },
@@ -122,4 +124,6 @@ export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	RTN: '',
 	contacto: '',
 	comentariosAnalista: '',
+	pasoRRHH:false,
+	pasoAgroMoney:false,
 };

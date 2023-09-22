@@ -249,7 +249,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 							<label>Fecha de Vencimiento</label>
 							<DatePicker
 								className="block h-12 w-full rounded-lg mt-1 border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
-								maxDate={new Date()}
+
 								showYearDropdown
 								selected={new Date(deuda.fechaVencimiento)}
 								onChange={(date) => {

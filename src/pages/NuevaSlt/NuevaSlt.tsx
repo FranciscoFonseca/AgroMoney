@@ -86,7 +86,10 @@ const NuevaSlt2 = (): JSX.Element => {
 					const files = selectedFiles[key];
 					for (let i = 0; i < files.length; i++) {
 						const file = files[i];
-						const newFileName = `${key}-${i + 1}.pdf`; // Construct new filename
+						//get mimetype
+						const mimeType = file.type;
+
+						const newFileName = `${key}-${i + 1}.${mimeType}`; // Construct new filename
 						// Create a new File object with updated filename
 						const modifiedFile = new File([file], newFileName, {
 							type: file.type,
@@ -111,7 +114,9 @@ const NuevaSlt2 = (): JSX.Element => {
 				}
 			)
 			.then((response) => {
+				toast.success('Solicitud Creada Exitosamente.');
 				navigate('/Principal');
+
 				// Handle success
 			})
 			.catch((error) => {
@@ -165,7 +170,7 @@ const NuevaSlt2 = (): JSX.Element => {
 					}
 				);
 				if (response.status === 201) {
-					toast.success('Solicitud Creada Correctamente.');
+					toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
 					handleUpload(response);
 
 					handleSolicitud(response);
@@ -185,7 +190,7 @@ const NuevaSlt2 = (): JSX.Element => {
 							}
 						);
 						if (response.status === 201) {
-							toast.success('Solicitud Creada Correctamente.');
+							toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
 							handleUpload(response);
 							handleSolicitud(response);
 							//Fnavigate('/Principal');
@@ -416,7 +421,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			interesAcumulativo += interes;
 			pagoProgramado = cuota;
 			data.push({
-				id: i,
+				id: i.toString(),
 				fechaDePago: fechaPago,
 				saldoInicial: Number(saldoInicial.toFixed(2)),
 				pagoProgramado: Number(pagoProgramado.toFixed(2)),
@@ -667,11 +672,11 @@ const NuevaSlt2 = (): JSX.Element => {
 					</div>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-col w-full">
-							<TextInput label="Tiempo Maximo" disabled value={plazoRange.max} />
+							<TextInput label="Tiempo Máximo" disabled value={plazoRange.max} />
 						</div>
 						<div className="flex flex-col w-full">
 							<TextInput
-								label="Tasa de Interes"
+								label="Tasa de Interés"
 								disabled
 								value={`${tasaDeInteres}%`}
 							/>
@@ -683,7 +688,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								rules={{ required: true }}
 								render={({ field: { value, onChange } }) => (
 									<TextInput
-										label="Cuota Maxima"
+										label="Cuota Máxima"
 										value={formatCurrency(cuota.toFixed(2))}
 										disabled
 									/>
@@ -714,7 +719,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									<TextInput
 										disabled
 										value={formatCurrency(value)}
-										label="Total Interes"
+										label="Total Interés"
 										{...register('total_Interes')}
 									/>
 								)}
@@ -922,7 +927,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										render={({ field: { value, onChange } }) => (
 											<TextInput
 												disabled={step !== 1}
-												label="Profesion"
+												label="Profesión"
 												{...register('profesion')}
 											/>
 										)}
@@ -945,7 +950,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												render={({ field: { value, onChange } }) => (
 													<TextInput
 														disabled={step !== 1}
-														label="Telefono"
+														label="Teléfono"
 														{...register('telefono')}
 													/>
 												)}
@@ -993,7 +998,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										render={({ field: { value, onChange } }) => (
 											<TextInput
 												disabled={step !== 1}
-												label="Profesion Conyuge"
+												label="Profesión Conyuge"
 												{...register('profesionConyuge')}
 											/>
 										)}
@@ -1028,7 +1033,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												}))}
 												defaultValue={'Honduras'}
 												placeholder="se"
-												label="Pais"
+												label="País"
 												{...register('pais')}
 												onChange={handlePaisChange}
 												disabled={step !== 1}
@@ -1139,7 +1144,7 @@ const NuevaSlt2 = (): JSX.Element => {
 													{ label: 'Masculino', value: 'Masculino' },
 													{ label: 'Femenino', value: 'Femenino' },
 												]}
-												label="Genero"
+												label="Género"
 												{...register('genero')}
 												disabled={step !== 1}
 											/>
@@ -1161,7 +1166,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												label="Direccion de Vivienda"
+												label="Dirección de Vivienda"
 												{...register('direccion')}
 												disabled={step !== 1}
 											/>
