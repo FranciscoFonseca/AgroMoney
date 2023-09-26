@@ -40,6 +40,7 @@ const VerSltComite = (): JSX.Element => {
 
 	const locStorage = localStorage.getItem('logusuario');
 	const [usuariolog, setUsuariolog] = useState<Usuario>();
+	const [selectedFiles, setSelectedFiles] = useState<Record<string, File[]>>({});
 	const navigate = useNavigate();
 	useEffect(() => {
 		console.log(locStorage);
@@ -294,7 +295,7 @@ const VerSltComite = (): JSX.Element => {
 			)
 			.then((response) => {
 				toast.success('Solicitud Aprobada');
-				navigate('/comite');
+				navigate('/Principal');
 			})
 			.catch((error) => {
 				console.log(error);
@@ -313,14 +314,14 @@ const VerSltComite = (): JSX.Element => {
 			)
 			.then((response) => {
 				toast.success('Solicitud Rechazada');
-				navigate('/comite');
+				navigate('/Principal');
 			})
 			.catch((error) => {
 				console.log(error);
 				toast.error('Error al rechazar la solicitud');
 			});
 	};
-	const [modalIsOpen, setModalIsOpen] = useState(true);
+	const [modalIsOpen, setModalIsOpen] = useState(false);
 	const [modalText, setModalText] = useState('');
 	const openModal = () => {
 		setModalIsOpen(true);
@@ -328,26 +329,33 @@ const VerSltComite = (): JSX.Element => {
 	const closeModal = () => {
 		setModalIsOpen(false);
 	};
-	const handleModal = () => {
+	const handleModal = (token: string) => {
 		let user = usuariolog?.telefono;
-		axios.post(`http://${API_IP}/api/Notificaciones`).then((response) => {
-			if (response.status === 200) {
-				if (modalText === 'Aprobar') {
-					handleAprobar();
+		axios
+			.post(
+				`http://${API_IP}/api/Usuarios/FortiToken?telefono=${user}&token=${token}`
+			)
+			.then((response) => {
+				if (response.status === 200) {
+					if (modalText === 'Aprobar') {
+						handleAprobar();
+					} else {
+						handleRechazar();
+					}
 				} else {
-					handleRechazar();
+					toast.error('Error al comprobar token');
 				}
-			} else {
+			})
+			.catch((error) => {
 				toast.error('Error al comprobar token');
-			}
-		});
+			});
 	};
 	return (
 		<>
 			<ModalRechazarAprobar
 				isOpen={modalIsOpen}
 				closeModal={closeModal}
-				titleText="Rechazar"
+				titleText={modalText}
 				handler={handleModal}
 			/>
 
@@ -361,8 +369,11 @@ const VerSltComite = (): JSX.Element => {
 							<Button
 								type="button"
 								customClassName="bg-red-700 text-white font-semibold "
-								// onClick={openModal}
-								onClick={handleRechazar}
+								onClick={() => {
+									setModalText('Rechazar');
+									openModal();
+								}}
+								// onClick={handleRechazar}
 							>
 								Rechazar
 							</Button>
@@ -370,7 +381,11 @@ const VerSltComite = (): JSX.Element => {
 								type="button"
 								customClassName="bg-green-700 text-white font-semibold ml-2"
 								// onClick={openModal}
-								onClick={handleAprobar}
+								// onClick={handleAprobar}
+								onClick={() => {
+									setModalText('Aprobar');
+									openModal();
+								}}
 							>
 								Aprobar
 							</Button>
@@ -695,7 +710,31 @@ const VerSltComite = (): JSX.Element => {
 						handleAgregarDeuda={handleAgregarDeudaAnalista}
 						handleEliminarDeuda={handleEliminarDeudaAnalista}
 						disabled
+						selectedFiles={selectedFiles}
+						setSelectedFiles={setSelectedFiles}
+						solicitudId={id || ''}
 					/>
+					<div className="flex gap-2 w-full flex-wrap justify-center mb-8">
+						<div className="mt-2 mb-2 border-b-2 w-full flex justify-center border-black">
+							<p className="text-xl font-semibold">Observaciones</p>
+						</div>
+						<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+							<div className="flex flex-col w-full">
+								<DisplayField
+									label="Comentarios Analista"
+									text={formularioSolicitudes.comentariosAnalista}
+								/>
+							</div>
+						</div>
+						<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+							<div className="flex flex-col w-full">
+								<DisplayField
+									label="Comentarios RRHH"
+									text={formularioSolicitudes.comentariosRRHH}
+								/>
+							</div>
+						</div>
+					</div>
 				</div>
 			</LayoutCustom>
 		</>

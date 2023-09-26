@@ -189,7 +189,6 @@ function Principal() {
 
 	const handleDateChange = (date) => {
 		setFechaSeleccionada(date);
-
 		formData.Antiguedad = date;
 
 		const differenceInMonths =

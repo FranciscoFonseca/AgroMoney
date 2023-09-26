@@ -268,14 +268,6 @@ const NuevaSlt2 = (): JSX.Element => {
 			.then((data: any) => {
 				setDestinos([defaultDestino, ...data]);
 			});
-		const locStorage = localStorage.getItem('logusuario');
-		if (locStorage) {
-			const usuariolog = JSON.parse(locStorage);
-			setValue('usuario_Registro', usuariolog.idUsuario);
-			setValue('idUsuario', usuariolog.idUsuario);
-			setValue('telefono', usuariolog.telefono);
-			setValue('tipoDePersona', usuariolog.tipoPersona || 'Natural');
-		}
 		axios
 			.get('http://' + API_IP + '/api/Solicitudes/' + id)
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
@@ -569,7 +561,7 @@ const NuevaSlt2 = (): JSX.Element => {
 				// navigate('/Principal');
 			});
 
-		let newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
+		let newStatus = 'En Analisis';
 		let formData = getValues();
 		formData = {
 			...formData,
@@ -584,8 +576,44 @@ const NuevaSlt2 = (): JSX.Element => {
 				},
 			})
 			.then((response) => {
-				navigate('/Principal');
+				handleUpload2();
 			});
+	};
+	const handleUpload2 = () => {
+		const formData = new FormData();
+
+		if (selectedFiles) {
+			for (const key in selectedFiles) {
+				if (Object.prototype.hasOwnProperty.call(selectedFiles, key)) {
+					const files = selectedFiles[key];
+					for (let i = 0; i < files.length; i++) {
+						const file = files[i];
+						formData.append('files', file);
+					}
+				}
+			}
+		}
+		axios
+			.post(
+				`http://${API_IP}/api/AttachmentsDeudas?associatedId=${id || 0}`,
+				formData,
+				{
+					headers: {
+						'Content-Type': 'multipart/form-data',
+					},
+				}
+			)
+			.then((response) => {
+				toast.success('Solicitud Creada Exitosamente.');
+				navigate('/Principal');
+
+				// Handle success
+			})
+			.catch((error) => {
+				console.error('API Error:', error);
+				// Handle error
+			});
+		// Now formData contains the selected files without changing their names.
 	};
 	return (
 		<>
@@ -675,24 +703,8 @@ const NuevaSlt2 = (): JSX.Element => {
 						</div>
 					</div>
 					<div className="flex flex-row gap-2 gap-x-4 w-full flex-wrap sm:flex-nowrap">
-						<SelectRango
-							label="Monto"
-							montoRange={montoRange}
-							selectOnChange={debouncedOnChangeMonto}
-							control={control}
-							register={register('monto')}
-							step={100}
-						/>
-
-						<SelectRango
-							label="Plazo"
-							montoRange={plazoRange}
-							selectOnChange={debouncedOnChangePlazo}
-							control={control}
-							step={1}
-							register={register('plazo')}
-							ignoreDecimals
-						/>
+						<TextInput label="Monto" disabled value={formatCurrency(watchMonto)} />
+						<TextInput label="Plazo" disabled value={watchPlazo} />
 					</div>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-col w-full">
@@ -1409,6 +1421,9 @@ const NuevaSlt2 = (): JSX.Element => {
 									id="tableDeudasAnalista"
 									handleAgregarDeuda={handleAgregarDeudaAnalista}
 									handleEliminarDeuda={handleEliminarDeudaAnalista}
+									selectedFiles={selectedFiles}
+									setSelectedFiles={setSelectedFiles}
+									solicitudId={id || ''}
 								/>
 								{/* textinput that saves a coment */}
 								<div className="flex flex-col w-full">

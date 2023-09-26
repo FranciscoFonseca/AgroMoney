@@ -453,6 +453,13 @@ const NuevaSlt2 = (): JSX.Element => {
 		setValue('cuota_Maxima', cuota);
 	}, [cuota]);
 	function getYearsAndMonthsPassed(fromDate: Date): string {
+		//validate if valid date
+		//validate Cannot read properties of null (reading 'getTime')
+		if (!fromDate) return '';
+
+		if (isNaN(fromDate.getTime())) {
+			return '';
+		}
 		const currentDate = new Date();
 		let yearsDiff = currentDate.getFullYear() - fromDate.getFullYear();
 		let monthsDiff = currentDate.getMonth() - fromDate.getMonth();
@@ -746,7 +753,7 @@ const NuevaSlt2 = (): JSX.Element => {
 					</div>
 					<div className="flex flex-col gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-row w-full justify-between gap-x-2">
-							<div className="flex flex-row gap-2 ">
+							<div className="flex flex-row gap-2 flex-wrap items-center">
 								<Button
 									onClick={handleGenerarTabla}
 									type="button"
@@ -759,6 +766,9 @@ const NuevaSlt2 = (): JSX.Element => {
 								>
 									Amortizar <FaMoneyBill />
 								</Button>
+								<p className={step !== 0 ? 'hidden' : ''}>
+									Por favor, Amortice para continuar.
+								</p>
 								<Button
 									type="button"
 									onClick={() => {
@@ -1000,7 +1010,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										control={control}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												disabled={step !== 1}
+												disabled={step !== 1 || watch('estadoCivil') !== 'Casado'}
 												label="Profesión Conyuge"
 												{...register('profesionConyuge')}
 											/>

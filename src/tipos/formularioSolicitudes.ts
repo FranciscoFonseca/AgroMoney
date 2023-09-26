@@ -55,6 +55,7 @@ export interface FormularioSolicitudes {
 	RTN: string;
 	contacto: string;
 	comentariosAnalista: string;
+	comentariosRRHH: string;
 	pasoRRHH?: boolean;
 	pasoAgroMoney?: boolean;
 }
@@ -126,4 +127,5 @@ export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	comentariosAnalista: '',
 	pasoRRHH:false,
 	pasoAgroMoney:false,
+	comentariosRRHH: '',
 };

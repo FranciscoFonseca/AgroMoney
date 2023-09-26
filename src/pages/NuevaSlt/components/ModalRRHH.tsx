@@ -5,10 +5,11 @@ import { get, set } from 'lodash';
 import Button from '../../../components/Button/Button';
 import { Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import API_IP from '../../../config';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { DataDeudasAnalista } from './TableDeudasAnalista';
 
 Modal.setAppElement('#root');
 interface ModalProps {
@@ -109,34 +110,63 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		// Clear cuota and salario
 		setSalario('');
 	};
+	const [tableDeudasAnalista, setTableDeudasAnalista] = useState<
+		DataDeudasAnalista[]
+	>([]);
+	const [sumValorCuotaNoIncluidas, setSumValorCuotaNoIncluidas] = useState(0);
+	const getDeudas = async () => {
+		try {
+			axios
+				.get(
+					`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${idSolicitud}&tipo=true`
+				)
+				.then((data: AxiosResponse<DataDeudasAnalista[]>) => {
+					setTableDeudasAnalista(data.data);
+					const sumValorCuotaNoIncluidas = data.data
+						.filter((deuda) => deuda.incluir === 'No')
+						.reduce((acc, deuda) => acc + deuda.valorCuota, 0);
+					setSumValorCuotaNoIncluidas(sumValorCuotaNoIncluidas);
+				});
+		} catch (error) {
+			console.log(error);
+		}
+	};
+	useEffect(() => {
+		getDeudas();
+	}, []);
 	const handleGuardar = async () => {
-		let newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
-		const data = {
-			empresa: getValues('empresa'),
-			antiguedad: getValues('antiguedad'),
-			PorcentajeRRHH: total,
-			ComentariosRRHH: getValues('ComentariosRRHH'),
-			estatus: newStatus,
-			pasoRRHH: true,
-		};
-		// axios.patch('http://localhost:3001/rrhh', data);
-		let formData = getValues();
-		formData = {
-			...formData,
-			...data,
-		};
-		const response = await axios.patch(
-			'http://' + API_IP + '/api/Solicitudes/' + idSolicitud,
-			formData,
-			{
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		);
-		navigate('/Principal');
-		toast.success('Solicitud actualizada con exito');
-		closeModal();
+		try {
+			let newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
+			const data = {
+				empresa: getValues('empresa'),
+				antiguedad: getValues('antiguedad'),
+				PorcentajeRRHH: total,
+				ComentariosRRHH: getValues('ComentariosRRHH'),
+				estatus: newStatus,
+				pasoRRHH: true,
+			};
+			// axios.patch('http://localhost:3001/rrhh', data);
+			let formData = getValues();
+			formData = {
+				...formData,
+				...data,
+			};
+			const response = await axios.patch(
+				'http://' + API_IP + '/api/Solicitudes/' + idSolicitud,
+				formData,
+				{
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+			navigate('/Principal');
+			toast.success('Solicitud actualizada con exito');
+			closeModal();
+		} catch (error) {
+			toast.error('Error al actualizar la solicitud');
+			console.error(error);
+		}
 	};
 
 	return (
@@ -187,7 +217,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 					<div className="flex flex-col">
 						<TextInput
 							id="cuota"
-							value={cuota.toFixed(2)}
+							value={(cuota + sumValorCuotaNoIncluidas).toFixed(2)}
 							disabled
 							onChange={handleCuotaChange}
 							label={'Cuota'}

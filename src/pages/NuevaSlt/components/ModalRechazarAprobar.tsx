@@ -16,22 +16,16 @@ interface ModalProps {
 	closeModal: () => void; // Define the type of closeModal function
 	titleText?: string;
 	subtitleText?: string;
-    handler: () => void;
+	handler: (token: string) => void;
 }
 
 const ModalRechazarAprobar: React.FC<ModalProps> = ({
 	isOpen,
 	closeModal,
 	titleText = 'Aprobar',
-	subtitleText = '¿Está seguro de aprobar la solicitud?',
-    handler
+	handler,
 }) => {
-	const [cuota, setCuota] = useState(0);
-	const [salario, setSalario] = useState('');
-	const [comisiones, setComisiones] = useState(0);
-	const [total, setTotal] = useState('');
-	const navigate = useNavigate();
-
+	const [token, setToken] = useState('');
 	return (
 		<Modal
 			isOpen={isOpen}
@@ -45,7 +39,7 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 					backgroundColor: '#fff',
 					margin: 'auto',
 					width: '550px',
-					height: '220px',
+					height: '260px',
 					border: '1px solid #ccc',
 					borderRadius: '4px',
 					outline: 'none',
@@ -74,10 +68,21 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 				</p>
 				<div className="flex w-full"></div>
 			</div>
+			{/* textbox with a state */}
+
+			<div className="flex flex-col">
+				<TextInput
+					id="motivo"
+					value={token}
+					onChange={(e) => setToken(e.target.value)}
+					label="Token"
+					placeholder="Token"
+				/>
+			</div>
 			<div className="flex justify-end gap-2 mt-4">
 				<Button
 					type="button"
-					customClassName="bg-green-700 font-semibold text-white"
+					customClassName="bg-red-700 font-semibold text-white"
 					onClick={closeModal}
 				>
 					Cancelar
@@ -86,7 +91,7 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 				<Button
 					type="button"
 					customClassName="bg-blue-700 font-semibold text-white"
-					onClick={handler}
+					onClick={() => handler(token)}
 				>
 					{titleText}
 				</Button>

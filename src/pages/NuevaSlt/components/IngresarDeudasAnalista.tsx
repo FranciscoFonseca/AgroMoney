@@ -2,7 +2,7 @@ import TextInput from '../../../components/TextInput/TextInput';
 import Button from '../../../components/Button/Button';
 import Select from '../../../components/Select/Select';
 import { FaTrash } from 'react-icons/fa';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import TableComponentDeudasAnalista, {
 	DataDeudasAnalista,
@@ -10,13 +10,26 @@ import TableComponentDeudasAnalista, {
 import { toast } from 'react-toastify';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
-
+import clsx from 'clsx';
+import axios from 'axios';
+import API_IP from '../../../config';
+import { BotonesAdjuntarOptions } from './BotonesAdjuntar';
+import {
+	FaEye,
+	FaFileDownload,
+	FaFileExcel,
+	FaFilePdf,
+	FaMoneyBill,
+} from 'react-icons/fa';
 interface IngresarDeudasAnalistaProps {
 	data: DataDeudasAnalista[];
 	id: string;
 	handleAgregarDeuda: (deuda: DataDeudasAnalista) => void;
 	handleEliminarDeuda: (id: string) => void;
 	disabled?: boolean;
+	selectedFiles: Record<string, File[]>;
+	setSelectedFiles: React.Dispatch<React.SetStateAction<Record<string, File[]>>>;
+	solicitudId: string;
 }
 
 const tipoEstatus = [
@@ -51,8 +64,12 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	handleAgregarDeuda,
 	handleEliminarDeuda,
 	disabled,
+	selectedFiles,
+	setSelectedFiles,
+	solicitudId,
 }) => {
 	const [deuda, setDeuda] = useState<DataDeudasAnalista>(defaultData);
+
 	const agregarDeuda = (deuda: DataDeudasAnalista) => {
 		if (deuda.tipo === '') {
 			return toast.warn('Debe seleccionar un tipo de deuda');
@@ -109,7 +126,8 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	// Total sum of saldoActual for both 'Si' and 'No'
 	const totalSumSaldoActual = sumSaldoActualSi + sumSaldoActualNo;
 	// Inside the IngresarDeudasAnalista component
-
+	const [selectedButton, setSelectedButton] =
+		useState<BotonesAdjuntarOptions | null>(null);
 	// Initialize counters for mora periods
 	let countMoraTreintaInstitucion = 0;
 	let countMoraSesentaInstitucion = 0;
@@ -128,28 +146,132 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 
 	// Iterate through the debts to update the counters based on tipo
 	data.forEach((debt) => {
-		if (debt.incluir === 'Si') {
-			if (debt.tipo === 'Institución') {
-				countMoraTreintaInstitucion += debt.mora30 > 0 ? 1 : 0;
-				countMoraSesentaInstitucion += debt.mora60 > 0 ? 1 : 0;
-				countMoraNoventaInstitucion += debt.mora90 > 0 ? 1 : 0;
-				countMoraCientoVeinteInstitucion += debt.mora120 > 0 ? 1 : 0;
-			} else if (debt.tipo === 'Comercial') {
-				countMoraTreintaComercial += debt.mora30 > 0 ? 1 : 0;
-				countMoraSesentaComercial += debt.mora60 > 0 ? 1 : 0;
-				countMoraNoventaComercial += debt.mora90 > 0 ? 1 : 0;
-				countMoraCientoVeinteComercial += debt.mora120 > 0 ? 1 : 0;
-			} else if (debt.tipo === 'Internos') {
-				countMoraTreintaInternos += debt.mora30 > 0 ? 1 : 0;
-				countMoraSesentaInternos += debt.mora60 > 0 ? 1 : 0;
-				countMoraNoventaInternos += debt.mora90 > 0 ? 1 : 0;
-				countMoraCientoVeinteInternos += debt.mora120 > 0 ? 1 : 0;
-			}
+		if (debt.tipo === 'Institución') {
+			countMoraTreintaInstitucion += debt.mora30 > 0 ? 1 : 0;
+			countMoraSesentaInstitucion += debt.mora60 > 0 ? 1 : 0;
+			countMoraNoventaInstitucion += debt.mora90 > 0 ? 1 : 0;
+			countMoraCientoVeinteInstitucion += debt.mora120 > 0 ? 1 : 0;
+		} else if (debt.tipo === 'Comercial') {
+			countMoraTreintaComercial += debt.mora30 > 0 ? 1 : 0;
+			countMoraSesentaComercial += debt.mora60 > 0 ? 1 : 0;
+			countMoraNoventaComercial += debt.mora90 > 0 ? 1 : 0;
+			countMoraCientoVeinteComercial += debt.mora120 > 0 ? 1 : 0;
+		} else if (debt.tipo === 'Internos') {
+			countMoraTreintaInternos += debt.mora30 > 0 ? 1 : 0;
+			countMoraSesentaInternos += debt.mora60 > 0 ? 1 : 0;
+			countMoraNoventaInternos += debt.mora90 > 0 ? 1 : 0;
+			countMoraCientoVeinteInternos += debt.mora120 > 0 ? 1 : 0;
 		}
 	});
 
 	// Display the counts for each tipo
+	const hasAnyFiles = (selectedFiles: Record<string, File[]>) => {
+		for (const groupName in selectedFiles) {
+			if (
+				selectedFiles.hasOwnProperty(groupName) &&
+				selectedFiles[groupName].length > 0
+			) {
+				return true;
+			}
+		}
+		return false;
+	};
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const handleFileRemove = (buttonName: string, index: number) => {
+		setSelectedFiles((prevSelectedFiles) => ({
+			...prevSelectedFiles,
+			[buttonName]: prevSelectedFiles[buttonName].filter((_, i) => i !== index),
+		}));
+	};
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (file && fileInputRef.current) {
+			const buttonName = selectedButton?.nombre || '';
+			setSelectedFiles((prevSelectedFiles) => ({
+				...prevSelectedFiles,
+				[buttonName]: prevSelectedFiles[buttonName]
+					? [...prevSelectedFiles[buttonName], file]
+					: [file],
+			}));
+		}
+	};
 
+	const handleClick = (button: BotonesAdjuntarOptions) => {
+		if (fileInputRef.current) {
+			setSelectedButton(button);
+			fileInputRef.current.click();
+		}
+	};
+	const [documentMetadata, setDocumentMetadata] = useState([]);
+
+	const fetchDocumentMetadataByAssociatedId = async (associatedId: string) => {
+		try {
+			const response = await axios.get(
+				`http://${API_IP}/api/AttachmentsDeudas/${solicitudId}`
+			);
+			return response.data;
+		} catch (error) {
+			console.error(error);
+		}
+	};
+	useEffect(() => {
+		if (disabled) {
+			fetchDocumentMetadataByAssociatedId(id).then((documentMetadata) => {
+				setDocumentMetadata(documentMetadata);
+			});
+		}
+	}, [disabled]);
+	const downloadDocument = async (associatedId: number, fileName: string) => {
+		const downloadLink = `http://${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
+			fileName
+		)}&associatedId=${solicitudId}`;
+
+		try {
+			const response = await fetch(downloadLink);
+			const blob = await response.blob();
+
+			// Create a URL for the blob
+			const blobUrl = URL.createObjectURL(blob);
+
+			// Create a temporary anchor element
+			const anchor = document.createElement('a');
+			anchor.href = blobUrl;
+			anchor.download = fileName;
+
+			// Simulate a click event on the anchor element
+			anchor.click();
+
+			// Clean up the URL and anchor element
+			URL.revokeObjectURL(blobUrl);
+			anchor.remove();
+		} catch (error) {
+			console.error('Error downloading document:', error);
+		}
+	};
+	const openDocumentInNewTab = async (
+		associatedId: number,
+		fileName: string
+	) => {
+		const downloadLink = `http://${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
+			fileName
+		)}&associatedId=${solicitudId}`;
+
+		try {
+			const response = await fetch(downloadLink);
+			const blob = await response.blob();
+
+			// Create a URL for the blob
+			const blobUrl = URL.createObjectURL(blob);
+
+			// Open the blob URL in a new tab
+			const newTab = window.open(blobUrl, '_blank');
+
+			// Clean up the URL
+			URL.revokeObjectURL(blobUrl);
+		} catch (error) {
+			console.error('Error opening document:', error);
+		}
+	};
 	return (
 		<>
 			{!disabled && (
@@ -160,6 +282,121 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 			{disabled && (
 				<div className="mt-2 border-b-2 w-full flex justify-center border-black">
 					<p className="text-xl font-semibold">Deudas Ingresadas (Analista)</p>
+				</div>
+			)}
+			{disabled && (
+				<>
+					<div className="flex w-full mt-4 justify-center">
+						<div className="flex flex-col justify-center">
+							<table className="w-full border-collapse border">
+								<colgroup>
+									<col className="w-1/3" />
+									<col className="w-1/3" />
+									<col className="w-1/3" />
+								</colgroup>
+								<thead>
+									<tr>
+										<th className="py-2 border">Nombre</th>
+										<th className="py-2 border">Ver</th>
+										<th className="py-2 border">Descargar</th>
+									</tr>
+								</thead>
+								<tbody>
+									{documentMetadata.map((metadata: any) => (
+										<tr key={metadata.id}>
+											<td className="border p-2 truncate">{metadata.fileName}</td>
+											<td className="border p-2 text-center">
+												<button
+													onClick={() => openDocumentInNewTab(Number(id), metadata.fileName)}
+												>
+													<FaEye />
+												</button>
+											</td>
+											<td className="border p-2 text-center">
+												<button
+													onClick={() => downloadDocument(Number(id), metadata.fileName)}
+												>
+													<FaFileDownload />
+												</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</>
+			)}
+			{!disabled && (
+				<div className="flex content-between flex-row w-full justify-between mb-2">
+					<div className="flex flex-col justify-start w-1/2 content-center items-center mt-4">
+						<span
+							className={clsx(
+								'inline-flex w-38 h-12 text-center items-center justify-center gap-x-2 rounded-lg border px-4 text-2 focus:outline-none focus:ring-2 focus:ring-offset-2   font-semibold hover:cursor-pointer',
+								'bg-green-700  text-white'
+							)}
+							onClick={() =>
+								handleClick({
+									nombre: 'Buro-de-Credito',
+									label: 'Buro de Credito',
+								})
+							}
+						>
+							Buro de Credito
+						</span>
+						<span
+							className={clsx(
+								'inline-flex w-38 h-12 text-center items-center justify-center gap-x-2 rounded-lg border px-4 text-2 focus:outline-none focus:ring-2 focus:ring-offset-2   font-semibold hover:cursor-pointer',
+								'bg-green-700  text-white'
+							)}
+							onClick={() =>
+								handleClick({
+									nombre: 'visto-bueno-jefe-inmediato',
+									label: 'Visto Bueno Jefe Inmediato',
+								})
+							}
+						>
+							Visto Bueno Jefe Inmediato
+						</span>
+						<input
+							type="file"
+							ref={fileInputRef}
+							name={'Adjuntar Archivos'}
+							style={{ display: 'none' }}
+							onChange={handleFileChange}
+						/>
+					</div>
+					{selectedFiles && hasAnyFiles(selectedFiles) && (
+						<div className="flex w-1/2 mt-4">
+							<div className="flex flex-col">
+								<table className="w-full border">
+									<thead>
+										<tr>
+											<th>Nombre</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										{Object.entries(selectedFiles).map(([buttonName, files]) => (
+											<>
+												{files.map((file, index) => (
+													<tr key={file.name}>
+														<td className="border p-2 truncate">{file.name}</td>
+														<td className="border p-2 ">
+															<FaTrash
+																className="hover:cursor-pointer"
+																onClick={() => handleFileRemove(buttonName, index)}
+															/>
+														</td>
+													</tr>
+												))}
+											</>
+										))}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					)}
 				</div>
 			)}
 			{!disabled && (
@@ -249,7 +486,6 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 							<label>Fecha de Vencimiento</label>
 							<DatePicker
 								className="block h-12 w-full rounded-lg mt-1 border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
-
 								showYearDropdown
 								selected={new Date(deuda.fechaVencimiento)}
 								onChange={(date) => {
@@ -279,6 +515,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 						<div className="flex flex-col w-full sm:w-1/6 ">
 							<TextInput
 								label="Saldo en Mora"
+								disabled={deuda.estatus === 'Vigente'}
 								onChange={(e) => {
 									setDeuda({
 										...deuda,

@@ -12,7 +12,7 @@ export interface RegisterFormDto {
 	telefono: number;
 	password: string;
 	tipoPersona: string;
-	Token: number;
+	Token?: string | null;
 	tipo: string;
 	perfil: string;
 	estatus: string;
@@ -29,7 +29,7 @@ export const defaultRegisterFormDto: RegisterFormDto = {
 	telefono: 0,
 	password: '',
 	tipoPersona: '',
-	Token: 0,
+	Token: null,
 	tipo: 'Empleado',
 	perfil: 'E',
 	estatus: 'A',

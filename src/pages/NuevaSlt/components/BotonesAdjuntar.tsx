@@ -13,7 +13,7 @@ import Button from '../../../components/Button/Button';
 import clsx from 'clsx';
 import { toast } from 'react-toastify';
 
-interface BotonesAdjuntarOptions {
+export interface BotonesAdjuntarOptions {
 	nombre: string;
 	label: string;
 	adjunto?: (form: any) => Promise<void>;
