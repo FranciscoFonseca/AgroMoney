@@ -120,6 +120,7 @@ const IngresarDeudas: React.FC<IngresarDeudasProps> = ({
 						handleEliminarDeuda={handleEliminarDeuda}
 						handleAgregarDeuda={handleAgregarDeuda}
 						setDeuda={setDeuda}
+						disabled={disabled}
 					/>
 				</div>
 			</div>

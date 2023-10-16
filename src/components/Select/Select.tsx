@@ -62,7 +62,7 @@ const Select = forwardRef(
 						defaultValue={defaultValue}
 						className={clsx(
 							'text-base ... relative block h-12 w-full overflow-hidden text-ellipsis rounded-lg border-gray-15 px-4 py-3 text-1 text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100',
-							disabled && 'bg-gray-20',
+							disabled && 'bg-gray-100',
 							error && 'border-red-100',
 							selectorHeight && `h-12`,
 							highlight && !error && 'border-2 border-yellow-100'

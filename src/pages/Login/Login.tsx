@@ -36,7 +36,7 @@ const Login = (): JSX.Element => {
 
 			<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap justify-center items-end">
 				<div className="flex flex-col w-80 bg-white border border-1 border-gray-300 rounded-lg">
-					<div className="flex flex-row justify-center items-center w-full h-12 bg-green-600 rounded-t-lg ">
+					{/* <div className="flex flex-row justify-center items-center w-full h-12 bg-green-600 rounded-t-lg ">
 						<Button
 							customClassName={clsx(
 								'font-bold border-none text-2',
@@ -59,7 +59,7 @@ const Login = (): JSX.Element => {
 						>
 							Registrar
 						</Button>
-					</div>
+					</div> */}
 					<div className="flex flex-col justify-center items-center w-full h-full">
 						{activeTab == 'login' ? (
 							<LoginComponent />

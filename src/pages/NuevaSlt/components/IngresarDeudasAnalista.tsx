@@ -21,6 +21,7 @@ import {
 	FaFilePdf,
 	FaMoneyBill,
 } from 'react-icons/fa';
+import { set } from 'lodash';
 interface IngresarDeudasAnalistaProps {
 	data: DataDeudasAnalista[];
 	id: string;
@@ -129,40 +130,99 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	const [selectedButton, setSelectedButton] =
 		useState<BotonesAdjuntarOptions | null>(null);
 	// Initialize counters for mora periods
-	let countMoraTreintaInstitucion = 0;
-	let countMoraSesentaInstitucion = 0;
-	let countMoraNoventaInstitucion = 0;
-	let countMoraCientoVeinteInstitucion = 0;
+	// let countMoraTreintaInstitucion = 0;
+	// let countMoraSesentaInstitucion = 0;
+	// let countMoraNoventaInstitucion = 0;
+	// let countMoraCientoVeinteInstitucion = 0;
 
-	let countMoraTreintaComercial = 0;
-	let countMoraSesentaComercial = 0;
-	let countMoraNoventaComercial = 0;
-	let countMoraCientoVeinteComercial = 0;
+	// let countMoraTreintaComercial = 0;
+	// let countMoraSesentaComercial = 0;
+	// let countMoraNoventaComercial = 0;
+	// let countMoraCientoVeinteComercial = 0;
 
-	let countMoraTreintaInternos = 0;
-	let countMoraSesentaInternos = 0;
-	let countMoraNoventaInternos = 0;
-	let countMoraCientoVeinteInternos = 0;
+	// let countMoraTreintaInternos = 0;
+	// let countMoraSesentaInternos = 0;
+	// let countMoraNoventaInternos = 0;
+	// let countMoraCientoVeinteInternos = 0;
 
-	// Iterate through the debts to update the counters based on tipo
-	data.forEach((debt) => {
-		if (debt.tipo === 'Institución') {
-			countMoraTreintaInstitucion += debt.mora30 > 0 ? 1 : 0;
-			countMoraSesentaInstitucion += debt.mora60 > 0 ? 1 : 0;
-			countMoraNoventaInstitucion += debt.mora90 > 0 ? 1 : 0;
-			countMoraCientoVeinteInstitucion += debt.mora120 > 0 ? 1 : 0;
-		} else if (debt.tipo === 'Comercial') {
-			countMoraTreintaComercial += debt.mora30 > 0 ? 1 : 0;
-			countMoraSesentaComercial += debt.mora60 > 0 ? 1 : 0;
-			countMoraNoventaComercial += debt.mora90 > 0 ? 1 : 0;
-			countMoraCientoVeinteComercial += debt.mora120 > 0 ? 1 : 0;
-		} else if (debt.tipo === 'Internos') {
-			countMoraTreintaInternos += debt.mora30 > 0 ? 1 : 0;
-			countMoraSesentaInternos += debt.mora60 > 0 ? 1 : 0;
-			countMoraNoventaInternos += debt.mora90 > 0 ? 1 : 0;
-			countMoraCientoVeinteInternos += debt.mora120 > 0 ? 1 : 0;
-		}
-	});
+	const [countMoraTreintaInstitucion, setCountMoraTreintaInstitucion] =
+		useState(0);
+	const [countMoraSesentaInstitucion, setCountMoraSesentaInstitucion] =
+		useState(0);
+	const [countMoraNoventaInstitucion, setCountMoraNoventaInstitucion] =
+		useState(0);
+	const [countMoraCientoVeinteInstitucion, setCountMoraCientoVeinteInstitucion] =
+		useState(0);
+
+	const [countMoraTreintaComercial, setCountMoraTreintaComercial] = useState(0);
+	const [countMoraSesentaComercial, setCountMoraSesentaComercial] = useState(0);
+	const [countMoraNoventaComercial, setCountMoraNoventaComercial] = useState(0);
+	const [countMoraCientoVeinteComercial, setCountMoraCientoVeinteComercial] =
+		useState(0);
+
+	const [countMoraTreintaInternos, setCountMoraTreintaInternos] = useState(0);
+	const [countMoraSesentaInternos, setCountMoraSesentaInternos] = useState(0);
+	const [countMoraNoventaInternos, setCountMoraNoventaInternos] = useState(0);
+	const [countMoraCientoVeinteInternos, setCountMoraCientoVeinteInternos] =
+		useState(0);
+
+	useEffect(() => {
+		setCountMoraTreintaInstitucion(0);
+		setCountMoraSesentaInstitucion(0);
+		setCountMoraNoventaInstitucion(0);
+		setCountMoraCientoVeinteInstitucion(0);
+		setCountMoraTreintaComercial(0);
+		setCountMoraSesentaComercial(0);
+		setCountMoraNoventaComercial(0);
+		setCountMoraCientoVeinteComercial(0);
+		setCountMoraTreintaInternos(0);
+		setCountMoraSesentaInternos(0);
+		setCountMoraNoventaInternos(0);
+		setCountMoraCientoVeinteInternos(0);
+
+		data.forEach((debt) => {
+			if (debt.tipo === 'Financiera') {
+				setCountMoraTreintaInstitucion((prevCount) =>
+					debt.mora30 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraSesentaInstitucion((prevCount) =>
+					debt.mora60 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraNoventaInstitucion((prevCount) =>
+					debt.mora90 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraCientoVeinteInstitucion((prevCount) =>
+					debt.mora120 > 0 ? prevCount + 1 : prevCount
+				);
+			} else if (debt.tipo === 'Comercial') {
+				setCountMoraTreintaComercial((prevCount) =>
+					debt.mora30 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraSesentaComercial((prevCount) =>
+					debt.mora60 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraNoventaComercial((prevCount) =>
+					debt.mora90 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraCientoVeinteComercial((prevCount) =>
+					debt.mora120 > 0 ? prevCount + 1 : prevCount
+				);
+			} else if (debt.tipo === 'Internos') {
+				setCountMoraTreintaInternos((prevCount) =>
+					debt.mora30 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraSesentaInternos((prevCount) =>
+					debt.mora60 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraNoventaInternos((prevCount) =>
+					debt.mora90 > 0 ? prevCount + 1 : prevCount
+				);
+				setCountMoraCientoVeinteInternos((prevCount) =>
+					debt.mora120 > 0 ? prevCount + 1 : prevCount
+				);
+			}
+		});
+	}, [data]);
 
 	// Display the counts for each tipo
 	const hasAnyFiles = (selectedFiles: Record<string, File[]>) => {
@@ -207,7 +267,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	const fetchDocumentMetadataByAssociatedId = async (associatedId: string) => {
 		try {
 			const response = await axios.get(
-				`http://${API_IP}/api/AttachmentsDeudas/${solicitudId}`
+				`${API_IP}/api/AttachmentsDeudas/${solicitudId}`
 			);
 			return response.data;
 		} catch (error) {
@@ -222,12 +282,17 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 		}
 	}, [disabled]);
 	const downloadDocument = async (associatedId: number, fileName: string) => {
-		const downloadLink = `http://${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
+		const downloadLink = `${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${solicitudId}`;
 
 		try {
-			const response = await fetch(downloadLink);
+			const usuariologtoken = localStorage.getItem('token') || '';
+			const response = await fetch(downloadLink, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
 			const blob = await response.blob();
 
 			// Create a URL for the blob
@@ -252,12 +317,17 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 		associatedId: number,
 		fileName: string
 	) => {
-		const downloadLink = `http://${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
+		const downloadLink = `${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${solicitudId}`;
 
 		try {
-			const response = await fetch(downloadLink);
+			const usuariologtoken = localStorage.getItem('token') || '';
+			const response = await fetch(downloadLink, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
 			const blob = await response.blob();
 
 			// Create a URL for the blob
@@ -487,6 +557,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 							<DatePicker
 								className="block h-12 w-full rounded-lg mt-1 border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 								showYearDropdown
+								dateFormat={'dd/MM/yyyy'}
 								selected={new Date(deuda.fechaVencimiento)}
 								onChange={(date) => {
 									if (date)
@@ -565,6 +636,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 						<div className="flex flex-col justify-center w-full  ">
 							<TextInput
 								label="Mora 30"
+								disabled={deuda.estatus === 'Vigente'}
 								onChange={(e) => {
 									setDeuda({
 										...deuda,
@@ -577,6 +649,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 						<div className="flex flex-col justify-center w-full  ">
 							<TextInput
 								label="Mora 60"
+								disabled={deuda.estatus === 'Vigente'}
 								onChange={(e) => {
 									setDeuda({
 										...deuda,
@@ -589,6 +662,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 						<div className="flex flex-col justify-center w-full  ">
 							<TextInput
 								label="Mora 90"
+								disabled={deuda.estatus === 'Vigente'}
 								onChange={(e) => {
 									setDeuda({
 										...deuda,
@@ -601,6 +675,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 						<div className="flex flex-col justify-center w-full  ">
 							<TextInput
 								label="Mora 120"
+								disabled={deuda.estatus === 'Vigente'}
 								onChange={(e) => {
 									setDeuda({
 										...deuda,
@@ -618,6 +693,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 					<TableComponentDeudasAnalista
 						data={data}
 						id={id}
+						disabled={disabled}
 						handleEliminarDeuda={handleEliminarDeuda}
 						handleAgregarDeuda={handleAgregarDeuda}
 						setDeuda={setDeuda}
@@ -637,7 +713,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 				/>
 			</div>
 			<p>Conteos Historicos de Mora</p>
-			<p>Banco</p>
+			<p>Financiera</p>
 			<div className="flex flex-row gap-3 w-full flex-wrap sm:flex-nowrap">
 				<TextInput label="30 Dias" disabled value={countMoraTreintaInstitucion} />
 				<TextInput label="60 Dias" disabled value={countMoraSesentaInstitucion} />

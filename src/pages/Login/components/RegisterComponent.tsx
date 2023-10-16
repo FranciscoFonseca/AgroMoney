@@ -33,10 +33,18 @@ const RegisterComponent = ({
 			// Aquí iría tu lógica de autenticación para verificar las credenciales del usuario.
 			// Si la autenticación es exitosa, podrías hacer lo siguiente para redirigir al usuario a la página principal:
 			// history.push("/Principal"); // Cambia "/main" por la ruta de tu página principal. http://192.100.10.187/
-			const response = await axios.post(
-				'http://' + API_IP + '/api/Usuarios/',
-				formData
-			);
+
+			const usuariologtoken = localStorage.getItem('token');
+
+			// const response = await axios.post(
+			// 	 API_IP + '/api/Usuarios/',
+			// 	formData
+			// );
+			const response = await axios.post(API_IP + '/api/Usuarios/', formData, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
 
 			if (response.status === 201) {
 				toast.success('Usuario Creado Correctamente.');

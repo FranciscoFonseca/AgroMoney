@@ -2,6 +2,9 @@ import React from 'react';
 import { PDFDocument, rgb } from 'pdf-lib';
 import moment from 'moment';
 import 'moment/locale/es';
+import { FormularioSolicitudes } from '../tipos/formularioSolicitudes';
+import { formatCurrency } from '../functions';
+import QRCode from 'qrcode';
 export const handleDownloadAgroMoney = async (form: any) => {
 	// Load the existing PDF
 	const existingPdfBytes = await fetch(
@@ -39,7 +42,7 @@ export const handleDownloadAgroMoney = async (form: any) => {
 		color: rgb(0, 0, 0),
 	});
 
-	page.drawText(`${form?.salario || ''}`, {
+	page.drawText(`${formatCurrency(form.monto)}`, {
 		x: 120,
 		y: page.getHeight() - 300,
 		size: 16,
@@ -55,6 +58,23 @@ export const handleDownloadAgroMoney = async (form: any) => {
 	const link = document.createElement('a');
 	link.href = URL.createObjectURL(blob);
 	link.download = 'AUTORIZACION DE DEBITO -  AgroMoney.pdf';
+	link.click();
+};
+
+export const handleDownloadAchPronto = async (form: any) => {
+	const existingPdfBytes = await fetch('/adjuntos/ACH-PRONTO.pdf').then((res) =>
+		res.arrayBuffer()
+	);
+	const pdfDoc = await PDFDocument.load(existingPdfBytes);
+	const modifiedPdfBytes = await pdfDoc.save();
+
+	// Create a Blob from the bytes
+	const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+
+	// Create a download link
+	const link = document.createElement('a');
+	link.href = URL.createObjectURL(blob);
+	link.download = 'Autorizacion-Persona-Natural.pdf';
 	link.click();
 };
 
@@ -273,6 +293,153 @@ export const handleDownloadJuridica = async (form: any) => {
 	link.download = 'Autorizacion-Persona-Juridica.pdf';
 	link.click();
 };
+
+const generateQRCode = async (data: any) => {
+	try {
+		const qrCodeDataURL = await QRCode.toDataURL(data);
+		return qrCodeDataURL;
+	} catch (error) {
+		console.error('Error generating QR code:', error);
+		return null;
+	}
+};
+export const handleDownloadReporteOficial = async (
+	form: FormularioSolicitudes,
+	qrCodeData: string
+) => {
+	//const qrCodeData =		'$2a$11$FM4HD5o0eG3lYSTLXfy4dOIw.k/4IHgudIXAl9/djV4gLy07xWVT.'; // Replace with the data you want to encode
+	const newQRCodeData = `https://agromoney.solucionescalidad.com:9500/solicitudes/verificar/${qrCodeData}`;
+	const qrCodeDataURL = await generateQRCode(newQRCodeData);
+	const existingPdfBytes = await fetch('/template-reporte2.pdf').then((res) =>
+		res.arrayBuffer()
+	);
+	const pdfDoc = await PDFDocument.load(existingPdfBytes);
+	let votos: any[] = [];
+	if (form.votos) {
+		votos = JSON.parse(form.votos);
+	}
+	// Get the first page of the PDF
+	const page = pdfDoc.getPages()[0];
+	const votosText = votos.map((voto) => {
+		return ` ${voto.nombre}`;
+	});
+	page.drawText(`Resolución de Crédito`, {
+		x: 190,
+		y: page.getHeight() - 100,
+		size: 18,
+		color: rgb(0, 0, 0),
+	});
+	page.drawText(
+		`Reunidos en comité de crédito${votosText}. Se resolvió aprobar la siguiente solicitud de crédito numero ${
+			form.idSolicitud
+		}, a nombre de ${form?.nombre || ''} ${form?.segundoNombre || ''} ${
+			form?.apellido || ''
+		} ${form?.segundoApellido || ''}.\nMonto: ${formatCurrency(
+			form.monto
+		)}\nPlazo: ${form.plazo} meses\nTasa: 15%\nDestino: ${
+			form.destino_Credito
+		}.\nDando fé de lo anterior firman los miembros del comité adjuntos.\nDado en la ciudad de San Pedro Sula, con fecha ${moment().format(
+			'DD/MM/YYYY'
+		)}`,
+		{
+			x: 50,
+			y: page.getHeight() - 150,
+			size: 14,
+			color: rgb(0, 0, 0),
+			maxWidth: 500,
+		}
+	);
+	if (qrCodeDataURL) {
+		const qrCodeImage = await pdfDoc.embedPng(qrCodeDataURL);
+		page.drawImage(qrCodeImage, {
+			x: 100, // Adjust the position as needed
+			y: page.getHeight() - 795, // Adjust the position as needed
+			width: 100, // Adjust the size as needed
+			height: 100, // Adjust the size as needed
+		});
+	}
+
+	page.drawText(
+		`Escanee este código para validar la autenticidad de este documento.`,
+		{
+			x: 100,
+			y: page.getHeight() - 800,
+			size: 12,
+			color: rgb(0, 0, 0),
+		}
+	);
+	// page.drawImage(qrCodeImage, {
+	//   x: 100, // Adjust the position as needed
+	//   y: page.getHeight() - 400, // Adjust the position as needed
+	//   width: 100, // Adjust the size as needed
+	//   height: 100, // Adjust the size as needed
+	// });
+	// page.drawText(`${form.destino_Credito}`, {
+	// 	x: 100,
+	// 	y: page.getHeight() - 215,
+	// 	size: 14,
+	// 	color: rgb(0, 0, 0),
+	// });
+
+	// 	id: usuariolog?.idUsuario,
+	// 	nombre: usuariolog?.nombre,
+	// 	telefono: usuariolog?.telefono,
+	// 	voto: 'Aprobado',
+	// 	fecha: moment().format('DD/MM/YYYY hh:mm'),
+	// });
+
+	// votos.map((voto, index) => {
+	// 	page.drawText(`${voto?.nombre || ''}`, {
+	// 		x: 100,
+	// 		y: page.getHeight() - 250 - index * 20,
+	// 		size: 14,
+	// 		color: rgb(0, 0, 0),
+	// 	});
+	// });
+	//a map of votos where one is on the left and the other is on the right third would be down and so on
+	let i = 0;
+	votos.map((voto, index) => {
+		if (index % 2 === 0) {
+			page.drawText(`${voto?.nombre || ''}`, {
+				x: 100,
+				y: page.getHeight() - 420 - i * 80,
+				size: 14,
+				color: rgb(0, 0, 0),
+			});
+			page.drawText(`${voto?.fecha || ''}`, {
+				x: 100,
+				y: page.getHeight() - 435 - i * 80,
+				size: 14,
+				color: rgb(0, 0, 0),
+			});
+		} else {
+			page.drawText(`${voto?.nombre || ''}`, {
+				x: 400,
+				y: page.getHeight() - 420 - i * 80,
+				size: 14,
+				color: rgb(0, 0, 0),
+			});
+			page.drawText(`${voto?.fecha || ''}`, {
+				x: 400,
+				y: page.getHeight() - 435 - i * 80,
+				size: 14,
+				color: rgb(0, 0, 0),
+			});
+			i = i + 1;
+		}
+	});
+	const modifiedPdfBytes = await pdfDoc.save();
+
+	// Create a Blob from the bytes
+	const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+
+	// Create a download link
+	const link = document.createElement('a');
+	link.href = URL.createObjectURL(blob);
+	link.download = `Reporte-Solicitud#${form.idSolicitud}-${form.nombre}-${form.apellido}.pdf`;
+	link.click();
+};
+
 const AddTextToPDF: React.FC = () => {
 	return (
 		<div>

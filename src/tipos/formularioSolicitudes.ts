@@ -49,6 +49,7 @@ export interface FormularioSolicitudes {
 	estadoCivil: string;
 	dependientes: number;
 	profesionConyuge: string;
+	nombreConyuge?: string;
 	///
 	fechaConstitucion: Date; // Assuming this is a date string in the format "2023-08-03T21:27:18.521Z"
 	correo: string;
@@ -58,6 +59,8 @@ export interface FormularioSolicitudes {
 	comentariosRRHH: string;
 	pasoRRHH?: boolean;
 	pasoAgroMoney?: boolean;
+	votos?: string;
+	porcentajeRRHH?: number;
 }
 const estatusSolicitud = [
 	{ value: 'Nueva', label: 'Nueva' },
@@ -119,13 +122,15 @@ export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	estadoCivil: '',
 	dependientes: 0,
 	profesionConyuge: '',
+	nombreConyuge: '',
 	//
 	fechaConstitucion: new Date(),
 	correo: '',
 	RTN: '',
 	contacto: '',
 	comentariosAnalista: '',
-	pasoRRHH:false,
-	pasoAgroMoney:false,
+	pasoRRHH: false,
+	pasoAgroMoney: false,
 	comentariosRRHH: '',
+	porcentajeRRHH: 0,
 };

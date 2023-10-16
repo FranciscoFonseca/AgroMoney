@@ -24,8 +24,13 @@ const ControlUsuariosMenu = () => {
 
 	useEffect(() => {
 		const fetchUsuarios = async () => {
-			const res = await axios.get(`http://${API_IP}/api/usuarios`);
-			console.log(res.data);
+			const usuariologtoken = localStorage.getItem('token');
+			// const res = await axios.get(`${API_IP}/api/usuarios`);
+			const res = await axios.get(`${API_IP}/api/usuarios`, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
 			setUsuarios(res.data);
 		};
 		fetchUsuarios();

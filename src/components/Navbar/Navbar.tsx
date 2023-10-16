@@ -55,6 +55,7 @@ const Navbar = () => {
 					<div className="hidden sm:block sm:ml-6">
 						{usuariolog && (
 							<div className="flex space-x-4">
+								<p className="text-white px-3 py-2 rounded-md text-sm font-medium">Bienvenido, {usuariolog.nombre} {usuariolog.apellido}</p>
 								<a
 									href="/Principal"
 									className="text-white px-3 py-2 rounded-md text-sm font-medium"

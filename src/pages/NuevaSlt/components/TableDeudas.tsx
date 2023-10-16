@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { FaTrash } from 'react-icons/fa';
 import { useTable, Column } from 'react-table';
+import { formatCurrency2 } from '../../../functions';
 
 export type DataDeudas = {
 	id: string;
@@ -16,11 +17,13 @@ interface TableComponentDeudasProps {
 	handleEliminarDeuda: (id: string) => void;
 	handleAgregarDeuda: (deuda: DataDeudas) => void;
 	setDeuda: React.Dispatch<React.SetStateAction<DataDeudas>>;
+	disabled?: boolean;
 }
 const TableComponentDeudas: React.FC<TableComponentDeudasProps> = ({
 	data,
 	id,
 	handleEliminarDeuda,
+	disabled,
 }) => {
 	const columns: Column<DataDeudas>[] = React.useMemo(
 		() => [
@@ -36,7 +39,10 @@ const TableComponentDeudas: React.FC<TableComponentDeudasProps> = ({
 
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
 		useTable({ columns, data });
-
+	const handleCellRender = (cell: any) => {
+		if (typeof cell.value === 'number') return formatCurrency2(cell.value);
+		return cell.render('Cell');
+	};
 	return (
 		<>
 			{rows && rows.length > 0 && (
@@ -75,7 +81,13 @@ const TableComponentDeudas: React.FC<TableComponentDeudasProps> = ({
 													cell.column.Header === '' ? '' : ''
 												)}
 											>
-												{cell.column.Header === '' ? (
+												{disabled ? (
+													cell.column.Header === '' ? (
+														<></>
+													) : (
+														handleCellRender(cell)
+													)
+												) : cell.column.Header === '' ? (
 													<>
 														<FaTrash
 															className="text-2xl cursor-pointer m-auto"
@@ -83,7 +95,7 @@ const TableComponentDeudas: React.FC<TableComponentDeudasProps> = ({
 														/>
 													</>
 												) : (
-													<>{cell.render('Cell')}</>
+													handleCellRender(cell)
 												)}
 											</td>
 										))}

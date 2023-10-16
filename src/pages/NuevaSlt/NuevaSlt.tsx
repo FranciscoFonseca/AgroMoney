@@ -61,6 +61,7 @@ const NuevaSlt2 = (): JSX.Element => {
 	const [municipios, setMunicipios] = useState<any[]>([]);
 	const [tableDeudas, setTableDeudas] = useState<DataDeudas[]>([]);
 	const [step, setStep] = useState<number>(0);
+	const [diferenciaAnos, setDiferenciaAnos] = useState<number>(0);
 	const [montoRange, setMontoRange] = useState<minMax>({
 		min: 0,
 		max: 0,
@@ -69,7 +70,15 @@ const NuevaSlt2 = (): JSX.Element => {
 		min: 0,
 		max: 0,
 	});
-
+	const companies = [
+		{ value: 'Cadelga', label: 'Cadelga' },
+		{ value: 'Fertica', label: 'Fertica' },
+		{ value: 'AgroMoney', label: 'AgroMoney' },
+		{ value: 'Chumbagua', label: 'Chumbagua' },
+		{ value: 'Fertiagrho', label: 'Fertiagrho' },
+		{ value: 'Tres Valles', label: 'Tres Valles' },
+		{ value: 'ADN', label: 'ADN' },
+	];
 	const salarioRange = {
 		min: 0,
 		max: 250000,
@@ -77,8 +86,8 @@ const NuevaSlt2 = (): JSX.Element => {
 	const navigate = useNavigate();
 	const locStorage = localStorage.getItem('logusuario');
 	const handleUpload = (response: any) => {
-		console.log('response', response.data.idSolicitud);
-		console.log('form', getValues());
+		// console.log('response', response.data.idSolicitud);
+		// console.log('form', getValues());
 		const formData = new FormData();
 		if (selectedFiles) {
 			for (const key in selectedFiles) {
@@ -104,15 +113,16 @@ const NuevaSlt2 = (): JSX.Element => {
 				}
 			}
 		}
+		const usuariologtoken = localStorage.getItem('token');
+
 		axios
 			.post(
-				`http://${API_IP}/api/Attachments?associatedId=${
-					response.data.idSolicitud || 0
-				}`,
+				`${API_IP}/api/Attachments?associatedId=${response.data.idSolicitud || 0}`,
 				formData,
 				{
 					headers: {
 						'Content-Type': 'multipart/form-data',
+						Authorization: `Bearer ${usuariologtoken}`,
 					},
 				}
 			)
@@ -142,9 +152,20 @@ const NuevaSlt2 = (): JSX.Element => {
 				idSolicitud: idSolicitudValue,
 			};
 		});
+		const usuariologtoken = localStorage.getItem('token');
 
+		// axios
+		// 	.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray)
+		// 	.then((response) => {
+		// 		//navigate('/Principal');
+		// 	});
 		axios
-			.post(`http://${API_IP}/api/SolicitudesDeudas`, modifiedArray)
+			.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray, {
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			})
 			.then((response) => {
 				//navigate('/Principal');
 			});
@@ -156,22 +177,23 @@ const NuevaSlt2 = (): JSX.Element => {
 			if (!(Object.keys(errors).length === 0)) {
 				return;
 			}
+			setValue('tipoDePersona', 'Natural');
 			setValue('usuario_Registro', 1);
+			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+			const newForm = getValues();
 			if (locStorage) {
 				//const usuariolog = JSON.parse(locStorage);
 				const usuariolog = JSON.parse(locStorage);
 				setValue('usuario_Registro', usuariolog.id);
 				setValue('idUsuario', usuariolog.id);
-				setValue('telefono', usuariolog.telefono);
-				const response = await axios.post(
-					'http://' + API_IP + '/api/Solicitudes/',
-					formData,
-					{
-						headers: {
-							'Content-Type': 'application/json',
-						},
-					}
-				);
+				const usuariologtoken = localStorage.getItem('token');
+
+				const response = await axios.post(API_IP + '/api/Solicitudes/', newForm, {
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				});
 				if (response.status === 201) {
 					toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
 					handleUpload(response);
@@ -179,31 +201,63 @@ const NuevaSlt2 = (): JSX.Element => {
 					handleSolicitud(response);
 				}
 			} else {
-				await fetch(
-					`http://${API_IP}/api/Solicitudes/BuscarPorNumero/${formData.telefono}`
-				).then(async (data: any) => {
-					if (data.status === 404) {
-						const response = await axios.post(
-							'http://' + API_IP + '/api/Solicitudes/',
-							formData,
-							{
-								headers: {
-									'Content-Type': 'application/json',
-								},
+				// await fetch(
+				// 	`${API_IP}/api/Solicitudes/BuscarPorNumero/${formData.telefono}`
+				// ).then(async (data: any) => {
+				// 	if (data.status === 204) {
+				// 		const response = await axios.post(
+				// 			 API_IP + '/api/Solicitudes/',
+				// 			formData,
+				// 			{
+				// 				headers: {
+				// 					'Content-Type': 'application/json',
+				// 				},
+				// 			}
+				// 		);
+				// 		if (response.status === 201) {
+				// 			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+				// 			handleUpload(response);
+				// 			handleSolicitud(response);
+				// 			//Fnavigate('/Principal');
+				// 		}
+				// 	} else {
+				// 		return toast.error(
+				// 			'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
+				// 		);
+				// 	}
+				// });
+				const usuariologtoken = localStorage.getItem('token');
+
+				await axios
+					.get(`${API_IP}/api/Solicitudes/BuscarPorNumero/${newForm.telefono}`, {
+						headers: {
+							Authorization: `Bearer ${usuariologtoken}`,
+						},
+					})
+					.then(async (data: any) => {
+						if (data.status === 204) {
+							const response = await axios.post(
+								API_IP + '/api/Solicitudes/',
+								newForm,
+								{
+									headers: {
+										'Content-Type': 'application/json',
+										Authorization: `Bearer ${usuariologtoken}`,
+									},
+								}
+							);
+							if (response.status === 201) {
+								toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+								handleUpload(response);
+								handleSolicitud(response);
+								//Fnavigate('/Principal');
 							}
-						);
-						if (response.status === 201) {
-							toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-							handleUpload(response);
-							handleSolicitud(response);
-							//Fnavigate('/Principal');
+						} else {
+							return toast.error(
+								'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
+							);
 						}
-					} else {
-						return toast.error(
-							'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
-						);
-					}
-				});
+					});
 			}
 		} catch (error) {
 			console.log(error);
@@ -263,9 +317,19 @@ const NuevaSlt2 = (): JSX.Element => {
 		// 	'table.xlsx'
 		// );
 		try {
+			const usuariologtoken = localStorage.getItem('token');
+			// const response = await axios.get(
+			// 	`${API_IP}/api/Solicitudes/ExportToExcel?monto=${monto}&plazo=${plazo}`,
+			// 	{ responseType: 'blob' }
+			// );
 			const response = await axios.get(
-				`http://${API_IP}/api/Solicitudes/ExportToExcel?monto=${monto}&plazo=${plazo}`,
-				{ responseType: 'blob' }
+				`${API_IP}/api/Solicitudes/ExportToExcel?monto=${monto}&plazo=${plazo}`,
+				{
+					headers: {
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+					responseType: 'blob',
+				}
 			);
 			const url = window.URL.createObjectURL(new Blob([response.data]));
 			const a = document.createElement('a');
@@ -319,9 +383,9 @@ const NuevaSlt2 = (): JSX.Element => {
 	useEffect(() => {
 		const defaultDestino: any = {
 			idDestino: 0,
-			destino: 'Seleccione un Destino',
+			destino: 'Seleccione un destino',
 		};
-		fetch('http://' + API_IP + '/api/Destino')
+		fetch(API_IP + '/api/Destino')
 			.then((response) => response.json())
 			.then((data: any) => {
 				setDestinos([defaultDestino, ...data]);
@@ -331,8 +395,6 @@ const NuevaSlt2 = (): JSX.Element => {
 			const usuariolog = JSON.parse(locStorage);
 			setValue('usuario_Registro', usuariolog.idUsuario);
 			setValue('idUsuario', usuariolog.idUsuario);
-			setValue('telefono', usuariolog.telefono);
-			setValue('tipoDePersona', usuariolog.tipoPersona || 'Natural');
 		}
 	}, []);
 	const handlePaisChange = (e: any) => {
@@ -467,6 +529,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			yearsDiff--;
 			monthsDiff += 12;
 		}
+		setDiferenciaAnos(yearsDiff);
 		if (yearsDiff === 0 && monthsDiff === 0) {
 			return 'Menos de un mes';
 		}
@@ -484,7 +547,7 @@ const NuevaSlt2 = (): JSX.Element => {
 	}
 	const handleBotonAmortizarDisable = () => {
 		if (
-			watch('destino_Credito') === 'Seleccione un Destino' ||
+			watch('destino_Credito') === 'Seleccione un destino' ||
 			!watch('destino_Credito')
 		) {
 			return true;
@@ -545,10 +608,10 @@ const NuevaSlt2 = (): JSX.Element => {
 			return toast.warn('Debe ingresar un monto');
 		}
 		setTableDeudas([...tableDeudas, data]);
-		console.log([...tableDeudas, data]);
+		// console.log([...tableDeudas, data]);
 	};
 	useEffect(() => {
-		console.log(tableDeudas);
+		// console.log(tableDeudas);
 	}, [tableDeudas]);
 	const handleEliminarDeuda = (id: string) => {
 		const newTableDeudas = tableDeudas.filter((item) => item.id !== id);
@@ -582,7 +645,6 @@ const NuevaSlt2 = (): JSX.Element => {
 				'genero',
 				'tipoDePersona',
 				'direccion',
-				'empresa',
 				'antiguedad',
 				'cargo',
 				'telEmpresa',
@@ -592,6 +654,10 @@ const NuevaSlt2 = (): JSX.Element => {
 				'telJefeIn',
 				'correoJefeIn',
 			]);
+			if (diferenciaAnos < 1) {
+				toast.warn('Debe tener al menos 1 año de antiguedad laboral.');
+				return;
+			}
 			if (trigerdata) {
 				setStep(2);
 			} else {
@@ -793,13 +859,6 @@ const NuevaSlt2 = (): JSX.Element => {
 									>
 										Exportar a Excel <FaFileExcel />
 									</Button>
-									<Button
-										onClick={handleExportToPDF}
-										type="button"
-										customClassName="bg-green-700 font-semibold text-white"
-									>
-										Exportar a PDF <FaFilePdf />
-									</Button>
 								</div>
 							)}
 						</div>
@@ -811,8 +870,8 @@ const NuevaSlt2 = (): JSX.Element => {
 						<p className="text-xl font-semibold">Datos Generales</p>
 					</div>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
-						<div className="flex flex-col w-1/2">
-							<Controller
+						{/*<div className="flex flex-col w-1/2">
+							 <Controller
 								name="tipoDePersona"
 								control={control}
 								rules={{ required: true }}
@@ -834,7 +893,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									El tipo de persona es requerido
 								</p>
 							)}
-						</div>
+						</div>*/}
 					</div>
 					{tipoDePersonaWatch === 'Natural' ? (
 						<>
@@ -987,6 +1046,7 @@ const NuevaSlt2 = (): JSX.Element => {
 											<Select
 												options={[
 													{ label: 'Soltero', value: 'Soltero' },
+													{ label: 'Union Libre', value: 'Union Libre' },
 													{ label: 'Casado', value: 'Casado' },
 													{ label: 'Divorciado', value: 'Divorciado' },
 													{ label: 'Viudo', value: 'Viudo' },
@@ -1003,14 +1063,36 @@ const NuevaSlt2 = (): JSX.Element => {
 										</p>
 									)}
 								</div>
-
+								<div className="flex flex-col w-full">
+									<Controller
+										name="nombreConyuge"
+										control={control}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												disabled={
+													step !== 1 ||
+													watch('estadoCivil') === 'Soltero' ||
+													watch('estadoCivil') === 'Divorciado' ||
+													watch('estadoCivil') === 'Viudo'
+												}
+												label="Nombre Conyuge"
+												{...register('nombreConyuge')}
+											/>
+										)}
+									/>
+								</div>
 								<div className="flex flex-col w-full">
 									<Controller
 										name="profesionConyuge"
 										control={control}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												disabled={step !== 1 || watch('estadoCivil') !== 'Casado'}
+												disabled={
+													step !== 1 ||
+													watch('estadoCivil') === 'Soltero' ||
+													watch('estadoCivil') === 'Divorciado' ||
+													watch('estadoCivil') === 'Viudo'
+												}
 												label="Profesión Conyuge"
 												{...register('profesionConyuge')}
 											/>
@@ -1115,6 +1197,7 @@ const NuevaSlt2 = (): JSX.Element => {
 											<DatePicker
 												className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 												maxDate={new Date()}
+												dateFormat={'dd/MM/yyyy'}
 												showYearDropdown
 												selected={new Date(value)}
 												onChange={(date) => {
@@ -1194,12 +1277,25 @@ const NuevaSlt2 = (): JSX.Element => {
 							</div>
 							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 								<div className="flex flex-col w-full">
-									<Controller
+									{/* <Controller
 										name="empresa"
 										control={control}
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
+												label="Lugar de Trabajo"
+												{...register('empresa')}
+												disabled={step !== 1}
+											/>
+										)}
+									/> */}
+									<Controller
+										name="empresa"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<Select
+												options={companies}
 												label="Lugar de Trabajo"
 												{...register('empresa')}
 												disabled={step !== 1}
@@ -1223,6 +1319,8 @@ const NuevaSlt2 = (): JSX.Element => {
 												<DatePicker
 													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 													maxDate={new Date()}
+												dateFormat={'dd/MM/yyyy'}
+
 													showYearDropdown
 													selected={new Date(value)}
 													onChange={(date) => {
@@ -1278,6 +1376,7 @@ const NuevaSlt2 = (): JSX.Element => {
 							</div>
 							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 								<div className="flex flex-col w-full">
+									{/* 
 									<Controller
 										control={control}
 										name="contrato"
@@ -1287,6 +1386,21 @@ const NuevaSlt2 = (): JSX.Element => {
 												label="Tipo de Contrato"
 												disabled={step !== 1}
 												{...register('contrato')}
+											/>
+										)}
+									/>*/}
+									<Controller
+										name="contrato"
+										control={control}
+										render={({ field: { value, onChange } }) => (
+											<Select
+												options={[
+													{ value: 'Permanente', label: 'Permanente' },
+													{ value: 'Temporal', label: 'Temporal' },
+												]}
+												label="Lugar de Trabajo"
+												{...register('contrato')}
+												disabled={step !== 1}
 											/>
 										)}
 									/>
@@ -1518,6 +1632,8 @@ const NuevaSlt2 = (): JSX.Element => {
 												className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 												maxDate={new Date()}
 												showYearDropdown
+												dateFormat={'dd/MM/yyyy'}
+
 												selected={new Date(value)}
 												onChange={(date) => {
 													onChange(date);

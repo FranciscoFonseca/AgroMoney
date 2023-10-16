@@ -17,10 +17,11 @@ import VerSlt from './pages/NuevaSlt/VerSlt';
 import ControlUsuariosMenu from './pages/ControlUsuarios/ControlUsuariosMenu';
 import ControlUsuario from './pages/ControlUsuarios/ControlUsuario';
 import VerSltComite from './pages/NuevaSlt/VerSltComite';
-
+import VerificarSlt from './pages/NuevaSlt/VerificarSlt';
+import setupAxiosInterceptors from './pages/Login/AxiosInterceptor';
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement); // Create the root using createRoot
-
+setupAxiosInterceptors();
 // Use root instead of ReactDOM.render
 root.render(
 	<Router>
@@ -40,6 +41,7 @@ root.render(
 			<Route exact path="/control-usuarios" element={<ControlUsuariosMenu />} />
 			<Route exact path="/solicitud/:id" element={<VerSlt />} />
 			<Route exact path="/solicitud-reporte/:id" element={<VerSltComite />} />
+			<Route exact path="/solicitudes/verificar/:id" element={<VerificarSlt />} />
 		</Routes>
 	</Router>
 );

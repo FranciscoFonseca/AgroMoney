@@ -4,6 +4,7 @@ import { generatePdf } from '../../../adjuntos/FuncionesAdjuntos';
 import { Font, PDFDownloadLink } from '@react-pdf/renderer';
 import MyDocument from '../../../adjuntos/PDFFormularioAgromoney';
 import AddTextToPDF, {
+	handleDownloadAchPronto,
 	handleDownloadAgroMoney,
 	handleDownloadBac,
 	handleDownloadJuridica,
@@ -61,6 +62,11 @@ const arrayBotones: BotonesAdjuntarOptions[] = [
 		label: 'Autorización Debito',
 		adjunto: handleDownloadAgroMoney,
 	}, //13
+	{
+		nombre: 'Autorizacion-Debito',
+		label: 'Autorización Debito',
+		adjunto: handleDownloadAchPronto,
+	}, //13
 ];
 
 const BotonesAdjuntar = ({
@@ -77,6 +83,8 @@ const BotonesAdjuntar = ({
 			await boton.adjunto(form); // Now you can use await because handleDownload is declared as async
 		}
 	};
+	const [tieneBAC, setTieneBAC] = useState<boolean>(false);
+
 	const optionMappings: { [key: string]: number[] } = {
 		'Compra de vehículo': [1, 2, 5, 6, 7, 8],
 		'Consolidación de deuda': [1, 2, 4],
@@ -225,6 +233,10 @@ const BotonesAdjuntar = ({
 					<b>Instrucciones: </b>Primero, descarga los formularios necesarios. Una vez
 					descargados, adjúntalos utilizando el botón correspondiente. ¡Gracias!
 				</p>
+				<br />
+				<p className="text-lg ">
+					<b>Si no tienes cuenta en BAC: </b>Descarga el formulario ACH PRONTO y Adjuntalo en el boton de Formulario Banco. ¡Gracias!
+				</p>
 			</div>
 			{step && step === 2 && (
 				<div className="flex w-full">
@@ -242,6 +254,7 @@ const BotonesAdjuntar = ({
 						) : (
 							<></>
 						)}
+						{<>{renderDownload(arrayBotones[14])}</>}
 					</div>
 
 					<div className="flex w-4/5">

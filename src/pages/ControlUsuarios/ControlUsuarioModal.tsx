@@ -35,11 +35,18 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 		defaultValues: exampleUsuario,
 	});
 	const [usuarioModal, setUsuarioModal] = useState();
+	const [empresas, setEmpresas] = useState<string[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const usuariologtoken = localStorage.getItem('token');
 	const fetchUsuarios = async () => {
 		const res = await axios
-			.get(`http://${API_IP}/api/Usuarios/${usuario?.idUsuario || 1}`)
+			.get(`${API_IP}/api/Usuarios/${usuario?.idUsuario || 1}`, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			})
 			.then((res) => {
+				setEmpresas(JSON.parse(res.data.empresa));
 				setIsLoading(false);
 				const newData = {
 					...res.data,
@@ -77,17 +84,39 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 	// ];
 
 	const onSubmit = async (data: Usuario) => {
+		//json-stringify the array and add it to the data object
+		data.empresa = JSON.stringify(empresas);
+		
 		if (data.idUsuario !== 0) {
-			const res = await axios.patch(
-				`http://${API_IP}/api/Usuarios/${data.idUsuario}`,
-				data
-			);
+			// const res = await axios.patch(
+			// 	`${API_IP}/api/Usuarios/${data.idUsuario}`,
+			// 	data
+			// );
+			//add headers
+			const usuariologtoken = localStorage.getItem('token');
+			const res = await axios({
+				method: 'patch',
+				url: `${API_IP}/api/Usuarios/${data.idUsuario}`,
+				data: data,
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
 		} else {
-			const res = await axios.post(`http://${API_IP}/api/Usuarios`, data);
+			const usuariologtoken = localStorage.getItem('token');
+			const res = await axios({
+				method: 'post',
+				url: `${API_IP}/api/Usuarios`,
+				data: data,
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
+			// const res = await axios.post(`${API_IP}/api/Usuarios`, data);
 		}
 		closeModal();
 	};
-	const companies = [
+	 const companies = [
 		{ value: 'Cadelga', label: 'Cadelga' },
 		{ value: 'Fertica', label: 'Fertica' },
 		{ value: 'AgroMoney', label: 'AgroMoney' },
@@ -116,7 +145,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 					borderRadius: '4px',
 					outline: 'none',
 					padding: '20px',
-					overflow: 'hidden',
+					overflowX: 'hidden',
 				},
 			}}
 		>
@@ -142,7 +171,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 					></path>
 				</svg>
 			) : (
-				<form className="flex flex-col h-full" onSubmit={handleSubmit(onSubmit)}>
+				<form className="flex flex-col h-full pb-4" onSubmit={handleSubmit(onSubmit)}>
 					<div className="flex justify-between items-center">
 						<h2 className="text-2xl font-bold">Control de Usuario</h2>
 						<button onClick={closeModal} className="text-2xl font-bold">
@@ -198,7 +227,6 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 							<Controller
 								name="tipoPersona"
 								control={control}
-								rules={{ required: true }}
 								render={({ field }) => (
 									<Select
 										label="Tipo de Persona"
@@ -224,7 +252,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 										options={perfiles}
 										value={field.value}
 										onChange={(e) => {
-											console.log(e);
+											// console.log(e);
 											const perfil = perfiles.find((p) => p.value === e.target.value);
 											if (perfil) {
 												setValue('perfil', perfil?.value);
@@ -232,6 +260,22 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 											}
 										}}
 										name="perfil"
+									/>
+								)}
+							/>
+						</div>
+					</div>
+					<div className="flex gap-y-2 mt-2 flex-row w-full justify-between gap-x-4">
+						<div className="flex flex-col gap-y-1 w-full">
+							<Controller
+								name="password"
+								control={control}
+								render={({ field }) => (
+									<TextInput
+										label="Contraseña"
+										placeholder="Contraseña"
+										type="password"
+										{...field}
 									/>
 								)}
 							/>
@@ -258,6 +302,19 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 						</div>
 						<div className="flex flex-col gap-y-1 w-full">
 							<Controller
+								name="token"
+								control={control}
+								rules={{ required: true }}
+								render={({ field }) => (
+									<TextInput label="Token" placeholder="Token" {...field} />
+								)}
+							/>
+						</div>
+					</div>
+					{/* have a dropdown that creates a list of strings */}
+					<div className="flex gap-y-2 mt-2 flex-row w-full justify-between gap-x-4">
+						<div className="flex flex-row gap-y-1 w-full">
+							<Controller
 								name="empresa"
 								control={control}
 								rules={{ required: true }}
@@ -270,36 +327,46 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 									/>
 								)}
 							/>
+							{/* button that adds the value to a state array of strings */}
+						</div>
+						<div className="flex flex-row gap-y-1 w-1/2 items-center">
+							<Button
+								type="button"
+								customClassName="bg-green-700 font-semibold text-white"
+								onClick={() => {
+									const empresa = getValues('empresa');
+									if (empresa && !empresas.includes(empresa)) {
+										let newEmpresas = [...empresas];
+										newEmpresas.push(empresa);
+										setEmpresas(newEmpresas);
+									}
+								}}
+							>
+								Añadir
+							</Button>
 						</div>
 					</div>
-					<div className="flex gap-y-2 mt-2 flex-row w-full justify-between gap-x-4">
-						<div className="flex flex-col gap-y-1 w-full">
-							<Controller
-								name="password"
-								control={control}
-								rules={{ required: true }}
-								render={({ field }) => (
-									<TextInput
-										label="Contraseña"
-										placeholder="Contraseña"
-										type="password"
-										{...field}
-									/>
-								)}
-							/>
-						</div>
-						<div className="flex flex-col gap-y-1 w-full">
-							<Controller
-								name="token"
-								control={control}
-								rules={{ required: true }}
-								render={({ field }) => (
-									<TextInput label="Token" placeholder="Token" {...field} />
-								)}
-							/>
-						</div>
+					{/* have a list of strings with a button to remove it*/}
+					<h1 className="text-xl font-bold mt-4 mb-2">Empresas</h1>
+					
+					<div className="flex flex-col gap-y-1 w-1/2">
+						{empresas.map((empresa) => (
+							<div className="flex justify-between" key={empresa}> 
+								<p>{empresa}</p>
+								<button
+									// onClick={() => setEmpresas(empresas.filter((e) => e !== empresa))}
+									onClick={() => {
+										let newEmpresas = [...empresas];
+										newEmpresas = newEmpresas.filter((e) => e !== empresa);
+										setEmpresas(newEmpresas);
+									}}
+								>
+									&times;
+								</button>
+							</div>
+						))}
 					</div>
-					<div className="flex justify-end gap-2 mt-4">
+					<div className="flex justify-end gap-2 mt-4 mb-4">
 						<Button
 							type="button"
 							customClassName="bg-green-700 font-semibold text-white"

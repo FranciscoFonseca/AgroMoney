@@ -81,7 +81,6 @@ const NuevaSlt2 = (): JSX.Element => {
 	const locStorage = localStorage.getItem('logusuario');
 	const [usuariolog, setUsuariolog] = useState<Usuario>();
 	useEffect(() => {
-		console.log(locStorage);
 		if (locStorage) {
 			const usuariolog = JSON.parse(locStorage);
 			setUsuariolog(usuariolog);
@@ -95,30 +94,30 @@ const NuevaSlt2 = (): JSX.Element => {
 				setValue('usuario_Registro', usuariolog.id);
 				setValue('idUsuario', usuariolog.id);
 				setValue('telefono', usuariolog.telefono);
-				const response = await axios.post(
-					'http://' + API_IP + '/api/Solicitudes/',
-					formData,
-					{
-						headers: {
-							'Content-Type': 'application/json',
-						},
-					}
-				);
+				const usuariologtoken = localStorage.getItem('token');
+				const response = await axios.post(API_IP + '/api/Solicitudes/', formData, {
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				});
 				if (response.status === 201) {
 					toast.success('Solicitud Creada Correctamente.');
 					navigate('/Principal');
 				}
 			} else {
 				await fetch(
-					`http://${API_IP}/api/Solicitudes/BuscarPorNumero/${formData.telefono}`
+					`${API_IP}/api/Solicitudes/BuscarPorNumero/${formData.telefono}`
 				).then(async (data: any) => {
 					if (data.status === 404) {
+						const usuariologtoken = localStorage.getItem('token');
 						const response = await axios.post(
-							'http://' + API_IP + '/api/Solicitudes/',
+							API_IP + '/api/Solicitudes/',
 							formData,
 							{
 								headers: {
 									'Content-Type': 'application/json',
+									Authorization: `Bearer ${usuariologtoken}`,
 								},
 							}
 						);
@@ -146,12 +145,29 @@ const NuevaSlt2 = (): JSX.Element => {
 	// 	window.open(downloadLink, '_blank');
 	// };
 	const downloadDocument = async (associatedId: number, fileName: string) => {
-		const downloadLink = `http://${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
+		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${associatedId}`;
 
 		try {
-			const response = await fetch(downloadLink);
+			// const response = await fetch(downloadLink);
+			const usuariologtoken = localStorage.getItem('token');
+			// const response = await axios.get(downloadLink, {
+			// 	responseType: 'blob',
+			// });
+			//const response = await axios.get(downloadLink, {
+			//	headers: {
+			//		Authorization: `Bearer ${usuariologtoken}`,
+			//	},
+			//	responseType: 'blob',
+			//});
+			// fetch downloadlink with authorization header
+			const response = await fetch(downloadLink, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
+
 			const blob = await response.blob();
 
 			// Create a URL for the blob
@@ -176,12 +192,21 @@ const NuevaSlt2 = (): JSX.Element => {
 		associatedId: number,
 		fileName: string
 	) => {
-		const downloadLink = `http://${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
+		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${associatedId}`;
 
 		try {
-			const response = await fetch(downloadLink);
+			const usuariologtoken = localStorage.getItem('token');
+			// const response = await fetch(downloadLink);
+			// const response = await axios.get(downloadLink, {
+			// 	responseType: 'blob',
+			// });
+			const response = await fetch(downloadLink, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			});
 			const blob = await response.blob();
 
 			// Create a URL for the blob
@@ -199,8 +224,14 @@ const NuevaSlt2 = (): JSX.Element => {
 
 	const fetchDocumentMetadataByAssociatedId = async (associatedId: number) => {
 		try {
+			const usuariologtoken = localStorage.getItem('token');
 			const response = await axios.get(
-				`http://${API_IP}/api/Attachments/${associatedId}`
+				`${API_IP}/api/Attachments/${associatedId}`,
+				{
+					headers: {
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				}
 			);
 			return response.data;
 		} catch (error) {
@@ -261,15 +292,20 @@ const NuevaSlt2 = (): JSX.Element => {
 	useEffect(() => {
 		const defaultDestino: any = {
 			idDestino: 0,
-			destino: 'Seleccione un Destino',
+			destino: 'Seleccione un destino',
 		};
-		fetch('http://' + API_IP + '/api/Destino')
+		fetch(API_IP + '/api/Destino')
 			.then((response) => response.json())
 			.then((data: any) => {
 				setDestinos([defaultDestino, ...data]);
 			});
+		const usuariologtoken = localStorage.getItem('token');
 		axios
-			.get('http://' + API_IP + '/api/Solicitudes/' + id)
+			.get(API_IP + '/api/Solicitudes/' + id, {
+				headers: {
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			})
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
 				reset(data.data);
 				const selectedDepartamento = departm.find(
@@ -280,22 +316,39 @@ const NuevaSlt2 = (): JSX.Element => {
 			})
 			.catch((error) => {
 				console.error('Error fetching user data:', error);
+				if (
+					error.response?.status === 401 ||
+					error.response?.status === 403 ||
+					error.response?.status === 404
+				) {
+					navigate('/Login');
+				}
 			});
 		try {
+			const usuariologtoken = localStorage.getItem('token');
 			axios
-				.get(`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=false`)
+				.get(`${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=false`, {
+					headers: {
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				})
 				.then((data: AxiosResponse<DataDeudas[]>) => {
-					console.log(data.data);
+					// console.log(data.data);
 					setTableDeudas(data.data);
 				});
 		} catch (error) {
 			console.log(error);
 		}
 		try {
+			const usuariologtoken = localStorage.getItem('token');
 			axios
-				.get(`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=true`)
+				.get(`${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=true`, {
+					headers: {
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				})
 				.then((data: AxiosResponse<DataDeudasAnalista[]>) => {
-					console.log(data.data);
+					// console.log(data.data);
 					setTableDeudasAnalista(data.data);
 				});
 		} catch (error) {
@@ -305,6 +358,11 @@ const NuevaSlt2 = (): JSX.Element => {
 		fetchDocumentMetadataByAssociatedId(Number(id)).then((documentMetadata) => {
 			setDocumentMetadata(documentMetadata);
 		});
+
+
+		// set documents on selected files if there are fromm
+
+
 	}, []);
 	useEffect(() => {
 		const destino = watch('destino_Credito');
@@ -456,7 +514,7 @@ const NuevaSlt2 = (): JSX.Element => {
 	}
 	const handleBotonAmortizarDisable = () => {
 		if (
-			watch('destino_Credito') === 'Seleccione un Destino' ||
+			watch('destino_Credito') === 'Seleccione un destino' ||
 			!watch('destino_Credito')
 		) {
 			return true;
@@ -509,7 +567,7 @@ const NuevaSlt2 = (): JSX.Element => {
 	};
 
 	const handleAgregarDeudaAnalista = (data: DataDeudasAnalista) => {
-		console.log(tableDeudasAnalista);
+		// console.log(tableDeudasAnalista);
 		if (data.tipo === '') {
 			return toast.warn('Debe seleccionar un tipo de deuda');
 		}
@@ -542,42 +600,64 @@ const NuevaSlt2 = (): JSX.Element => {
 	};
 	const [comentarioAnalista, setComentarioAnalista] = useState<string>('');
 	const handleSubmitDeudasAnalista = () => {
-		const idSolicitudValue = id;
-		const modifiedArray = tableDeudasAnalista.map((item) => {
-			// Destructure the object to remove the "id" property
-			const { id, ...rest } = item;
+		//check  selected files
+		if (Object.keys(selectedFiles).length < 2) {
+			return toast.warn('Por favor adjunte los archivos solicitados');
+		}
 
-			// Add the "idSolicitud" property with the constant value
-			return {
-				...rest,
-				tipoCreada: true,
-				idSolicitud: idSolicitudValue,
+		toast.warn('Su solicitud esta siendo guardada, por favor espere.');
+		try {
+			const idSolicitudValue = id;
+			const modifiedArray = tableDeudasAnalista.map((item) => {
+				// Destructure the object to remove the "id" property
+				const { id, ...rest } = item;
+
+				// Add the "idSolicitud" property with the constant value
+				return {
+					...rest,
+					tipoCreada: true,
+					idSolicitud: idSolicitudValue,
+				};
+			});
+
+			const usuariologtoken = localStorage.getItem('token');
+			// axios
+			// .post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray)
+			// .then((response) => {
+			// 	// navigate('/Principal');
+			// });
+			axios
+				.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray, {
+					headers: {
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				})
+				.then((response) => {
+					// navigate('/Principal');
+				});
+
+			let newStatus = 'En Analisis';
+			let formData = getValues();
+			formData = {
+				...formData,
+				estatus: newStatus,
+				pasoAgroMoney: true,
 			};
-		});
 
-		axios
-			.post(`http://${API_IP}/api/SolicitudesDeudas`, modifiedArray)
-			.then((response) => {
-				// navigate('/Principal');
-			});
-
-		let newStatus = 'En Analisis';
-		let formData = getValues();
-		formData = {
-			...formData,
-			estatus: newStatus,
-			pasoAgroMoney: true,
-		};
-
-		axios
-			.patch('http://' + API_IP + '/api/Solicitudes/' + id, formData, {
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			})
-			.then((response) => {
-				handleUpload2();
-			});
+			axios
+				.patch(API_IP + '/api/Solicitudes/' + id, formData, {
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				})
+				.then((response) => {
+					handleUpload2();
+				});
+		} catch (error) {
+			toast.error('Error al guardar la solicitud, por favor intente de nuevo.');
+			console.log(error);
+		}
 	};
 	const handleUpload2 = () => {
 		const formData = new FormData();
@@ -588,21 +668,32 @@ const NuevaSlt2 = (): JSX.Element => {
 					const files = selectedFiles[key];
 					for (let i = 0; i < files.length; i++) {
 						const file = files[i];
-						formData.append('files', file);
+						//get mimetype
+						const mimeType = file.type;
+						const fileNameParts = file.name.split('.');
+
+						// The last part will be the file extension
+						const fileExtension = fileNameParts[fileNameParts.length - 1];
+						const newFileName = `${key}-${i + 1}.${fileExtension}`; // Construct new filename
+						// Create a new File object with updated filename
+						const modifiedFile = new File([file], newFileName, {
+							type: file.type,
+							lastModified: file.lastModified,
+						});
+
+						formData.append('files', modifiedFile);
 					}
 				}
 			}
 		}
+		const usuariologtoken = localStorage.getItem('token');
 		axios
-			.post(
-				`http://${API_IP}/api/AttachmentsDeudas?associatedId=${id || 0}`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'multipart/form-data',
-					},
-				}
-			)
+			.post(`${API_IP}/api/AttachmentsDeudas?associatedId=${id || 0}`, formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+					Authorization: `Bearer ${usuariologtoken}`,
+				},
+			})
 			.then((response) => {
 				toast.success('Solicitud Creada Exitosamente.');
 				navigate('/Principal');
@@ -1104,6 +1195,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								<p className="text-xs mt-2 ml-2 text-red-600">El genero es requerido</p>
 							)}
 						</div>
+						{/* 
 						<div className="flex flex-col w-full">
 							<Controller
 								name="tipoDePersona"
@@ -1128,7 +1220,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									El tipo de persona es requerido
 								</p>
 							)}
-						</div>
+						</div>*/}
 					</div>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-col w-full">
@@ -1330,6 +1422,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										}}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
+												disabled
 												label={'Telefono de Jefe Inmediato'}
 												{...register('telJefeIn')}
 											/>
@@ -1345,6 +1438,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										}}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
+												disabled
 												label={'Correo de Jefe Inmediato'}
 												{...register('correoJefeIn')}
 											/>

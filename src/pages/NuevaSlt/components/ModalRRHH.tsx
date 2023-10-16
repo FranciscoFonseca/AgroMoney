@@ -93,12 +93,12 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		ccuota: number,
 		ccomisiones: number
 	) => {
-		const cuotaValue = ccuota;
+		const cuotaValue = ccuota + sumValorCuotaNoIncluidas;
 		const salarioValue = parseFloat(ssalario) + ccomisiones;
 
 		if (!isNaN(cuotaValue) && !isNaN(salarioValue)) {
-			console.log('cuotaValue2: ', cuotaValue);
-			console.log('salarioValue2: ', salarioValue);
+			// console.log('cuotaValue2: ', cuotaValue);
+			// console.log('salarioValue2: ', salarioValue);
 			const newTotal = (cuotaValue / salarioValue) * 100;
 			setTotal(`${newTotal.toFixed(2)}`);
 		}
@@ -118,7 +118,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		try {
 			axios
 				.get(
-					`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${idSolicitud}&tipo=true`
+					`${API_IP}/api/SolicitudesDeudas/solicitud?id=${idSolicitud}&tipo=true`
 				)
 				.then((data: AxiosResponse<DataDeudasAnalista[]>) => {
 					setTableDeudasAnalista(data.data);
@@ -152,7 +152,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 				...data,
 			};
 			const response = await axios.patch(
-				'http://' + API_IP + '/api/Solicitudes/' + idSolicitud,
+				API_IP + '/api/Solicitudes/' + idSolicitud,
 				formData,
 				{
 					headers: {
@@ -291,6 +291,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 										className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 										maxDate={new Date()}
 										showYearDropdown
+										dateFormat={'dd/MM/yyyy'}
 										selected={new Date(value)}
 										onChange={(date) => {
 											onChange(date);

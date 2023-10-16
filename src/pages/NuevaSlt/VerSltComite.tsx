@@ -25,6 +25,7 @@ import { DataDeudasAnalista } from './components/TableDeudasAnalista';
 import { Usuario } from '../../tipos/Usuario';
 import DisplayField from '../../components/DisplayField/DisplayField';
 import ModalRechazarAprobar from './components/ModalRechazarAprobar';
+import { handleDownloadReporteOficial } from '../../adjuntos/AddTextToPDF';
 
 const VerSltComite = (): JSX.Element => {
 	const { id } = useParams();
@@ -39,23 +40,37 @@ const VerSltComite = (): JSX.Element => {
 	const [documentMetadata, setDocumentMetadata] = useState([]);
 
 	const locStorage = localStorage.getItem('logusuario');
+	const usuariologtoken = localStorage.getItem('token');
+	const [usuarioToken, setUsuarioToken] = useState<string>('');
 	const [usuariolog, setUsuariolog] = useState<Usuario>();
 	const [selectedFiles, setSelectedFiles] = useState<Record<string, File[]>>({});
 	const navigate = useNavigate();
 	useEffect(() => {
-		console.log(locStorage);
+		// console.log(locStorage);
 		if (locStorage) {
 			const usuariolog = JSON.parse(locStorage);
 			setUsuariolog(usuariolog);
 		}
 	}, [locStorage]);
 
+	useEffect(() => {
+		if (usuariologtoken) {
+			setUsuarioToken(usuariologtoken);
+		}
+	}, [usuariologtoken]);
+
 	const downloadDocument = async (associatedId: number, fileName: string) => {
-		const downloadLink = `http://${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
+		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${associatedId}`;
 		try {
-			const response = await fetch(downloadLink);
+			//	const usuariologtoken = localStorage.getItem('logtoken');
+			// const response = await fetch(downloadLink);
+			const response = await fetch(downloadLink, {
+				headers: {
+					Authorization: `Bearer ${usuarioToken}`,
+				},
+			});
 			const blob = await response.blob();
 			// Create a URL for the blob
 			const blobUrl = URL.createObjectURL(blob);
@@ -76,12 +91,18 @@ const VerSltComite = (): JSX.Element => {
 		associatedId: number,
 		fileName: string
 	) => {
-		const downloadLink = `http://${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
+		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${associatedId}`;
-
+		console.log('usuarioToken', usuarioToken);
 		try {
-			const response = await fetch(downloadLink);
+			//const usuariologtoken = localStorage.getItem('logtoken');
+			// const response = await fetch(downloadLink);
+			const response = await fetch(downloadLink, {
+				headers: {
+					Authorization: `Bearer ${usuarioToken}`,
+				},
+			});
 			const blob = await response.blob();
 			// Create a URL for the blob
 			const blobUrl = URL.createObjectURL(blob);
@@ -97,7 +118,7 @@ const VerSltComite = (): JSX.Element => {
 	const fetchDocumentMetadataByAssociatedId = async (associatedId: number) => {
 		try {
 			const response = await axios.get(
-				`http://${API_IP}/api/Attachments/${associatedId}`
+				`${API_IP}/api/Attachments/${associatedId}`
 			);
 			return response.data;
 		} catch (error) {
@@ -158,16 +179,16 @@ const VerSltComite = (): JSX.Element => {
 	useEffect(() => {
 		const defaultDestino: any = {
 			idDestino: 0,
-			destino: 'Seleccione un Destino',
+			destino: 'Seleccione un destino',
 		};
-		fetch('http://' + API_IP + '/api/Destino')
+		fetch(API_IP + '/api/Destino')
 			.then((response) => response.json())
 			.then((data: any) => {
 				setDestinos([defaultDestino, ...data]);
 			});
 
 		axios
-			.get('http://' + API_IP + '/api/Solicitudes/' + id)
+			.get(API_IP + '/api/Solicitudes/' + id)
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
 				const newFormulario: FormularioSolicitudes = {
 					...data.data,
@@ -179,17 +200,24 @@ const VerSltComite = (): JSX.Element => {
 			})
 			.catch((error) => {
 				console.error('Error fetching user data:', error);
+				if (
+					error.response?.status === 401 ||
+					error.response?.status === 403 ||
+					error.response?.status === 404
+				) {
+					navigate('/Login');
+				}
 			});
 		axios
-			.get(`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=false`)
+			.get(`${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=false`)
 			.then((data: AxiosResponse<DataDeudas[]>) => {
-				console.log(data.data);
+				// console.log(data.data);
 				setTableDeudas(data.data);
 			});
 		axios
-			.get(`http://${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=true`)
+			.get(`${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=true`)
 			.then((data: AxiosResponse<DataDeudasAnalista[]>) => {
-				console.log(data.data);
+				// console.log(data.data);
 				setTableDeudasAnalista(data.data);
 			});
 
@@ -256,11 +284,11 @@ const VerSltComite = (): JSX.Element => {
 			return toast.warn('Debe ingresar un monto');
 		}
 		setTableDeudas([...tableDeudas, data]);
-		console.log([...tableDeudas, data]);
+		// console.log([...tableDeudas, data]);
 	};
 
 	const handleAgregarDeudaAnalista = (data: DataDeudasAnalista) => {
-		console.log(tableDeudasAnalista);
+		// console.log(tableDeudasAnalista);
 		if (data.tipo === '') {
 			return toast.warn('Debe seleccionar un tipo de deuda');
 		}
@@ -284,13 +312,40 @@ const VerSltComite = (): JSX.Element => {
 	};
 
 	const handleAprobar = () => {
-		const data = {
+		let data = {
 			...formularioSolicitudes,
-			estatus: 'Aprobado',
+			// estatus: 'Aprobado',
+		};
+		let votos = [];
+		if (formularioSolicitudes.votos) {
+			votos = JSON.parse(formularioSolicitudes.votos);
+		}
+
+		//check if user already voted
+		const userAlreadyVoted = votos.find(
+			(voto: any) => voto.id === usuariolog?.idUsuario
+		);
+		if (userAlreadyVoted) {
+			return toast.warn('Ya ha votado por esta solicitud');
+		}
+
+		votos.push({
+			id: usuariolog?.idUsuario,
+			nombre: usuariolog?.nombre + ' ' + usuariolog?.apellido,
+			telefono: usuariolog?.telefono,
+			voto: 'Aprobado',
+			fecha: moment().format('DD/MM/YYYY hh:mm'),
+		});
+
+		//check if all users voted. it will be 3 numbers 99999999 88888888 77777777
+
+		data = {
+			...data,
+			votos: JSON.stringify(votos),
 		};
 		axios
 			.patch(
-				`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
+				`${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
 				data
 			)
 			.then((response) => {
@@ -303,13 +358,35 @@ const VerSltComite = (): JSX.Element => {
 			});
 	};
 	const handleRechazar = () => {
-		const data = {
+		let data = {
 			...formularioSolicitudes,
 			estatus: 'Rechazado',
 		};
+		let votos = [];
+		if (formularioSolicitudes.votos) {
+			votos = JSON.parse(formularioSolicitudes.votos);
+		}
+		const userAlreadyVoted = votos.find(
+			(voto: any) => voto.id === usuariolog?.idUsuario
+		);
+		if (userAlreadyVoted) {
+			return toast.warn('Ya ha votado por esta solicitud');
+		}
+		votos.push({
+			id: usuariolog?.idUsuario,
+			nombre: usuariolog?.nombre + ' ' + usuariolog?.apellido,
+			telefono: usuariolog?.telefono,
+			voto: 'Aprobado',
+			fecha: moment().format('DD/MM/YYYY hh:mm'),
+		});
+
+		data = {
+			...data,
+			votos: JSON.stringify(votos),
+		};
 		axios
 			.patch(
-				`http://${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
+				`${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
 				data
 			)
 			.then((response) => {
@@ -332,9 +409,7 @@ const VerSltComite = (): JSX.Element => {
 	const handleModal = (token: string) => {
 		let user = usuariolog?.telefono;
 		axios
-			.post(
-				`http://${API_IP}/api/Usuarios/FortiToken?telefono=${user}&token=${token}`
-			)
+			.post(`${API_IP}/api/Usuarios/FortiToken?telefono=${user}&token=${token}`)
 			.then((response) => {
 				if (response.status === 200) {
 					if (modalText === 'Aprobar') {
@@ -348,6 +423,15 @@ const VerSltComite = (): JSX.Element => {
 			})
 			.catch((error) => {
 				toast.error('Error al comprobar token');
+			});
+	};
+	const handleImprimir = () => {
+
+		axios
+			.get(`${API_IP}/api/Solicitudes/EncryptNumber/${id}`)
+			.then((data: AxiosResponse<any>) => {
+				console.log(data.data.encryptedData);
+				handleDownloadReporteOficial(formularioSolicitudes,data.data.encryptedData);
 			});
 	};
 	return (
@@ -365,31 +449,47 @@ const VerSltComite = (): JSX.Element => {
 						<p className="text-xl font-semibold flex-grow text-center">
 							Precalificado
 						</p>
-						<div className="absolute end-2 gap-2 bg-gray-100">
-							<Button
-								type="button"
-								customClassName="bg-red-700 text-white font-semibold "
-								onClick={() => {
-									setModalText('Rechazar');
-									openModal();
-								}}
-								// onClick={handleRechazar}
-							>
-								Rechazar
-							</Button>
-							<Button
-								type="button"
-								customClassName="bg-green-700 text-white font-semibold ml-2"
-								// onClick={openModal}
-								// onClick={handleAprobar}
-								onClick={() => {
-									setModalText('Aprobar');
-									openModal();
-								}}
-							>
-								Aprobar
-							</Button>
-						</div>
+						{formularioSolicitudes.estatus === 'En Comite' && (
+							<div className="absolute end-2 gap-2 bg-gray-100">
+								<Button
+									type="button"
+									customClassName="bg-red-700 text-white font-semibold "
+									onClick={() => {
+										setModalText('Rechazar');
+										openModal();
+									}}
+									// onClick={handleRechazar}
+								>
+									Rechazar
+								</Button>
+								<Button
+									type="button"
+									customClassName="bg-green-700 text-white font-semibold ml-2"
+									// onClick={openModal}
+									// onClick={handleAprobar}
+									onClick={() => {
+										setModalText('Aprobar');
+										openModal();
+									}}
+								>
+									Aprobar
+								</Button>
+							</div>
+						)}
+						{formularioSolicitudes.estatus === 'Aprobado' && (
+							<div className="absolute end-2 gap-2 bg-gray-100">
+								<Button
+									type="button"
+									customClassName="bg-green-700 text-white font-semibold "
+									onClick={() => {
+										handleImprimir();
+									}}
+									// onClick={handleRechazar}
+								>
+									Imprimir
+								</Button>
+							</div>
+						)}
 					</div>
 
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
@@ -553,6 +653,12 @@ const VerSltComite = (): JSX.Element => {
 							<DisplayField
 								label="Estado Civil"
 								text={formularioSolicitudes.estadoCivil}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<DisplayField
+								label="Profesion Conyuge"
+								text={formularioSolicitudes.nombreConyuge}
 							/>
 						</div>
 						<div className="flex flex-col w-full">
@@ -727,6 +833,12 @@ const VerSltComite = (): JSX.Element => {
 							</div>
 						</div>
 						<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+							<div className="flex flex-col w-full">
+								<DisplayField
+									label="Relación Cuota/Ingreso"
+									text={formularioSolicitudes.porcentajeRRHH?.toString() + '%'}
+								/>
+							</div>
 							<div className="flex flex-col w-full">
 								<DisplayField
 									label="Comentarios RRHH"

@@ -9,6 +9,7 @@ import axios from 'axios';
 import API_IP from '../../../config';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import { ToastContainer, toast } from 'react-toastify';
+import setupAxiosInterceptors from '../AxiosInterceptor';
 
 const LoginComponent = (): JSX.Element => {
 	const navigate = useNavigate();
@@ -26,14 +27,11 @@ const LoginComponent = (): JSX.Element => {
 			// Aquí iría tu lógica de autenticación para verificar las credenciales del usuario.
 			// Si la autenticación es exitosa, podrías hacer lo siguiente para redirigir al usuario a la página principal:
 			// history.push("/Principal"); // Cambia "/main" por la ruta de tu página principal. http://192.100.10.187/
-			const response = await axios.post(
-				'http://' + API_IP + '/api/Usuarios/login/',
-				{
-					Telefono: data.Telefono,
-					Password: data.Password,
-					Token: data.Token,
-				}
-			);
+			const response = await axios.post(API_IP + '/api/Usuarios/login/', {
+				Telefono: data.Telefono,
+				Password: data.Password,
+				Token: data.Token,
+			});
 
 			if (response.status === 200) {
 				localStorage.setItem('logusuario', JSON.stringify(response.data.usuario));
@@ -145,14 +143,14 @@ const LoginComponent = (): JSX.Element => {
 								{isLoading ? <LoadingSpinner /> : 'Iniciar Sesión'}
 							</Button>
 						</div>
-						<div className="flex w-full justify-center">
+						{/* <div className="flex w-full justify-center">
 							<span
 								onClick={() => navigate('Recuperar')}
 								className="cursor-pointer text-center"
 							>
 								¿Olvidaste tu contraseña?
 							</span>
-						</div>
+						</div> */}
 					</div>
 				</div>
 			</form>

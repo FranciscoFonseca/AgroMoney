@@ -18,6 +18,7 @@ import API_IP from './config';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import setupAxiosInterceptors from './pages/Login/AxiosInterceptor';
 
 function Principal() {
 	const navigate = useNavigate();
@@ -62,14 +63,39 @@ function Principal() {
 		// 	'R'
 		// 		? 'A'
 		// 		: usuariolog.perfil;
-		const url = `http://${API_IP}/api/Solicitudes/BuscarPorUsuario?idusuario=${usuariolog.idUsuario}&perfil=${usuariolog.perfil}`;
+		const url = `${API_IP}/api/Solicitudes/BuscarPorUsuario?idusuario=${usuariolog.idUsuario}&perfil=${usuariolog.perfil}`;
 		console.log('datadata', usuariolog.perfil);
 		console.log('datadataurl', url);
-		fetch(url)
-			.then((response) => response.json())
-			.then((data) => {
-				setUsers(data);
-				setResultadosFiltrado(data);
+		// fetch(url)
+		// 	.then((response) => response.json())
+		// 	.then((data) => {
+		// 		setUsers(data);
+		// 		setResultadosFiltrado(data);
+		// 	})
+		// 	.catch((error) => {
+		// 		console.error('Error fetching user data:', error);
+		// 	});
+		setupAxiosInterceptors();
+		// axios
+		// 	.get(url)
+		// 	.then((response) => {
+		// 		setUsers(response.data);
+		// 		setResultadosFiltrado(response.data);
+		// 	})
+		// 	.catch((error) => {
+		// 		console.error('Error fetching user data:', error);
+		// 	});
+		// add bearer token
+		const usuariologtoken = localStorage.getItem('token');
+		axios
+			.get(url, {
+				headers: {
+					Authorization: 'Bearer ' + usuariologtoken,
+				},
+			})
+			.then((response) => {
+				setUsers(response.data);
+				setResultadosFiltrado(response.data);
 			})
 			.catch((error) => {
 				console.error('Error fetching user data:', error);
@@ -238,7 +264,7 @@ function Principal() {
 									onClick={() => handleSeleccionarSolicitud(user)}
 								>
 									<td>
-										{perfil === 'C' ? (
+										{perfil === 'C' || perfil === 'O' ? (
 											<Link to={`/solicitud-reporte/${user.idSolicitud}`}>
 												Ver Solicitud
 											</Link>
@@ -453,8 +479,7 @@ function Principal() {
 		if (solicitudSeleccionada) {
 			try {
 				const response = await axios.put(
-					'http://' +
-						API_IP +
+					API_IP +
 						'/api/Solicitudes/CancelarSolicitud?id=' +
 						solicitudSeleccionada.idSolicitud +
 						'&UsuarioID=' +
@@ -469,10 +494,11 @@ function Principal() {
 			}
 		}
 	};
-
+	if (usuariolog.perfil === 'A') {
+		return <LayoutCustom></LayoutCustom>;
+	}
 	return (
 		<LayoutCustom>
-			<h5>Solicitudes</h5>
 			<div className="principal principal-form" style={{ marginBottom: '1%' }}>
 				<form className="principal-form">
 					{/* <div className="inputs-container">

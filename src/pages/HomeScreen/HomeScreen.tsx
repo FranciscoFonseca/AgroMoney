@@ -24,7 +24,7 @@ const HomeScreen = (): JSX.Element => {
 			<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap justify-center items-end">
 				<div className="flex flex-col w-48">
 					<Button
-						customClassName="bg-green-700 font-semibold text-white h-24"
+						customClassName="bg-green-700 font-semibold text-white h-24 w-48"
 						onClick={() => {
 							navigate('/nueva-solicitud');
 						}}
@@ -35,12 +35,12 @@ const HomeScreen = (): JSX.Element => {
 				<div className="flex flex-col w-48 items-center gap-y-1">
 					<h1>¿ Ya eres Cliente ?</h1>
 					<Button
-						customClassName="bg-green-700 font-semibold text-white h-24"
+						customClassName="bg-green-700 font-semibold text-white h-24 w-48"
 						onClick={() => {
 							navigate('/Login');
 						}}
 					>
-						Inicio de Sesión/ Registrar
+						Inicio de Sesión
 					</Button>
 				</div>
 			</div>
