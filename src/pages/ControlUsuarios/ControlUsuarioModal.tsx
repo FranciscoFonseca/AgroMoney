@@ -71,6 +71,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 		{ value: 'R', label: 'RRHH' },
 		{ value: 'M', label: 'AgroMoney' },
 		{ value: 'C', label: 'Comite de Credito' },
+		{ value: 'O', label: 'Oficial de Credito' },
 	];
 	// const companies = [
 	// 	'Cadelga',

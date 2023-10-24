@@ -67,6 +67,7 @@ export const handleDownloadAchPronto = async (form: any) => {
 	);
 	const pdfDoc = await PDFDocument.load(existingPdfBytes);
 	const modifiedPdfBytes = await pdfDoc.save();
+	const page = pdfDoc.getPages()[0];
 
 	// Create a Blob from the bytes
 	const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
@@ -74,7 +75,7 @@ export const handleDownloadAchPronto = async (form: any) => {
 	// Create a download link
 	const link = document.createElement('a');
 	link.href = URL.createObjectURL(blob);
-	link.download = 'Autorizacion-Persona-Natural.pdf';
+	link.download = 'Autorizacion-ACH-PRONTO.pdf';
 	link.click();
 };
 

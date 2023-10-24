@@ -160,9 +160,11 @@ const ModalRRHH: React.FC<ModalProps> = ({
 					},
 				}
 			);
-			navigate('/Principal');
+
 			toast.success('Solicitud actualizada con exito');
-			closeModal();
+			setTimeout(() => {
+				navigate('/Principal');
+			}, 1000);
 		} catch (error) {
 			toast.error('Error al actualizar la solicitud');
 			console.error(error);

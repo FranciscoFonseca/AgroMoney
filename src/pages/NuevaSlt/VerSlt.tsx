@@ -42,6 +42,7 @@ import { DataDeudasAnalista } from './components/TableDeudasAnalista';
 import ModalRRHH from './components/ModalRRHH';
 import { Usuario } from '../../tipos/Usuario';
 import clsx from 'clsx';
+import ModalExepcion from './components/ModalExepcion';
 
 const NuevaSlt2 = (): JSX.Element => {
 	const {
@@ -307,6 +308,12 @@ const NuevaSlt2 = (): JSX.Element => {
 				},
 			})
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
+				if (data.status === 404) {
+					return navigate('/Login');
+				}
+				if (data.status === 401) {
+					return navigate('/Login');
+				}
 				reset(data.data);
 				const selectedDepartamento = departm.find(
 					(item: Region) => item.nombre === data.data.departamento
@@ -359,10 +366,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			setDocumentMetadata(documentMetadata);
 		});
 
-
 		// set documents on selected files if there are fromm
-
-
 	}, []);
 	useEffect(() => {
 		const destino = watch('destino_Credito');
@@ -590,6 +594,13 @@ const NuevaSlt2 = (): JSX.Element => {
 		setTableDeudasAnalista(newTableDeudasAnalista);
 	};
 	const [modalIsOpen, setModalIsOpen] = useState(false);
+	const [modalIsOpen2, setModalIsOpen2] = useState(false);
+	const openModal2 = () => {
+		setModalIsOpen2(true);
+	};
+	const closeModal2 = () => {
+		setModalIsOpen2(false);
+	};
 
 	const openModal = () => {
 		setModalIsOpen(true);
@@ -725,6 +736,23 @@ const NuevaSlt2 = (): JSX.Element => {
 					getValues,
 				}}
 			/>
+			<ModalExepcion
+				isOpen={modalIsOpen2}
+				closeModal={closeModal2}
+				cuotaFormulario={getValues('cuota_Maxima')}
+				nombre={getValues('nombre')}
+				idSolicitud={id}
+				formMethods={{
+					register,
+					handleSubmit,
+					setValue,
+					control,
+					watch,
+					formState: { errors },
+					reset,
+					getValues,
+				}}
+			/>
 			<LayoutCustom>
 				<form
 					onSubmit={handleSubmit(onSubmit)}
@@ -744,6 +772,17 @@ const NuevaSlt2 = (): JSX.Element => {
 									</Button>
 								</>
 							)}
+						{usuariolog?.perfil === 'M' && getValues('estatus') === 'Excepción' && (
+							<>
+								<Button
+									type="button"
+									customClassName="bg-green-700 text-white font-semibold"
+									onClick={openModal2}
+								>
+									Excepción
+								</Button>
+							</>
+						)}
 					</div>
 					<div className="border-b-2 w-full flex justify-between items-center border-black">
 						<p className="text-xl font-semibold flex-grow text-center">
@@ -1027,7 +1066,23 @@ const NuevaSlt2 = (): JSX.Element => {
 								</p>
 							)}
 						</div>
-
+						<div className="flex flex-col w-full">
+							<Controller
+								name="correoPersonal"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										disabled
+										label="Correo Personal"
+										{...register('correoPersonal')}
+									/>
+								)}
+							/>
+							{errors.correoPersonal && (
+								<p className="text-xs mt-2 ml-2 text-red-600">El correo es requerido</p>
+							)}
+						</div>
 						<div className="flex flex-col w-full">
 							<Controller
 								name="telefono"
@@ -1044,6 +1099,79 @@ const NuevaSlt2 = (): JSX.Element => {
 									El telefono es requerido
 								</p>
 							)}
+						</div>
+					</div>
+					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+						<div className="flex flex-col w-full">
+							<Controller
+								name="estadoCivil"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										disabled
+										label="Estado Civil"
+										{...register('estadoCivil')}
+									/>
+								)}
+							/>
+							{errors.estadoCivil && (
+								<p className="text-xs mt-2 ml-2 text-red-600">
+									El estado civil es requerido
+								</p>
+							)}
+						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="nombreConyuge"
+								control={control}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										disabled
+										label="Nombre Cónyuge"
+										{...register('nombreConyuge')}
+									/>
+								)}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="profesionConyuge"
+								control={control}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										disabled
+										label="Profesión Cónyuge"
+										{...register('profesionConyuge')}
+									/>
+								)}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="telConyuge"
+								control={control}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										disabled
+										label="Teléfono Cónyuge"
+										{...register('telConyuge')}
+									/>
+								)}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="dependientes"
+								control={control}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										disabled
+										label="Dependientes"
+										{...register('dependientes')}
+									/>
+								)}
+							/>
 						</div>
 					</div>
 					<label className="flex w-full">Lugar y Fecha de Nacimiento</label>
@@ -1450,7 +1578,69 @@ const NuevaSlt2 = (): JSX.Element => {
 							<> </>
 						)}
 					</div>
-
+					<div className="mt-2 border-b-2 w-full flex justify-center border-black">
+						<p className="text-xl font-semibold">Referencias</p>
+					</div>
+					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+						<div className="flex flex-col w-full">
+							<Controller
+								name="referencia1"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Referencia Personal"
+										disabled
+										{...register('referencia1')}
+									/>
+								)}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="noReferencia1"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Numero de Referencia Personal"
+										disabled
+										{...register('noReferencia1')}
+									/>
+								)}
+							/>
+						</div>
+					</div>
+					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+						<div className="flex flex-col w-full">
+							<Controller
+								name="referencia2"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Referencia Laboral"
+										disabled
+										{...register('referencia2')}
+									/>
+								)}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="noReferencia2"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Numero de Referencia Laboral"
+										disabled
+										{...register('noReferencia2')}
+									/>
+								)}
+							/>
+						</div>
+					</div>
 					<div className="flex gap-2 w-full flex-wrap justify-center">
 						<div className="mt-2 mb-2 border-b-2 w-full flex justify-center border-black">
 							<p className="text-xl font-semibold">Adjuntar Archivos</p>

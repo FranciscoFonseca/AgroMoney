@@ -190,6 +190,12 @@ const VerSltComite = (): JSX.Element => {
 		axios
 			.get(API_IP + '/api/Solicitudes/' + id)
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
+				if(data.status === 404){
+					return navigate('/Login');
+				}
+				if(data.status === 401){
+					return navigate('/Login');
+				}
 				const newFormulario: FormularioSolicitudes = {
 					...data.data,
 					producto: destinos.find(
@@ -199,14 +205,9 @@ const VerSltComite = (): JSX.Element => {
 				setFormularioSolicitudes(newFormulario);
 			})
 			.catch((error) => {
-				console.error('Error fetching user data:', error);
-				if (
-					error.response?.status === 401 ||
-					error.response?.status === 403 ||
-					error.response?.status === 404
-				) {
-					navigate('/Login');
-				}
+				console.log('error');
+				console.log(error);
+			
 			});
 		axios
 			.get(`${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=false`)
@@ -426,12 +427,14 @@ const VerSltComite = (): JSX.Element => {
 			});
 	};
 	const handleImprimir = () => {
-
 		axios
 			.get(`${API_IP}/api/Solicitudes/EncryptNumber/${id}`)
 			.then((data: AxiosResponse<any>) => {
 				console.log(data.data.encryptedData);
-				handleDownloadReporteOficial(formularioSolicitudes,data.data.encryptedData);
+				handleDownloadReporteOficial(
+					formularioSolicitudes,
+					data.data.encryptedData
+				);
 			});
 	};
 	return (
@@ -657,7 +660,7 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 						<div className="flex flex-col w-full">
 							<DisplayField
-								label="Profesion Conyuge"
+								label="Nombre Cónyuge"
 								text={formularioSolicitudes.nombreConyuge}
 							/>
 						</div>
@@ -669,7 +672,7 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 						<div className="flex flex-col w-full">
 							<DisplayField
-								label="Profesion Conyuge"
+								label="Profesion Cónyuge"
 								text={formularioSolicitudes.profesionConyuge}
 							/>
 						</div>
@@ -846,6 +849,16 @@ const VerSltComite = (): JSX.Element => {
 								/>
 							</div>
 						</div>
+						{formularioSolicitudes.comentariosExcepcion.length > 0 && (
+							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+								<div className="flex flex-col w-full">
+									<DisplayField
+										label="Comentarios RRHH"
+										text={formularioSolicitudes.comentariosExcepcion}
+									/>
+								</div>
+							</div>
+						)}
 					</div>
 				</div>
 			</LayoutCustom>

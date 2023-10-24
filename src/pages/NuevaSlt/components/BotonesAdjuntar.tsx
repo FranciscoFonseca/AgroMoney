@@ -63,8 +63,8 @@ const arrayBotones: BotonesAdjuntarOptions[] = [
 		adjunto: handleDownloadAgroMoney,
 	}, //13
 	{
-		nombre: 'Autorizacion-Debito',
-		label: 'Autorización Debito',
+		nombre: 'ACH-PRONTO',
+		label: 'ACH PRONTO',
 		adjunto: handleDownloadAchPronto,
 	}, //13
 ];
@@ -110,7 +110,25 @@ const BotonesAdjuntar = ({
 		}
 	};
 	const checkFilesSelectedForCategory = (listName: string): boolean => {
-		const optionIndices = optionMappings[listName] || [];
+		let optionIndices = optionMappings[listName] || [];
+
+		// {esCadelga && <>{renderButton(arrayBotones[13])}</>}
+		// 					{form?.tipoDePersona === 'Juridica' ? (
+		// 						<>{renderButton(arrayBotones[11])}</>
+		// 					) : (
+		// 						<></>
+		// 					)}
+
+		if (esCadelga) {
+			optionIndices = [...optionIndices, 13];
+		}
+		if (form?.tipoDePersona === 'Juridica') {
+			optionIndices = [...optionIndices, 11];
+		}
+		if (form?.tipoDePersona === 'Natural') {
+			optionIndices = [...optionIndices, 12];
+		}
+
 		const haveFiles = optionIndices.every((index) => {
 			const buttonName = arrayBotones[index].nombre;
 			const filesForButton = selectedFiles[buttonName];
@@ -231,17 +249,19 @@ const BotonesAdjuntar = ({
 			<div className="w-11/12">
 				<p className="text-lg ">
 					<b>Instrucciones: </b>Primero, descarga los formularios necesarios. Una vez
-					descargados, adjúntalos utilizando el botón correspondiente. ¡Gracias!
+					descargados, firmalos y luego adjúntalos utilizando el botón
+					correspondiente. ¡Gracias!
 				</p>
 				<br />
 				<p className="text-lg ">
-					<b>Si no tienes cuenta en BAC: </b>Descarga el formulario ACH PRONTO y Adjuntalo en el boton de Formulario Banco. ¡Gracias!
+					<b>Si no tienes cuenta en BAC: </b>Descarga el formulario ACH PRONTO y
+					Adjuntalo en el boton de Formulario Banco. ¡Gracias!
 				</p>
 			</div>
 			{step && step === 2 && (
 				<div className="flex w-full">
 					<div className="flex flex-col w-1/5  gap-2 justify-start">
-						<p className="font-bold">Formularios</p>
+						<p className="font-bold">Formularios a Descargar</p>
 						{getOptionsByList(destino).map((boton) => renderDownload(boton))}
 						{esCadelga && <>{renderDownload(arrayBotones[13])}</>}
 						{form?.tipoDePersona === 'Juridica' ? (

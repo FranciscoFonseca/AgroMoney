@@ -372,25 +372,29 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 									</tr>
 								</thead>
 								<tbody>
-									{documentMetadata.map((metadata: any) => (
-										<tr key={metadata.id}>
-											<td className="border p-2 truncate">{metadata.fileName}</td>
-											<td className="border p-2 text-center">
-												<button
-													onClick={() => openDocumentInNewTab(Number(id), metadata.fileName)}
-												>
-													<FaEye />
-												</button>
-											</td>
-											<td className="border p-2 text-center">
-												<button
-													onClick={() => downloadDocument(Number(id), metadata.fileName)}
-												>
-													<FaFileDownload />
-												</button>
-											</td>
-										</tr>
-									))}
+									{documentMetadata &&
+										documentMetadata.length > 0 &&
+										documentMetadata.map((metadata: any) => (
+											<tr key={metadata.id}>
+												<td className="border p-2 truncate">{metadata.fileName}</td>
+												<td className="border p-2 text-center">
+													<button
+														onClick={() =>
+															openDocumentInNewTab(Number(id), metadata.fileName)
+														}
+													>
+														<FaEye />
+													</button>
+												</td>
+												<td className="border p-2 text-center">
+													<button
+														onClick={() => downloadDocument(Number(id), metadata.fileName)}
+													>
+														<FaFileDownload />
+													</button>
+												</td>
+											</tr>
+										))}
 								</tbody>
 							</table>
 						</div>
@@ -447,21 +451,22 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 										</tr>
 									</thead>
 									<tbody>
-										{Object.entries(selectedFiles).map(([buttonName, files]) => (
-											<>
-												{files.map((file, index) => (
-													<tr key={file.name}>
-														<td className="border p-2 truncate">{file.name}</td>
-														<td className="border p-2 ">
-															<FaTrash
-																className="hover:cursor-pointer"
-																onClick={() => handleFileRemove(buttonName, index)}
-															/>
-														</td>
-													</tr>
-												))}
-											</>
-										))}
+										{selectedFiles &&
+											Object.entries(selectedFiles).map(([buttonName, files]) => (
+												<>
+													{files.map((file, index) => (
+														<tr key={file.name}>
+															<td className="border p-2 truncate">{file.name}</td>
+															<td className="border p-2 ">
+																<FaTrash
+																	className="hover:cursor-pointer"
+																	onClick={() => handleFileRemove(buttonName, index)}
+																/>
+															</td>
+														</tr>
+													))}
+												</>
+											))}
 									</tbody>
 								</table>
 							</div>
@@ -553,7 +558,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 									setDeuda({ ...deuda, fechaVencimiento: date?.toISOString() || '' });
 								}}
 							/> */}
-							<label>Fecha de Vencimiento</label>
+							<label>Fecha de Vencimiento (DD/MM/AAAA)</label>
 							<DatePicker
 								className="block h-12 w-full rounded-lg mt-1 border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 								showYearDropdown

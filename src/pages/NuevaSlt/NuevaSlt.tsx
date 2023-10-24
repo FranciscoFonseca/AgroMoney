@@ -8,7 +8,7 @@ import { jsPDF } from 'jspdf';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import { Region, departm, munic, paises } from '../../constants/departamentos';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import {
 	FormularioSolicitudes,
 	FormularioSolicitudesDefault,
@@ -41,6 +41,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { formatNumber } from '../../functions';
 import clsx from 'clsx';
+import { Profesion } from './components/ModalProfesion';
 
 const NuevaSlt2 = (): JSX.Element => {
 	const {
@@ -58,6 +59,8 @@ const NuevaSlt2 = (): JSX.Element => {
 	const [selectedFiles, setSelectedFiles] = useState<Record<string, File[]>>({});
 	const [amortizarData, setAmortizarData] = useState<DataAmortizar[]>([]);
 	const [destinos, setDestinos] = useState<any[]>([]);
+	const [profesiones, setProfesiones] = useState<Profesion[]>([]);
+
 	const [municipios, setMunicipios] = useState<any[]>([]);
 	const [tableDeudas, setTableDeudas] = useState<DataDeudas[]>([]);
 	const [step, setStep] = useState<number>(0);
@@ -179,8 +182,25 @@ const NuevaSlt2 = (): JSX.Element => {
 			}
 			setValue('tipoDePersona', 'Natural');
 			setValue('usuario_Registro', 1);
+			const telefono = formData.telefono;
+			const teljefe = formData.telJefeIn;
+			const telEmpresa = formData.telEmpresa;
+			const dni = formData.dni;
 			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-			const newForm = getValues();
+			let newForm2 = getValues();
+			const cleancharsfromtelefono = telefono.replace(/[^0-9]/g, '');
+			const cleancharsfromteljefe = teljefe.replace(/[^0-9]/g, '');
+			const cleancharsfromtelEmpresa = telEmpresa.replace(/[^0-9]/g, '');
+			const cleancharsfromdni = dni.replace(/[^0-9]/g, '');
+			console.log('cleancharsfromtelEmpresa', cleancharsfromtelEmpresa);
+			const newForm = {
+				...newForm2,
+				telefono: cleancharsfromtelefono,
+				telJefeIn: cleancharsfromteljefe,
+				telEmpresa: cleancharsfromtelEmpresa,
+				dni: cleancharsfromdni,
+			};
+
 			if (locStorage) {
 				//const usuariolog = JSON.parse(locStorage);
 				const usuariolog = JSON.parse(locStorage);
@@ -261,6 +281,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			}
 		} catch (error) {
 			console.log(error);
+			return toast.error('Ha ocurrido un error.');
 		}
 	};
 
@@ -379,7 +400,17 @@ const NuevaSlt2 = (): JSX.Element => {
 			});
 		}
 	};
-
+	const getProfesion = async () => {
+		try {
+			axios
+				.get(`${API_IP}/api/Profesion`)
+				.then((data: AxiosResponse<Profesion[]>) => {
+					setProfesiones(data.data);
+				});
+		} catch (error) {
+			console.log(error);
+		}
+	};
 	useEffect(() => {
 		const defaultDestino: any = {
 			idDestino: 0,
@@ -396,6 +427,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			setValue('usuario_Registro', usuariolog.idUsuario);
 			setValue('idUsuario', usuariolog.idUsuario);
 		}
+		getProfesion();
 	}, []);
 	const handlePaisChange = (e: any) => {
 		const selected = paises.find((item: any) => item === e.target.value);
@@ -439,6 +471,9 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (selected) {
 			setValue('municipio', selected.nombre);
 		}
+	};
+	const handleProfesionChange = (e: any) => {
+		setValue('profesion', e.target.value);
 	};
 	const handleDestinoChange = (e: any) => {
 		const selected = destinos.find(
@@ -571,19 +606,19 @@ const NuevaSlt2 = (): JSX.Element => {
 		handlerTotalInteres();
 		handlerTotalPagar();
 		setAmortizarData([]);
-	}, 50);
+	}, 10);
 	const debouncedOnChangePlazo = debounce((e: any) => {
 		setValue('plazo', Number(e.target.value));
 		handlerTotalInteres();
 		handlerTotalPagar();
 		setAmortizarData([]);
-	}, 50);
+	}, 10);
 	const debouncedOnChangeMonto = debounce((e: any) => {
 		setValue('monto', Number(e.target.value));
 		handlerTotalInteres();
 		handlerTotalPagar();
 		setAmortizarData([]);
-	}, 50);
+	}, 10);
 
 	const handlerTotalInteres = () => {
 		const totalPago = cuota * Number(watchPlazo);
@@ -833,7 +868,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									Amortizar <FaMoneyBill />
 								</Button>
 								<p className={step !== 0 ? 'hidden' : ''}>
-									Por favor, Amortice para continuar.
+									Por favor, amortice para continuar.
 								</p>
 								<Button
 									type="button"
@@ -992,7 +1027,18 @@ const NuevaSlt2 = (): JSX.Element => {
 									)}
 								</div>
 								<div className="flex flex-col w-full">
-									<Controller
+									<Select
+										options={profesiones.map((item: Profesion) => ({
+											label: item.profesionName,
+											value: item.profesionName,
+										}))}
+										disabled={step !== 1}
+										placeholder="Seleccione una profesión"
+										label="Profesión"
+										{...register('profesion')}
+										onChange={handleProfesionChange}
+									/>
+									{/* <Controller
 										name="profesion"
 										control={control}
 										rules={{ required: true }}
@@ -1003,10 +1049,29 @@ const NuevaSlt2 = (): JSX.Element => {
 												{...register('profesion')}
 											/>
 										)}
-									/>
+									/> */}
 									{errors.profesion && (
 										<p className="text-xs mt-2 ml-2 text-red-600">
 											La profesion es requerida
+										</p>
+									)}
+								</div>
+								<div className="flex flex-col w-full">
+									<Controller
+										name="correoPersonal"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												disabled={step !== 1}
+												label="Correo Personal"
+												{...register('correoPersonal')}
+											/>
+										)}
+									/>
+									{errors.correoPersonal && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											El correo es requerido
 										</p>
 									)}
 								</div>
@@ -1022,7 +1087,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												render={({ field: { value, onChange } }) => (
 													<TextInput
 														disabled={step !== 1}
-														label="Teléfono"
+														label="Teléfono (91234567)"
 														{...register('telefono')}
 													/>
 												)}
@@ -1075,7 +1140,7 @@ const NuevaSlt2 = (): JSX.Element => {
 													watch('estadoCivil') === 'Divorciado' ||
 													watch('estadoCivil') === 'Viudo'
 												}
-												label="Nombre Conyuge"
+												label="Nombre Cónyuge"
 												{...register('nombreConyuge')}
 											/>
 										)}
@@ -1093,8 +1158,26 @@ const NuevaSlt2 = (): JSX.Element => {
 													watch('estadoCivil') === 'Divorciado' ||
 													watch('estadoCivil') === 'Viudo'
 												}
-												label="Profesión Conyuge"
+												label="Profesión Cónyuge"
 												{...register('profesionConyuge')}
+											/>
+										)}
+									/>
+								</div>
+								<div className="flex flex-col w-full">
+									<Controller
+										name="telConyuge"
+										control={control}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												disabled={
+													step !== 1 ||
+													watch('estadoCivil') === 'Soltero' ||
+													watch('estadoCivil') === 'Divorciado' ||
+													watch('estadoCivil') === 'Viudo'
+												}
+												label="Teléfono Cónyuge (91234567)"
+												{...register('telConyuge')}
 											/>
 										)}
 									/>
@@ -1188,7 +1271,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									)}
 								</div>
 								<div className="flex flex-col w-full gap-y-1">
-									<label>Fecha de Nacimiento</label>
+									<label>Fecha de Nacimiento (DD/MM/AAAA)</label>
 									<Controller
 										control={control}
 										name="fechaNacimiento"
@@ -1296,7 +1379,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										render={({ field: { value, onChange } }) => (
 											<Select
 												options={companies}
-												label="Lugar de Trabajo"
+												label="Empresa para la cual trabaja"
 												{...register('empresa')}
 												disabled={step !== 1}
 											/>
@@ -1309,7 +1392,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									)}
 								</div>
 								<div className="flex flex-col w-full">
-									<label>Fecha de Ingreso</label>
+									<label>Fecha de Ingreso (DD/MM/AAAA)</label>
 									<Controller
 										control={control}
 										name="antiguedad"
@@ -1319,8 +1402,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												<DatePicker
 													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 													maxDate={new Date()}
-												dateFormat={'dd/MM/yyyy'}
-
+													dateFormat={'dd/MM/yyyy'}
 													showYearDropdown
 													selected={new Date(value)}
 													onChange={(date) => {
@@ -1361,7 +1443,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												label="Telefono de Trabajo"
+												label="Telefono de Trabajo (91234567)"
 												disabled={step !== 1}
 												{...register('telEmpresa')}
 											/>
@@ -1398,7 +1480,7 @@ const NuevaSlt2 = (): JSX.Element => {
 													{ value: 'Permanente', label: 'Permanente' },
 													{ value: 'Temporal', label: 'Temporal' },
 												]}
-												label="Lugar de Trabajo"
+												label="Tipo de contrato"
 												{...register('contrato')}
 												disabled={step !== 1}
 											/>
@@ -1477,7 +1559,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												}}
 												render={({ field: { value, onChange } }) => (
 													<TextInput
-														label={'Telefono de Jefe Inmediato'}
+														label={'Telefono de Jefe Inmediato (91234567)'}
 														{...register('telJefeIn')}
 														disabled={step !== 1}
 													/>
@@ -1622,7 +1704,7 @@ const NuevaSlt2 = (): JSX.Element => {
 							</div>
 							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 								<div className="flex flex-col w-full gap-y-1">
-									<label>Fecha de Constitución</label>
+									<label>Fecha de Constitución (DD/MM/AAAA)</label>
 									<Controller
 										control={control}
 										name="fechaConstitucion"
@@ -1633,7 +1715,6 @@ const NuevaSlt2 = (): JSX.Element => {
 												maxDate={new Date()}
 												showYearDropdown
 												dateFormat={'dd/MM/yyyy'}
-
 												selected={new Date(value)}
 												onChange={(date) => {
 													onChange(date);
@@ -1695,15 +1776,108 @@ const NuevaSlt2 = (): JSX.Element => {
 					)}
 
 					{step >= 2 && (
-						<BotonesAdjuntar
-							destino={watch('destino_Credito')}
-							selectedFiles={selectedFiles}
-							setSelectedFiles={setSelectedFiles}
-							esCadelga={watch('esCadelga')}
-							form={watch()}
-							setStep={setStep}
-							step={step}
-						/>
+						<>
+							<div className="mt-2 border-b-2 w-full flex justify-center border-black">
+								<p className="text-xl font-semibold">Referencias</p>
+							</div>
+							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+								<div className="flex flex-col w-full">
+									<Controller
+										name="referencia1"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												label="Referencia Personal"
+												disabled={step >= 3}
+												{...register('referencia1')}
+											/>
+										)}
+									/>
+								</div>
+								<div className="flex flex-col w-full">
+									<Controller
+										name="noReferencia1"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												label="Numero de Referencia Personal"
+												disabled={step >= 3}
+												{...register('noReferencia1')}
+											/>
+										)}
+									/>
+								</div>
+								<div className="flex flex-col w-full">
+									<Controller
+										name="relacionReferencia1"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												label="Relación Referencia Personal"
+												disabled={step >= 3}
+												{...register('relacionReferencia1')}
+											/>
+										)}
+									/>
+								</div>
+							</div>
+							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+								<div className="flex flex-col w-full">
+									<Controller
+										name="referencia2"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												label="Referencia Familiar"
+												disabled={step >= 3}
+												{...register('referencia2')}
+											/>
+										)}
+									/>
+								</div>
+								<div className="flex flex-col w-full">
+									<Controller
+										name="noReferencia2"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												label="Numero de Referencia Familiar"
+												disabled={step >= 3}
+												{...register('noReferencia2')}
+											/>
+										)}
+									/>
+								</div>
+								<div className="flex flex-col w-full">
+									<Controller
+										name="relacionReferencia2"
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { value, onChange } }) => (
+											<TextInput
+												label="Relación Referencia Familiar"
+												disabled={step >= 3}
+												{...register('relacionReferencia2')}
+											/>
+										)}
+									/>
+								</div>
+							</div>
+							<BotonesAdjuntar
+								destino={watch('destino_Credito')}
+								selectedFiles={selectedFiles}
+								setSelectedFiles={setSelectedFiles}
+								esCadelga={watch('esCadelga')}
+								form={watch()}
+								setStep={setStep}
+								step={step}
+							/>
+						</>
 					)}
 					{step >= 3 && (
 						<IngresarDeudas

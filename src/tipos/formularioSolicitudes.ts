@@ -61,6 +61,15 @@ export interface FormularioSolicitudes {
 	pasoAgroMoney?: boolean;
 	votos?: string;
 	porcentajeRRHH?: number;
+	comentariosExcepcion: string;
+	correoPersonal?: string;
+	referencia1?: string;
+	referencia2?: string;
+	noReferencia1?: string;
+	noReferencia2?: string;
+	telConyuge?: string;
+	relacionReferencia1?: string;
+	relacionReferencia2?: string;
 }
 const estatusSolicitud = [
 	{ value: 'Nueva', label: 'Nueva' },
@@ -70,6 +79,7 @@ const estatusSolicitud = [
 	{ value: 'Cancelada', label: 'Cancelada' },
 	{ value: 'Finalizada', label: 'Finalizada' },
 ];
+
 
 export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	idSolicitud: 0,
@@ -133,4 +143,13 @@ export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	pasoAgroMoney: false,
 	comentariosRRHH: '',
 	porcentajeRRHH: 0,
+	comentariosExcepcion: '',
+	correoPersonal: '',
+	referencia1: '',
+	referencia2: '',
+	noReferencia1: '',
+	noReferencia2: '',
+	telConyuge: '',
+	relacionReferencia1: '',
+	relacionReferencia2: '',
 };

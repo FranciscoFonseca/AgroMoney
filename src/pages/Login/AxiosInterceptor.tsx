@@ -1,4 +1,5 @@
 import axios from 'axios';
+import API_IP from '../../config';
 
 const setupAxiosInterceptors = () => {
 	// Add a request interceptor
@@ -34,6 +35,28 @@ const setupAxiosInterceptors = () => {
 		(error) => {
 			if (error) {
 				console.log('error, ', error);
+				let errorMsg = error.message;
+				//check if error.response exist
+				if (error.response) {
+					if (error.response.data) {
+						errorMsg += ' /-/ ' + error.response.data;
+					}
+					if (error.response.status) {
+						if (error.response.status === 401) {
+							console.log('Unauthorized');
+							window.location.replace('/Login');
+						}
+						if (error.response.status === 404) {
+							console.log('Not Found');
+							window.location.replace('/Principal');
+						} //api/Log_Error
+					}
+				}
+				axios.post(`${API_IP}/api/Log_Error`, {
+					LogMsg: errorMsg,
+					LogDate: new Date(),
+				});
+				//TypeError: Cannot read properties of undefined (reading 'status')
 			}
 		}
 	);
