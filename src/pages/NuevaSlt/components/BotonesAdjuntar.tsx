@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaCaretRight, FaSyncAlt, FaTrash } from 'react-icons/fa';
 import { generatePdf } from '../../../adjuntos/FuncionesAdjuntos';
 import { Font, PDFDownloadLink } from '@react-pdf/renderer';
@@ -20,7 +20,7 @@ export interface BotonesAdjuntarOptions {
 	adjunto?: (form: any) => Promise<void>;
 }
 
-interface BotonesAdjuntarProps {
+export interface BotonesAdjuntarProps {
 	destino: string;
 	selectedFiles: Record<string, File[]>;
 	setSelectedFiles: React.Dispatch<React.SetStateAction<Record<string, File[]>>>;
@@ -30,7 +30,7 @@ interface BotonesAdjuntarProps {
 	step?: number;
 }
 
-const arrayBotones: BotonesAdjuntarOptions[] = [
+export const arrayBotones: BotonesAdjuntarOptions[] = [
 	{ nombre: 'Cotizacion-O-Minuta', label: 'Cotizacion o Minuta' }, //0
 	{ nombre: 'DNI', label: 'DNI' }, //1
 	{
@@ -68,7 +68,15 @@ const arrayBotones: BotonesAdjuntarOptions[] = [
 		adjunto: handleDownloadAchPronto,
 	}, //13
 ];
-
+export const optionMappings: { [key: string]: number[] } = {
+	'Compra de vehículo': [1, 2, 5, 6, 7, 8],
+	'Consolidación de deuda': [1, 2, 4],
+	'Mejoras de vivienda': [1, 2, 0, 3],
+	'Gastos escolares': [1, 2, 9],
+	'Gastos Medicos': [1, 2, 10],
+	Vacaciones: [1, 2],
+	'Gastos Personales': [1, 2],
+};
 const BotonesAdjuntar = ({
 	destino,
 	selectedFiles,
@@ -85,15 +93,7 @@ const BotonesAdjuntar = ({
 	};
 	const [tieneBAC, setTieneBAC] = useState<boolean>(false);
 
-	const optionMappings: { [key: string]: number[] } = {
-		'Compra de vehículo': [1, 2, 5, 6, 7, 8],
-		'Consolidación de deuda': [1, 2, 4],
-		'Mejoras de vivienda': [1, 2, 0, 3],
-		'Gastos escolares': [1, 2, 9],
-		'Gastos Medicos': [1, 2, 10],
-		Vacaciones: [1, 2],
-		'Gastos Personales': [1, 2],
-	};
+	
 	function getOptionsByList(listName: string): BotonesAdjuntarOptions[] {
 		const optionIndices = optionMappings[listName] || [];
 		return optionIndices.map((index) => arrayBotones[index]);

@@ -44,11 +44,11 @@ const setupAxiosInterceptors = () => {
 					if (error.response.status) {
 						if (error.response.status === 401) {
 							console.log('Unauthorized');
-							window.location.replace('/Login');
+							window.location.replace('/');
 						}
 						if (error.response.status === 404) {
 							console.log('Not Found');
-							window.location.replace('/Principal');
+							// window.location.replace('/');
 						} //api/Log_Error
 					}
 				}

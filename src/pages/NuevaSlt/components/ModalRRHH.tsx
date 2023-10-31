@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import TextInput from '../../../components/TextInput/TextInput';
-import { get, set } from 'lodash';
 import Button from '../../../components/Button/Button';
 import { Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
@@ -24,18 +23,11 @@ interface ModalProps {
 const ModalRRHH: React.FC<ModalProps> = ({
 	isOpen,
 	closeModal,
-	nombre = '',
 	cuotaFormulario = 0,
 	formMethods,
 	idSolicitud = 0,
 }) => {
-	const {
-		register,
-		handleSubmit,
-		watch,
-		formState: { errors },
-		getValues,
-	} = formMethods;
+	const { getValues } = formMethods;
 	const [cuota, setCuota] = useState(0);
 	const [salario, setSalario] = useState('');
 	const [comisiones, setComisiones] = useState(0);
@@ -64,29 +56,29 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		setComisiones(Number(newComisiones));
 		calculateTotal(salario, cuota, Number(newComisiones));
 	};
-	function getYearsAndMonthsPassed(fromDate: Date): string {
-		const currentDate = new Date();
-		let yearsDiff = currentDate.getFullYear() - fromDate.getFullYear();
-		let monthsDiff = currentDate.getMonth() - fromDate.getMonth();
-		if (monthsDiff < 0) {
-			yearsDiff--;
-			monthsDiff += 12;
-		}
-		if (yearsDiff === 0 && monthsDiff === 0) {
-			return 'Menos de un mes';
-		}
-		let result = '';
-		if (yearsDiff > 0) {
-			result += yearsDiff === 1 ? '1 año' : `${yearsDiff} años`;
-		}
-		if (monthsDiff > 0) {
-			if (result) {
-				result += ' ';
-			}
-			result += monthsDiff === 1 ? '1 mes' : `${monthsDiff} meses`;
-		}
-		return result;
-	}
+	// function getYearsAndMonthsPassed(fromDate: Date): string {
+	// 	const currentDate = new Date();
+	// 	let yearsDiff = currentDate.getFullYear() - fromDate.getFullYear();
+	// 	let monthsDiff = currentDate.getMonth() - fromDate.getMonth();
+	// 	if (monthsDiff < 0) {
+	// 		yearsDiff--;
+	// 		monthsDiff += 12;
+	// 	}
+	// 	if (yearsDiff === 0 && monthsDiff === 0) {
+	// 		return 'Menos de un mes';
+	// 	}
+	// 	let result = '';
+	// 	if (yearsDiff > 0) {
+	// 		result += yearsDiff === 1 ? '1 año' : `${yearsDiff} años`;
+	// 	}
+	// 	if (monthsDiff > 0) {
+	// 		if (result) {
+	// 			result += ' ';
+	// 		}
+	// 		result += monthsDiff === 1 ? '1 mes' : `${monthsDiff} meses`;
+	// 	}
+	// 	return result;
+	// }
 
 	const calculateTotal = (
 		ssalario: string,
@@ -110,9 +102,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		// Clear cuota and salario
 		setSalario('');
 	};
-	const [tableDeudasAnalista, setTableDeudasAnalista] = useState<
-		DataDeudasAnalista[]
-	>([]);
+
 	const [sumValorCuotaNoIncluidas, setSumValorCuotaNoIncluidas] = useState(0);
 	const getDeudas = async () => {
 		try {
@@ -121,7 +111,6 @@ const ModalRRHH: React.FC<ModalProps> = ({
 					`${API_IP}/api/SolicitudesDeudas/solicitud?id=${idSolicitud}&tipo=true`
 				)
 				.then((data: AxiosResponse<DataDeudasAnalista[]>) => {
-					setTableDeudasAnalista(data.data);
 					const sumValorCuotaNoIncluidas = data.data
 						.filter((deuda) => deuda.incluir === 'No')
 						.reduce((acc, deuda) => acc + deuda.valorCuota, 0);
@@ -136,7 +125,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 	}, []);
 	const handleGuardar = async () => {
 		try {
-			let newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
+			const newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
 			const data = {
 				empresa: getValues('empresa'),
 				antiguedad: getValues('antiguedad'),
@@ -151,15 +140,11 @@ const ModalRRHH: React.FC<ModalProps> = ({
 				...formData,
 				...data,
 			};
-			const response = await axios.patch(
-				API_IP + '/api/Solicitudes/' + idSolicitud,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
+			await axios.patch(API_IP + '/api/Solicitudes/' + idSolicitud, formData, {
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
 
 			toast.success('Solicitud actualizada con exito');
 			setTimeout(() => {

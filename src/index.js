@@ -4,7 +4,6 @@ import './index.css';
 import Login from './Login';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Principal from './Principal';
-import NuevaSlt from './NuevaSlt';
 import Usuarios from './Usuarios';
 import Conocenos from './Conocenos';
 import NuevaSlt2 from './pages/NuevaSlt/NuevaSlt';
@@ -31,7 +30,7 @@ root.render(
 			<Route exact path="/Login2" element={<Login />} />
 			<Route exact path="/Principal" element={<Principal />} />
 			<Route exact path="/nueva-solicitud" element={<NuevaSlt2 />} />
-			<Route exact path="/nueva-solicitud/:ids" element={<NuevaSlt />} />
+			<Route exact path="/nueva-solicitud/:id" element={<NuevaSlt2 />} />
 			<Route exact path="/Usuarios" element={<Usuarios />} />
 			<Route exact path="/Conocenos" element={<Conocenos />} />
 			<Route exact path="/Revision" element={<RRHH />} />

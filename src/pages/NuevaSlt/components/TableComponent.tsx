@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTable, Column } from 'react-table';
-import { formatCurrency, formatNumber } from '../../../functions';
+import { formatNumber } from '../../../functions';
 
 export type DataAmortizar = {
 	id: string;

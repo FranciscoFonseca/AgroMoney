@@ -1,10 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button/Button';
 import imagenLogin from '../../images/agromoney.png';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import ModalSolicitud from './ModalSolicitud';
+import { ToastContainer } from 'react-toastify';
 
 const HomeScreen = (): JSX.Element => {
 	const navigate = useNavigate();
+	const [isOpen, setIsOpen] = useState(false);
+
+	const toggleModal = () => {
+		setIsOpen(!isOpen);
+	};
+
 	useEffect(() => {
 		document.body.style.backgroundImage = 'url(/fondoAgro.jpg)';
 		document.body.style.backgroundSize = 'auto 100%';
@@ -18,33 +26,48 @@ const HomeScreen = (): JSX.Element => {
 	}, []);
 
 	return (
-		<div className="flex flex-col justify-center items-center w-full h-[90vh] gap-y-8">
-			<img className="imagen-login" src={imagenLogin} alt="Imagen de login" />
+		<>
+		<ToastContainer />
+			<ModalSolicitud isOpen={isOpen} closeModal={toggleModal} />
+			<div className="flex flex-col justify-center items-center w-full h-[90vh] gap-y-8">
+				<img className="imagen-login" src={imagenLogin} alt="Imagen de login" />
 
-			<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap justify-center items-end">
-				<div className="flex flex-col w-48">
-					<Button
-						customClassName="bg-green-700 font-semibold text-white h-24 w-48"
-						onClick={() => {
-							navigate('/nueva-solicitud');
-						}}
-					>
-						Nueva Solicitud
-					</Button>
-				</div>
-				<div className="flex flex-col w-48 items-center gap-y-1">
-					<h1>¿ Ya eres Cliente ?</h1>
-					<Button
-						customClassName="bg-green-700 font-semibold text-white h-24 w-48"
-						onClick={() => {
-							navigate('/Login');
-						}}
-					>
-						Inicio de Sesión
-					</Button>
+				<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap justify-center items-end">
+					<div className="flex flex-col w-48">
+						<Button
+							customClassName="bg-green-700 font-semibold text-white h-24 w-48"
+							onClick={() => {
+								navigate('/nueva-solicitud');
+							}}
+						>
+							Nueva Solicitud
+						</Button>
+					</div>
+					<div className="flex flex-col w-48">
+						<Button
+							customClassName="bg-green-700 font-semibold text-white h-24 w-48"
+							onClick={() => {
+								// navigate('/nueva-solicitud');
+								toggleModal();
+							}}
+						>
+							Completar Solicitud
+						</Button>
+					</div>
+					<div className="flex flex-col w-48 items-center gap-y-1">
+						{/* <h1>¿ Ya eres Cliente ?</h1> */}
+						<Button
+							customClassName="bg-green-700 font-semibold text-white h-24 w-48"
+							onClick={() => {
+								navigate('/Login');
+							}}
+						>
+							Inicio de Sesión
+						</Button>
+					</div>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 };
 

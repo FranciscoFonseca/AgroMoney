@@ -610,6 +610,67 @@ const NuevaSlt2 = (): JSX.Element => {
 		setModalIsOpen(false);
 	};
 	const [comentarioAnalista, setComentarioAnalista] = useState<string>('');
+	const handleSubmitDeudasAnalista2 = () => {
+		//check  selected files
+		if (Object.keys(selectedFiles).length < 2) {
+			return toast.warn('Por favor adjunte los archivos solicitados');
+		}
+
+		toast.warn('Su solicitud esta siendo guardada, por favor espere.');
+		try {
+			const idSolicitudValue = id;
+			const modifiedArray = tableDeudasAnalista.map((item) => {
+				// Destructure the object to remove the "id" property
+				const { id, ...rest } = item;
+
+				// Add the "idSolicitud" property with the constant value
+				return {
+					...rest,
+					tipoCreada: true,
+					idSolicitud: idSolicitudValue,
+				};
+			});
+
+			const usuariologtoken = localStorage.getItem('token');
+			// axios
+			// .post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray)
+			// .then((response) => {
+			// 	// navigate('/Principal');
+			// });
+			axios
+				.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray, {
+					headers: {
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				})
+				.then((response) => {
+					// navigate('/Principal');
+				});
+
+			const newStatus = 'En Analisis';
+			let formData = getValues();
+			formData = {
+				...formData,
+				estatus: newStatus,
+				pasoAgroMoney: true,
+				excepcion: true,
+			};
+
+			axios
+				.patch(API_IP + '/api/Solicitudes/' + id, formData, {
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				})
+				.then((response) => {
+					handleUpload2();
+				});
+		} catch (error) {
+			toast.error('Error al guardar la solicitud, por favor intente de nuevo.');
+			console.log(error);
+		}
+	};
 	const handleSubmitDeudasAnalista = () => {
 		//check  selected files
 		if (Object.keys(selectedFiles).length < 2) {
@@ -647,7 +708,7 @@ const NuevaSlt2 = (): JSX.Element => {
 					// navigate('/Principal');
 				});
 
-			let newStatus = 'En Analisis';
+			const newStatus = 'En Analisis';
 			let formData = getValues();
 			formData = {
 				...formData,
@@ -1619,7 +1680,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								rules={{ required: true }}
 								render={({ field: { value, onChange } }) => (
 									<TextInput
-										label="Referencia Laboral"
+										label="Referencia Familiar"
 										disabled
 										{...register('referencia2')}
 									/>
@@ -1633,7 +1694,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								rules={{ required: true }}
 								render={({ field: { value, onChange } }) => (
 									<TextInput
-										label="Numero de Referencia Laboral"
+										label="Numero de Referencia Familiar"
 										disabled
 										{...register('noReferencia2')}
 									/>
@@ -1733,6 +1794,13 @@ const NuevaSlt2 = (): JSX.Element => {
 										onClick={() => handleSubmitDeudasAnalista()}
 									>
 										Salvar
+									</Button>
+									<Button
+										type="button"
+										customClassName={clsx('font-semibold text-white', 'bg-green-700 ')}
+										onClick={() => handleSubmitDeudasAnalista2()}
+									>
+										Salvar como Excepción
 									</Button>
 									<Button
 										type="button"

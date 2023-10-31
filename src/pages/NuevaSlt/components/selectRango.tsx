@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 
 interface SelectRangoProps
@@ -16,6 +16,7 @@ interface SelectRangoProps
 	register: any;
 	step: number;
 	ignoreDecimals?: boolean;
+	meses?: boolean
 }
 
 const SelectRango = (
@@ -27,6 +28,7 @@ const SelectRango = (
 		register,
 		step,
 		ignoreDecimals = false,
+		meses = false,
 		...props
 	}: SelectRangoProps,
 	ref: React.Ref<HTMLInputElement>
@@ -48,6 +50,7 @@ const SelectRango = (
 			<label className="mb-2 inline-block text-neutral-700">
 				{label}: {watchMonto ? watchMonto : Number(0)}
 				{ignoreDecimals ? '' : '.00'}
+				{meses && ' meses' }
 			</label>
 			<Controller
 				name="Monto"
@@ -61,7 +64,7 @@ const SelectRango = (
 						max={montoRange.max}
 						{...register}
 						onChange={handleOnChange}
-						className="transparent h-1.5 w-full cursor-pointer appearance-none rounded-lg border-transparent bg-neutral-200"
+						className="transparent h-1.5 w-full cursor-pointer appearance-none rounded-lg border-transparent bg-neutral-200 mt-4 "
 					/>
 				)}
 			/>

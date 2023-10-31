@@ -70,6 +70,8 @@ export interface FormularioSolicitudes {
 	telConyuge?: string;
 	relacionReferencia1?: string;
 	relacionReferencia2?: string;
+	excepcion?: boolean;
+	habilitadoExcepcion?: boolean;
 }
 const estatusSolicitud = [
 	{ value: 'Nueva', label: 'Nueva' },
@@ -79,7 +81,6 @@ const estatusSolicitud = [
 	{ value: 'Cancelada', label: 'Cancelada' },
 	{ value: 'Finalizada', label: 'Finalizada' },
 ];
-
 
 export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	idSolicitud: 0,
@@ -152,4 +153,6 @@ export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	telConyuge: '',
 	relacionReferencia1: '',
 	relacionReferencia2: '',
+	excepcion: false,
+	habilitadoExcepcion: false,
 };

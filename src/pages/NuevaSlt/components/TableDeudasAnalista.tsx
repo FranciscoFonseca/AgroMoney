@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { FaTrash } from 'react-icons/fa';
 import { useTable, Column } from 'react-table';
-import { formatCurrency, formatCurrency2 } from '../../../functions';
+import { formatCurrency2 } from '../../../functions';
 
 export type DataDeudasAnalista = {
 	id: string;
@@ -58,8 +58,7 @@ const TableComponentDeudasAnalista: React.FC<
 		useTable({ columns, data });
 
 	const handleCellRender = (cell: any) => {
-		if (typeof cell.value === 'number')
-			return formatCurrency2(cell.value);
+		if (typeof cell.value === 'number') return formatCurrency2(cell.value);
 		return cell.render('Cell');
 	};
 

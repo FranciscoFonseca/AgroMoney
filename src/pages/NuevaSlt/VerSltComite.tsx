@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import API_IP from '../../config';
 import 'react-datepicker/dist/react-datepicker.css';
 import Button from '../../components/Button/Button';
@@ -26,6 +26,7 @@ import { Usuario } from '../../tipos/Usuario';
 import DisplayField from '../../components/DisplayField/DisplayField';
 import ModalRechazarAprobar from './components/ModalRechazarAprobar';
 import { handleDownloadReporteOficial } from '../../adjuntos/AddTextToPDF';
+import ModalHabilitar from './components/ModalHabilitar';
 
 const VerSltComite = (): JSX.Element => {
 	const { id } = useParams();
@@ -190,10 +191,10 @@ const VerSltComite = (): JSX.Element => {
 		axios
 			.get(API_IP + '/api/Solicitudes/' + id)
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
-				if(data.status === 404){
+				if (data.status === 404) {
 					return navigate('/Login');
 				}
-				if(data.status === 401){
+				if (data.status === 401) {
 					return navigate('/Login');
 				}
 				const newFormulario: FormularioSolicitudes = {
@@ -207,7 +208,6 @@ const VerSltComite = (): JSX.Element => {
 			.catch((error) => {
 				console.log('error');
 				console.log(error);
-			
 			});
 		axios
 			.get(`${API_IP}/api/SolicitudesDeudas/solicitud?id=${id}&tipo=false`)
@@ -225,8 +225,13 @@ const VerSltComite = (): JSX.Element => {
 		fetchDocumentMetadataByAssociatedId(Number(id)).then((documentMetadata) => {
 			setDocumentMetadata(documentMetadata);
 		});
+
+		axios.get(`${API_IP}/api/Usuarios/esLider`).then((data) => {
+			setEsLider(data.data);
+		});
 	}, []);
 
+	const [esLider, setEsLider] = useState<string>('false');
 	const formatCurrency = (value: number | string): string => {
 		const formatter = new Intl.NumberFormat('en-US');
 		const currencySymbol = 'L';
@@ -238,40 +243,6 @@ const VerSltComite = (): JSX.Element => {
 		const formattedValue = newValue.toFixed(2);
 		const formattedCurrency = formatter.format(Number(formattedValue));
 		return `${currencySymbol} ${formattedCurrency}`;
-	};
-
-	const handleGenerarTabla = () => {
-		const data: DataAmortizar[] = [];
-		let saldoInicial = Number(formularioSolicitudes.monto);
-		let saldoFinal = 0;
-		let interesAcumulativo = 0;
-		let pagoProgramado = 0;
-		let interes = 0;
-		let capital = 0;
-		let fechaPago = moment().format('DD/MM/YYYY');
-		for (let i = 1; i <= Number(formularioSolicitudes.plazo); i++) {
-			interes = saldoInicial * 0.0125;
-			capital = formularioSolicitudes.cuota_Maxima - interes;
-			saldoFinal = saldoInicial - capital;
-			interesAcumulativo += interes;
-			pagoProgramado = formularioSolicitudes.cuota_Maxima;
-			data.push({
-				id: i.toString(),
-				fechaDePago: fechaPago,
-				saldoInicial: Number(saldoInicial.toFixed(2)),
-				pagoProgramado: Number(pagoProgramado.toFixed(2)),
-				pagoTotal: Number(pagoProgramado.toFixed(2)),
-				capital: Number(capital.toFixed(2)),
-				interes: Number(interes.toFixed(2)),
-				saldoFinal: Number(saldoFinal.toFixed(2)),
-				interesAcumulativo: Number(interesAcumulativo.toFixed(2)),
-			});
-			saldoInicial = saldoFinal;
-			fechaPago = moment(fechaPago, 'DD/MM/YYYY')
-				.add(1, 'months')
-				.format('DD/MM/YYYY');
-		}
-		setAmortizarData(data);
 	};
 
 	const handleAgregarDeuda = (data: DataDeudas) => {
@@ -377,7 +348,7 @@ const VerSltComite = (): JSX.Element => {
 			id: usuariolog?.idUsuario,
 			nombre: usuariolog?.nombre + ' ' + usuariolog?.apellido,
 			telefono: usuariolog?.telefono,
-			voto: 'Aprobado',
+			voto: 'Rechazado',
 			fecha: moment().format('DD/MM/YYYY hh:mm'),
 		});
 
@@ -400,6 +371,7 @@ const VerSltComite = (): JSX.Element => {
 			});
 	};
 	const [modalIsOpen, setModalIsOpen] = useState(false);
+	const [modalIsOpen2, setModalIsOpen2] = useState(false);
 	const [modalText, setModalText] = useState('');
 	const openModal = () => {
 		setModalIsOpen(true);
@@ -407,8 +379,14 @@ const VerSltComite = (): JSX.Element => {
 	const closeModal = () => {
 		setModalIsOpen(false);
 	};
+	const openModal2 = () => {
+		setModalIsOpen2(true);
+	};
+	const closeModal2 = () => {
+		setModalIsOpen2(false);
+	};
 	const handleModal = (token: string) => {
-		let user = usuariolog?.telefono;
+		const user = usuariolog?.telefono;
 		axios
 			.post(`${API_IP}/api/Usuarios/FortiToken?telefono=${user}&token=${token}`)
 			.then((response) => {
@@ -427,6 +405,7 @@ const VerSltComite = (): JSX.Element => {
 			});
 	};
 	const handleImprimir = () => {
+		
 		axios
 			.get(`${API_IP}/api/Solicitudes/EncryptNumber/${id}`)
 			.then((data: AxiosResponse<any>) => {
@@ -437,6 +416,27 @@ const VerSltComite = (): JSX.Element => {
 				);
 			});
 	};
+	const handleHabilitar = () => {
+		const data = {
+			...formularioSolicitudes,
+			habilitadoExcepcion: true,
+		};
+		axios
+			.patch(
+				`${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
+				data
+			)
+			.then((response) => {
+				// navigate('/Principal');
+				//location.reload();
+				toast.success('Solicitud Habilitada');
+				location.reload();
+			})
+			.catch((error) => {
+				console.log(error);
+				toast.error('Error al habilitar la solicitud');
+			});
+	};
 	return (
 		<>
 			<ModalRechazarAprobar
@@ -444,6 +444,12 @@ const VerSltComite = (): JSX.Element => {
 				closeModal={closeModal}
 				titleText={modalText}
 				handler={handleModal}
+				flagExepcion={formularioSolicitudes.excepcion}
+			/>
+			<ModalHabilitar
+				isOpen={modalIsOpen2}
+				closeModal={closeModal2}
+				handler={handleHabilitar}
 			/>
 
 			<LayoutCustom>
@@ -452,33 +458,53 @@ const VerSltComite = (): JSX.Element => {
 						<p className="text-xl font-semibold flex-grow text-center">
 							Precalificado
 						</p>
-						{formularioSolicitudes.estatus === 'En Comite' && (
-							<div className="absolute end-2 gap-2 bg-gray-100">
-								<Button
-									type="button"
-									customClassName="bg-red-700 text-white font-semibold "
-									onClick={() => {
-										setModalText('Rechazar');
-										openModal();
-									}}
-									// onClick={handleRechazar}
-								>
-									Rechazar
-								</Button>
-								<Button
-									type="button"
-									customClassName="bg-green-700 text-white font-semibold ml-2"
-									// onClick={openModal}
-									// onClick={handleAprobar}
-									onClick={() => {
-										setModalText('Aprobar');
-										openModal();
-									}}
-								>
-									Aprobar
-								</Button>
-							</div>
-						)}
+						{formularioSolicitudes.estatus === 'En Comite' &&
+							formularioSolicitudes.excepcion &&
+							formularioSolicitudes.habilitadoExcepcion && (
+								<div className="absolute end-2 gap-2 bg-gray-100">
+									<Button
+										type="button"
+										customClassName="bg-red-700 text-white font-semibold "
+										onClick={() => {
+											setModalText('Rechazar');
+											openModal();
+										}}
+										// onClick={handleRechazar}
+									>
+										Rechazar
+									</Button>
+									<Button
+										type="button"
+										customClassName="bg-green-700 text-white font-semibold ml-2"
+										// onClick={openModal}
+										// onClick={handleAprobar}
+										onClick={() => {
+											setModalText('Aprobar');
+											openModal();
+										}}
+									>
+										Aprobar
+									</Button>
+								</div>
+							)}
+						{formularioSolicitudes.estatus === 'En Comite' &&
+							formularioSolicitudes.excepcion &&
+							!formularioSolicitudes.habilitadoExcepcion &&
+							esLider === 'True' && (
+								<div className="absolute end-2 gap-2 bg-gray-100">
+									<Button
+										type="button"
+										customClassName="bg-blue-700 text-white font-semibold ml-2"
+										// onClick={openModal}
+										// onClick={handleAprobar}
+										onClick={() => {
+											openModal2();
+										}}
+									>
+										Habilitar
+									</Button>
+								</div>
+							)}
 						{formularioSolicitudes.estatus === 'Aprobado' && (
 							<div className="absolute end-2 gap-2 bg-gray-100">
 								<Button
@@ -666,14 +692,20 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 						<div className="flex flex-col w-full">
 							<DisplayField
-								label="Dependientes"
-								text={formularioSolicitudes.dependientes.toString()}
+								label="Profesion Cónyuge"
+								text={formularioSolicitudes.profesionConyuge}
 							/>
 						</div>
 						<div className="flex flex-col w-full">
 							<DisplayField
-								label="Profesion Cónyuge"
-								text={formularioSolicitudes.profesionConyuge}
+								label="Teléfono Cónyuge"
+								text={formularioSolicitudes.telConyuge}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<DisplayField
+								label="Dependientes"
+								text={formularioSolicitudes.dependientes.toString()}
 							/>
 						</div>
 					</div>
@@ -756,6 +788,46 @@ const VerSltComite = (): JSX.Element => {
 						) : (
 							<> </>
 						)}
+					</div>
+					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+						<div className="flex flex-row w-full">
+							<DisplayField
+								label="Referencia Personal"
+								text={formularioSolicitudes.referencia1}
+							/>
+						</div>
+						<div className="flex flex-row w-full">
+							<DisplayField
+								label="Numero de Referencia Personal"
+								text={formularioSolicitudes.noReferencia1}
+							/>
+						</div>
+						<div className="flex flex-row w-full">
+							<DisplayField
+								label="Relación Referencia Personal"
+								text={formularioSolicitudes.relacionReferencia1}
+							/>
+						</div>
+					</div>
+					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+						<div className="flex flex-row w-full">
+							<DisplayField
+								label="Referencia Familiar"
+								text={formularioSolicitudes.referencia2}
+							/>
+						</div>
+						<div className="flex flex-row w-full">
+							<DisplayField
+								label="Numero de Referencia Familiar"
+								text={formularioSolicitudes.noReferencia2}
+							/>
+						</div>
+						<div className="flex flex-row w-full">
+							<DisplayField
+								label="Relación Referencia Familiar"
+								text={formularioSolicitudes.relacionReferencia2}
+							/>
+						</div>
 					</div>
 
 					<div className="flex gap-2 w-full flex-wrap justify-center">
@@ -853,7 +925,7 @@ const VerSltComite = (): JSX.Element => {
 							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 								<div className="flex flex-col w-full">
 									<DisplayField
-										label="Comentarios RRHH"
+										label="Comentarios Excepción"
 										text={formularioSolicitudes.comentariosExcepcion}
 									/>
 								</div>

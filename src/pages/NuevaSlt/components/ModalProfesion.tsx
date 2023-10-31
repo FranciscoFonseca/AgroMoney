@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import TextInput from '../../../components/TextInput/TextInput';
-import { get, set } from 'lodash';
 import Button from '../../../components/Button/Button';
-import { Controller } from 'react-hook-form';
-import DatePicker from 'react-datepicker';
 import axios, { AxiosResponse } from 'axios';
 import API_IP from '../../../config';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { DataDeudasAnalista } from './TableDeudasAnalista';
 
 Modal.setAppElement('#root');
 interface ModalProps {
@@ -23,8 +18,6 @@ export interface Profesion {
 }
 
 const ModalProfesion: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-	const navigate = useNavigate();
-
 	const [profesiones, setProfesiones] = useState<Profesion[]>([]);
 	const [profesionStr, setProfesionStr] = useState('');
 

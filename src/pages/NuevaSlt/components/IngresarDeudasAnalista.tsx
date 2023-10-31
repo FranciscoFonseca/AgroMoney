@@ -1,3 +1,4 @@
+import React from 'react';
 import TextInput from '../../../components/TextInput/TextInput';
 import Button from '../../../components/Button/Button';
 import Select from '../../../components/Select/Select';
@@ -17,11 +18,7 @@ import { BotonesAdjuntarOptions } from './BotonesAdjuntar';
 import {
 	FaEye,
 	FaFileDownload,
-	FaFileExcel,
-	FaFilePdf,
-	FaMoneyBill,
 } from 'react-icons/fa';
-import { set } from 'lodash';
 interface IngresarDeudasAnalistaProps {
 	data: DataDeudasAnalista[];
 	id: string;
@@ -112,7 +109,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 		.reduce((sum, debt) => sum + debt.valorCuota, 0);
 
 	// Total sum of valorCuota for both 'Si' and 'No'
-	const totalSumValorCuota = sumValorCuotaSi + sumValorCuotaNo;
+	// const totalSumValorCuota = sumValorCuotaSi + sumValorCuotaNo;
 
 	// Calculate the sum of saldoActual for debts with incluir set to 'Si'
 	const sumSaldoActualSi = data
@@ -125,7 +122,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 		.reduce((sum, debt) => sum + debt.saldoActual, 0);
 
 	// Total sum of saldoActual for both 'Si' and 'No'
-	const totalSumSaldoActual = sumSaldoActualSi + sumSaldoActualNo;
+	// const totalSumSaldoActual = sumSaldoActualSi + sumSaldoActualNo;
 	// Inside the IngresarDeudasAnalista component
 	const [selectedButton, setSelectedButton] =
 		useState<BotonesAdjuntarOptions | null>(null);

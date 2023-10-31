@@ -1,7 +1,7 @@
+import React from 'react';
 import TextInput from '../../../components/TextInput/TextInput';
 import Button from '../../../components/Button/Button';
 import Select from '../../../components/Select/Select';
-import { FaTrash } from 'react-icons/fa';
 import TableComponentDeudas, { DataDeudas } from './TableDeudas';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';

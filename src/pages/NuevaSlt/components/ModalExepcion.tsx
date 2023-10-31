@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-modal';
 import TextInput from '../../../components/TextInput/TextInput';
-import { get, set } from 'lodash';
 import Button from '../../../components/Button/Button';
-import { Controller } from 'react-hook-form';
-import DatePicker from 'react-datepicker';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import API_IP from '../../../config';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { DataDeudasAnalista } from './TableDeudasAnalista';
 
 Modal.setAppElement('#root');
 interface ModalProps {
@@ -24,16 +20,10 @@ interface ModalProps {
 const ModalExepcion: React.FC<ModalProps> = ({
 	isOpen,
 	closeModal,
-	nombre = '',
-	cuotaFormulario = 0,
 	formMethods,
 	idSolicitud = 0,
 }) => {
 	const {
-		register,
-		handleSubmit,
-		watch,
-		formState: { errors },
 		getValues,
 	} = formMethods;
 
@@ -52,7 +42,7 @@ const ModalExepcion: React.FC<ModalProps> = ({
 				...formData,
 				...data,
 			};
-			const response = await axios.patch(
+			await axios.patch(
 				API_IP + '/api/Solicitudes/' + idSolicitud,
 				formData,
 				{
@@ -82,7 +72,7 @@ const ModalExepcion: React.FC<ModalProps> = ({
 				...formData,
 				...data,
 			};
-			const response = await axios.patch(
+			await axios.patch(
 				API_IP + '/api/Solicitudes/' + idSolicitud,
 				formData,
 				{

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import API_IP from '../../config';
 import TextInput from '../../components/TextInput/TextInput';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -36,9 +36,13 @@ import DatePicker from 'react-datepicker';
 import { minMax } from '../../tipos/shared';
 import { DataDeudas } from './components/TableDeudas';
 import LayoutCustom from '../../components/Navbar/Layout';
-import BotonesAdjuntar from './components/BotonesAdjuntar';
+import BotonesAdjuntar, {
+	BotonesAdjuntarOptions,
+	arrayBotones,
+	optionMappings,
+} from './components/BotonesAdjuntar';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { formatNumber } from '../../functions';
 import clsx from 'clsx';
 import { Profesion } from './components/ModalProfesion';
@@ -52,10 +56,13 @@ const NuevaSlt2 = (): JSX.Element => {
 		watch,
 		getValues,
 		trigger,
+		reset,
 		formState: { errors },
 	} = useForm<FormularioSolicitudes>({
 		defaultValues: FormularioSolicitudesDefault,
 	});
+	const { id } = useParams();
+
 	const [selectedFiles, setSelectedFiles] = useState<Record<string, File[]>>({});
 	const [amortizarData, setAmortizarData] = useState<DataAmortizar[]>([]);
 	const [destinos, setDestinos] = useState<any[]>([]);
@@ -86,11 +93,42 @@ const NuevaSlt2 = (): JSX.Element => {
 		min: 0,
 		max: 250000,
 	};
+
+	// useEffect based on id
+
+	useEffect(() => {
+		if (id) {
+			axios
+				.get(`${API_IP}/api/Solicitudes/CompletarSolicitud/${id}`)
+				.then((response) => {
+					//reset the form with the data from the response
+
+					reset(response.data);
+					//bookmark
+					setValue('tipoDePersona', 'Natural');
+					const selected = destinos.find(
+						(item: any) => item.destino === response.data.destino_Credito
+					);
+					if (selected) {
+						setValue('producto', selected.producto);
+						setMontoRange({
+							min: selected.minimo,
+							max: selected.maximo,
+						});
+						setPlazoRange({
+							min: 1,
+							max: selected.plazo,
+						});
+						setValue('plazo', 1);
+						setValue('destino_Credito', selected.destino);
+					}
+				});
+		}
+	}, [id]);
+
 	const navigate = useNavigate();
 	const locStorage = localStorage.getItem('logusuario');
 	const handleUpload = (response: any) => {
-		// console.log('response', response.data.idSolicitud);
-		// console.log('form', getValues());
 		const formData = new FormData();
 		if (selectedFiles) {
 			for (const key in selectedFiles) {
@@ -98,26 +136,20 @@ const NuevaSlt2 = (): JSX.Element => {
 					const files = selectedFiles[key];
 					for (let i = 0; i < files.length; i++) {
 						const file = files[i];
-						//get mimetype
 						const mimeType = file.type;
 						const fileNameParts = file.name.split('.');
-
-						// The last part will be the file extension
 						const fileExtension = fileNameParts[fileNameParts.length - 1];
 						const newFileName = `${key}-${i + 1}.${fileExtension}`; // Construct new filename
-						// Create a new File object with updated filename
 						const modifiedFile = new File([file], newFileName, {
 							type: file.type,
 							lastModified: file.lastModified,
 						});
-
 						formData.append('files', modifiedFile);
 					}
 				}
 			}
 		}
 		const usuariologtoken = localStorage.getItem('token');
-
 		axios
 			.post(
 				`${API_IP}/api/Attachments?associatedId=${response.data.idSolicitud || 0}`,
@@ -132,23 +164,16 @@ const NuevaSlt2 = (): JSX.Element => {
 			.then((response) => {
 				toast.success('Solicitud Creada Exitosamente.');
 				navigate('/Principal');
-
-				// Handle success
 			})
 			.catch((error) => {
 				console.error('API Error:', error);
-				// Handle error
 			});
 	};
 
 	const handleSolicitud = (response: any) => {
-		// console.log('response', response.data.idSolicitud);
 		const idSolicitudValue = response.data.idSolicitud;
 		const modifiedArray = tableDeudas.map((item) => {
-			// Destructure the object to remove the "id" property
 			const { id, ...rest } = item;
-
-			// Add the "idSolicitud" property with the constant value
 			return {
 				...rest,
 				tipoCreada: false,
@@ -156,29 +181,87 @@ const NuevaSlt2 = (): JSX.Element => {
 			};
 		});
 		const usuariologtoken = localStorage.getItem('token');
-
-		// axios
-		// 	.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray)
-		// 	.then((response) => {
-		// 		//navigate('/Principal');
-		// 	});
+		axios.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray, {
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${usuariologtoken}`,
+			},
+		});
+	};
+	const handleUpload2 = (idSolicitud: any) => {
+		const formData = new FormData();
+		if (selectedFiles) {
+			for (const key in selectedFiles) {
+				if (Object.prototype.hasOwnProperty.call(selectedFiles, key)) {
+					const files = selectedFiles[key];
+					for (let i = 0; i < files.length; i++) {
+						const file = files[i];
+						const mimeType = file.type;
+						const fileNameParts = file.name.split('.');
+						const fileExtension = fileNameParts[fileNameParts.length - 1];
+						const newFileName = `${key}-${i + 1}.${fileExtension}`; // Construct new filename
+						const modifiedFile = new File([file], newFileName, {
+							type: file.type,
+							lastModified: file.lastModified,
+						});
+						formData.append('files', modifiedFile);
+					}
+				}
+			}
+		}
+		const usuariologtoken = localStorage.getItem('token');
 		axios
-			.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray, {
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${usuariologtoken}`,
-				},
-			})
+			.post(
+				`${API_IP}/api/Attachments?associatedId=${idSolicitud || 0}`,
+				formData,
+				{
+					headers: {
+						'Content-Type': 'multipart/form-data',
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				}
+			)
 			.then((response) => {
-				//navigate('/Principal');
+				toast.success('Solicitud Creada Exitosamente.');
+				navigate('/Principal');
+			})
+			.catch((error) => {
+				console.error('API Error:', error);
 			});
 	};
 
-	const onSubmit: SubmitHandler<FormularioSolicitudes> = async (formData) => {
+	const handleSolicitud2 = (idSolicitudValue: any) => {
+		const modifiedArray = tableDeudas.map((item) => {
+			const { id, ...rest } = item;
+			return {
+				...rest,
+				tipoCreada: false,
+				idSolicitud: idSolicitudValue,
+			};
+		});
+		const usuariologtoken = localStorage.getItem('token');
+		axios.post(`${API_IP}/api/SolicitudesDeudas`, modifiedArray, {
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${usuariologtoken}`,
+			},
+		});
+	};
+	const onSubmitParcial = async () => {
 		try {
-			trigger();
-			if (!(Object.keys(errors).length === 0)) {
-				return;
+			const formData = getValues();
+
+			if (formData.telefono.length < 8) {
+				return toast.error('El numero de telefono debe tener al menos 8 digitos');
+			}
+			if (formData.dni.length < 11) {
+				return toast.error('El numero de cedula debe tener al menos 11 digitos');
+			}
+			if (formData.nombre === '') {
+				return toast.error('El nombre es requerido');
+			}
+			if (formData.apellido === '') {
+				return toast.error('El apellido es requerido');
 			}
 			setValue('tipoDePersona', 'Natural');
 			setValue('usuario_Registro', 1);
@@ -187,7 +270,92 @@ const NuevaSlt2 = (): JSX.Element => {
 			const telEmpresa = formData.telEmpresa;
 			const dni = formData.dni;
 			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-			let newForm2 = getValues();
+			const newForm2 = getValues();
+			const cleancharsfromtelefono = telefono.replace(/[^0-9]/g, '');
+			const cleancharsfromteljefe = teljefe.replace(/[^0-9]/g, '');
+			const cleancharsfromtelEmpresa = telEmpresa.replace(/[^0-9]/g, '');
+			const cleancharsfromdni = dni.replace(/[^0-9]/g, '');
+
+			console.log('cleancharsfromtelEmpresa', cleancharsfromtelEmpresa);
+			const newForm = {
+				...newForm2,
+				telefono: cleancharsfromtelefono,
+				telJefeIn: cleancharsfromteljefe,
+				telEmpresa: cleancharsfromtelEmpresa,
+				dni: cleancharsfromdni,
+				estatus: 'En Proceso',
+			};
+
+			if (locStorage) {
+				//const usuariolog = JSON.parse(locStorage);
+				const usuariolog = JSON.parse(locStorage);
+				setValue('usuario_Registro', usuariolog.id);
+				setValue('idUsuario', usuariolog.id);
+				const usuariologtoken = localStorage.getItem('token');
+
+				const response = await axios.post(API_IP + '/api/Solicitudes/', newForm, {
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				});
+				if (response.status === 201) {
+					toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+					handleUpload(response);
+
+					handleSolicitud(response);
+				}
+			} else {
+				const usuariologtoken = localStorage.getItem('token');
+				await axios
+					.get(`${API_IP}/api/Solicitudes/BuscarPorNumero/${newForm.telefono}`, {
+						headers: {
+							Authorization: `Bearer ${usuariologtoken}`,
+						},
+					})
+					.then(async (data: any) => {
+						if (data.status === 204) {
+							const response = await axios.post(
+								API_IP + '/api/Solicitudes/',
+								newForm,
+								{
+									headers: {
+										'Content-Type': 'application/json',
+										Authorization: `Bearer ${usuariologtoken}`,
+									},
+								}
+							);
+							if (response.status === 201) {
+								toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+								handleUpload(response);
+								handleSolicitud(response);
+							}
+						} else {
+							return toast.error(
+								'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
+							);
+						}
+					});
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+	const onSubmit: SubmitHandler<FormularioSolicitudes> = async (formData) => {
+		try {
+			trigger();
+			if (!(Object.keys(errors).length === 0)) {
+				return;
+			}
+
+			setValue('tipoDePersona', 'Natural');
+			setValue('usuario_Registro', 1);
+			const telefono = formData.telefono;
+			const teljefe = formData.telJefeIn;
+			const telEmpresa = formData.telEmpresa;
+			const dni = formData.dni;
+			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+			const newForm2 = getValues();
 			const cleancharsfromtelefono = telefono.replace(/[^0-9]/g, '');
 			const cleancharsfromteljefe = teljefe.replace(/[^0-9]/g, '');
 			const cleancharsfromtelEmpresa = telEmpresa.replace(/[^0-9]/g, '');
@@ -221,63 +389,49 @@ const NuevaSlt2 = (): JSX.Element => {
 					handleSolicitud(response);
 				}
 			} else {
-				// await fetch(
-				// 	`${API_IP}/api/Solicitudes/BuscarPorNumero/${formData.telefono}`
-				// ).then(async (data: any) => {
-				// 	if (data.status === 204) {
-				// 		const response = await axios.post(
-				// 			 API_IP + '/api/Solicitudes/',
-				// 			formData,
-				// 			{
-				// 				headers: {
-				// 					'Content-Type': 'application/json',
-				// 				},
-				// 			}
-				// 		);
-				// 		if (response.status === 201) {
-				// 			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-				// 			handleUpload(response);
-				// 			handleSolicitud(response);
-				// 			//Fnavigate('/Principal');
-				// 		}
-				// 	} else {
-				// 		return toast.error(
-				// 			'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
-				// 		);
-				// 	}
-				// });
 				const usuariologtoken = localStorage.getItem('token');
-
-				await axios
-					.get(`${API_IP}/api/Solicitudes/BuscarPorNumero/${newForm.telefono}`, {
-						headers: {
-							Authorization: `Bearer ${usuariologtoken}`,
-						},
-					})
-					.then(async (data: any) => {
-						if (data.status === 204) {
-							const response = await axios.post(
-								API_IP + '/api/Solicitudes/',
-								newForm,
-								{
-									headers: {
-										'Content-Type': 'application/json',
-										Authorization: `Bearer ${usuariologtoken}`,
-									},
+				if (newForm.estatus === 'En Proceso') {
+					const newForm3 = {
+						...newForm,
+						estatus: 'Nueva',
+					};
+					axios
+						.patch(`${API_IP}/api/Solicitudes/CompletarSolicitud/${id}`, newForm3)
+						.then((response) => {
+							handleUpload2(id);
+							handleSolicitud2(id);
+						});
+				} else {
+					await axios
+						.get(`${API_IP}/api/Solicitudes/BuscarPorNumero/${newForm.telefono}`, {
+							headers: {
+								Authorization: `Bearer ${usuariologtoken}`,
+							},
+						})
+						.then(async (data: any) => {
+							if (data.status === 204) {
+								const response = await axios.post(
+									API_IP + '/api/Solicitudes/',
+									newForm,
+									{
+										headers: {
+											'Content-Type': 'application/json',
+											Authorization: `Bearer ${usuariologtoken}`,
+										},
+									}
+								);
+								if (response.status === 201) {
+									toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+									handleUpload(response);
+									handleSolicitud(response);
 								}
-							);
-							if (response.status === 201) {
-								toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-								handleUpload(response);
-								handleSolicitud(response);
-								//Fnavigate('/Principal');
+							} else {
+								return toast.error(
+									'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
+								);
 							}
-						} else {
-							return toast.error(
-								'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
-							);
-						}
-					});
+						});
+				}
 			}
 		} catch (error) {
 			console.log(error);
@@ -505,6 +659,12 @@ const NuevaSlt2 = (): JSX.Element => {
 	}
 
 	const handleGenerarTabla = () => {
+		if (watchMonto > montoRange.max) {
+			return toast.warn(
+				'El monto ingresado supera el monto maximo para este destino'
+			);
+		}
+
 		setStep(1);
 		const data: DataAmortizar[] = [];
 		let saldoInicial = Number(watchMonto);
@@ -549,9 +709,12 @@ const NuevaSlt2 = (): JSX.Element => {
 	useEffect(() => {
 		setValue('cuota_Maxima', cuota);
 	}, [cuota]);
-	function getYearsAndMonthsPassed(fromDate: Date): string {
+	function getYearsAndMonthsPassed(fromDate2: Date): string {
 		//validate if valid date
 		//validate Cannot read properties of null (reading 'getTime')
+		const fromDate = new Date(fromDate2);
+		console.log('fromDate', fromDate);
+
 		if (!fromDate) return '';
 
 		if (isNaN(fromDate.getTime())) {
@@ -580,6 +743,9 @@ const NuevaSlt2 = (): JSX.Element => {
 		}
 		return result;
 	}
+	const salvar = () => {
+		setStep(0);
+	};
 	const handleBotonAmortizarDisable = () => {
 		if (
 			watch('destino_Credito') === 'Seleccione un destino' ||
@@ -606,20 +772,25 @@ const NuevaSlt2 = (): JSX.Element => {
 		handlerTotalInteres();
 		handlerTotalPagar();
 		setAmortizarData([]);
-	}, 10);
+	}, 0);
 	const debouncedOnChangePlazo = debounce((e: any) => {
 		setValue('plazo', Number(e.target.value));
 		handlerTotalInteres();
 		handlerTotalPagar();
 		setAmortizarData([]);
-	}, 10);
+	}, 0);
 	const debouncedOnChangeMonto = debounce((e: any) => {
 		setValue('monto', Number(e.target.value));
 		handlerTotalInteres();
 		handlerTotalPagar();
 		setAmortizarData([]);
-	}, 10);
+	}, 0);
 
+	useEffect(() => {
+		handlerTotalInteres();
+		handlerTotalPagar();
+		setAmortizarData([]);
+	}, [watchMonto, watchSalario, watchPlazo]);
 	const handlerTotalInteres = () => {
 		const totalPago = cuota * Number(watchPlazo);
 		const totalInteres = totalPago - Number(watchMonto);
@@ -653,6 +824,10 @@ const NuevaSlt2 = (): JSX.Element => {
 		setTableDeudas(newTableDeudas);
 	};
 	const tipoDePersonaWatch = watch('tipoDePersona');
+	useEffect(() => {
+		console.log('tipoDePersonaWatch', tipoDePersonaWatch);
+	}, [tipoDePersonaWatch]);
+
 	useEffect(() => {
 		setValue('nombre', '');
 		setValue('segundoNombre', '');
@@ -714,6 +889,10 @@ const NuevaSlt2 = (): JSX.Element => {
 			}
 		}
 	};
+	function getOptionsByList(listName: string): BotonesAdjuntarOptions[] {
+		const optionIndices = optionMappings[listName] || [];
+		return optionIndices.map((index) => arrayBotones[index]);
+	}
 	return (
 		<>
 			<LayoutCustom>
@@ -724,6 +903,20 @@ const NuevaSlt2 = (): JSX.Element => {
 					<div className="border-b-2 w-full flex justify-center border-black">
 						<p className="text-xl font-semibold">Precalificado</p>
 					</div>
+					{watch('destino_Credito') !== 'Seleccione un destino' &&
+						watch('destino_Credito') !== '' && (
+							<div className="flex flex-row gap-2 w-full mb-2 flex-wrap sm:flex-nowrap">
+								{/* if there is a destino selected, show optionmappins from botonesAdjintar, and show the text from arrayBotones
+								 */}
+								<b className="text-xs mt-1 ml-2">
+									Para este destino necesitaras los siguientes documentos:
+								</b>
+
+								{getOptionsByList(watch('destino_Credito')).map((item) => (
+									<p className="text-xs mt-1 ml-2 text-red-600">{item.label}</p>
+								))}
+							</div>
+						)}
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-col w-full">
 							<Select
@@ -750,7 +943,7 @@ const NuevaSlt2 = (): JSX.Element => {
 						</div>
 					</div>
 					<div className="flex flex-row gap-2 gap-x-4 w-full flex-wrap sm:flex-nowrap">
-						<SelectRango
+						{/* <SelectRango
 							label="Monto"
 							montoRange={montoRange}
 							selectOnChange={debouncedOnChangeMonto}
@@ -758,20 +951,50 @@ const NuevaSlt2 = (): JSX.Element => {
 							register={register('monto')}
 							step={100}
 							disabled={step !== 0}
-						/>
-
-						<SelectRango
-							label="Plazo"
-							montoRange={plazoRange}
-							selectOnChange={debouncedOnChangePlazo}
-							control={control}
-							step={1}
-							register={register('plazo')}
-							ignoreDecimals
-							disabled={step !== 0}
-						/>
-
-						<SelectRango
+						/> */}
+						<div className="flex flex-col gap-2 w-full flex-wrap sm:flex-nowrap">
+							<Controller
+								name="monto"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Monto"
+										type="number"
+										max={montoRange.max}
+										disabled={step !== 0}
+										{...register('monto')}
+									/>
+								)}
+							/>
+							{montoRange && (
+								<p className="text-xs mt-1 ml-2 text-red-600">
+									El monto maximo para este destino es de{' '}
+									{formatCurrency(montoRange.max)}
+								</p>
+							)}
+						</div>
+						<div className="flex flex-col gap-2 w-full flex-wrap sm:flex-nowrap">
+							<SelectRango
+								label="Plazo"
+								montoRange={plazoRange}
+								selectOnChange={(e) => {
+									setValue('plazo', Number(e.target.value));
+								}}
+								control={control}
+								step={1}
+								register={register('plazo')}
+								ignoreDecimals
+								meses
+								disabled={step !== 0}
+							/>
+							{plazoRange && (
+								<p className="text-xs mt-1 ml-2 text-red-600">
+									El plazo maximo para este destino es de {plazoRange.max} meses
+								</p>
+							)}
+						</div>
+						{/* <SSelectRango
 							label="Salario"
 							montoRange={salarioRange}
 							selectOnChange={debouncedOnChangeSalario}
@@ -779,7 +1002,22 @@ const NuevaSlt2 = (): JSX.Element => {
 							step={100}
 							register={register('salario')}
 							disabled={step !== 0}
-						/>
+						/> */}
+						<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+							<Controller
+								name="salario"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Salario"
+										type="number"
+										disabled={step !== 0}
+										{...register('salario')}
+									/>
+								)}
+							/>
+						</div>
 					</div>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-col w-full">
@@ -940,7 +1178,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												label="Nombre"
+												label="Primer Nombre"
 												disabled={step !== 1}
 												{...register('nombre')}
 											/>
@@ -981,7 +1219,7 @@ const NuevaSlt2 = (): JSX.Element => {
 										render={({ field: { value, onChange } }) => (
 											<TextInput
 												disabled={step !== 1}
-												label="Apellido"
+												label="Primer Apellido"
 												{...register('apellido')}
 											/>
 										)}
@@ -1546,7 +1784,7 @@ const NuevaSlt2 = (): JSX.Element => {
 											/>
 										)}
 									/>
-									Soy Empleado de "Grupo Cadelga"
+									Soy Empleado de &quot;Grupo Cadelga&quot;
 								</div>
 								{watch('esCadelga') ? (
 									<>
@@ -1868,6 +2106,17 @@ const NuevaSlt2 = (): JSX.Element => {
 									/>
 								</div>
 							</div>
+							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+								<div className="flex flex-col w-full">
+									<Button
+										type="button"
+										onClick={() => salvar()}
+										customClassName="bg-green-700 font-semibold text-white"
+									>
+										Salvar
+									</Button>
+								</div>
+							</div>
 							<BotonesAdjuntar
 								destino={watch('destino_Credito')}
 								selectedFiles={selectedFiles}
@@ -1899,6 +2148,18 @@ const NuevaSlt2 = (): JSX.Element => {
 						>
 							Enviar
 						</Button>
+						{getValues('estatus') === 'En Proceso' && (
+							<Button
+								type="button"
+								customClassName="bg-blue-700 font-semibold text-white"
+								onClick={() => {
+									onSubmitParcial();
+								}}
+							>
+								Guardar Borrador
+							</Button>
+						)}
+
 						<Button
 							type="button"
 							customClassName="bg-green-700 font-semibold text-white"

@@ -163,7 +163,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 						cy="12"
 						r="10"
 						stroke="currentColor"
-						stroke-width="4"
+						strokeWidth="4"
 					></circle>
 					<path
 						className="opacity-75"
@@ -337,7 +337,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 								onClick={() => {
 									const empresa = getValues('empresa');
 									if (empresa && !empresas.includes(empresa)) {
-										let newEmpresas = [...empresas];
+										const newEmpresas = [...empresas];
 										newEmpresas.push(empresa);
 										setEmpresas(newEmpresas);
 									}
