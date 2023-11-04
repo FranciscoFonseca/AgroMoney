@@ -147,7 +147,7 @@ export const handleDownloadBac = async (form: any) => {
 	// Create a download link
 	const link = document.createElement('a');
 	link.href = URL.createObjectURL(blob);
-	link.download = 'F-BAC-Fórmula-De-Aceptación-De-Pago-BAC-BAC.pdf';
+	link.download = 'Fórmulario-De-Aceptación-De-Pago-BAC.pdf';
 	link.click();
 };
 
@@ -399,6 +399,7 @@ export const handleDownloadReporteOficial = async (
 	// });
 	//a map of votos where one is on the left and the other is on the right third would be down and so on
 	let i = 0;
+	let comentairo = '';
 	votos.map((voto, index) => {
 		if (index % 2 === 0) {
 			page.drawText(`${voto?.nombre || ''}`, {
@@ -428,7 +429,22 @@ export const handleDownloadReporteOficial = async (
 			});
 			i = i + 1;
 		}
+
+		if (voto?.comentario) {
+			// comentairo += voto?.comentario;
+			comentairo += `${voto?.nombre || ''} - ${voto?.comentario || ''} \n`;
+		}
+		//
 	});
+	if (comentairo.length > 0) {
+		page.drawText(`${comentairo}`, {
+			x: 50,
+			y: page.getHeight() - 600,
+			size: 12,
+			color: rgb(0, 0, 0),
+			maxWidth: 500,
+		});
+	}
 	const modifiedPdfBytes = await pdfDoc.save();
 
 	// Create a Blob from the bytes

@@ -45,6 +45,7 @@ const VerSltComite = (): JSX.Element => {
 	const [usuarioToken, setUsuarioToken] = useState<string>('');
 	const [usuariolog, setUsuariolog] = useState<Usuario>();
 	const [selectedFiles, setSelectedFiles] = useState<Record<string, File[]>>({});
+	const [comentarioVoto, setComentarioVoto] = useState<string>('');
 	const navigate = useNavigate();
 	useEffect(() => {
 		// console.log(locStorage);
@@ -306,6 +307,7 @@ const VerSltComite = (): JSX.Element => {
 			nombre: usuariolog?.nombre + ' ' + usuariolog?.apellido,
 			telefono: usuariolog?.telefono,
 			voto: 'Aprobado',
+			comentario: comentarioVoto,
 			fecha: moment().format('DD/MM/YYYY hh:mm'),
 		});
 
@@ -349,6 +351,7 @@ const VerSltComite = (): JSX.Element => {
 			nombre: usuariolog?.nombre + ' ' + usuariolog?.apellido,
 			telefono: usuariolog?.telefono,
 			voto: 'Rechazado',
+			comentario: comentarioVoto,
 			fecha: moment().format('DD/MM/YYYY hh:mm'),
 		});
 
@@ -405,7 +408,6 @@ const VerSltComite = (): JSX.Element => {
 			});
 	};
 	const handleImprimir = () => {
-		
 		axios
 			.get(`${API_IP}/api/Solicitudes/EncryptNumber/${id}`)
 			.then((data: AxiosResponse<any>) => {
@@ -445,6 +447,8 @@ const VerSltComite = (): JSX.Element => {
 				titleText={modalText}
 				handler={handleModal}
 				flagExepcion={formularioSolicitudes.excepcion}
+				comentarioVoto={comentarioVoto}
+				setComentarioVoto={setComentarioVoto}
 			/>
 			<ModalHabilitar
 				isOpen={modalIsOpen2}
@@ -461,6 +465,34 @@ const VerSltComite = (): JSX.Element => {
 						{formularioSolicitudes.estatus === 'En Comite' &&
 							formularioSolicitudes.excepcion &&
 							formularioSolicitudes.habilitadoExcepcion && (
+								<div className="absolute end-2 gap-2 bg-gray-100">
+									<Button
+										type="button"
+										customClassName="bg-red-700 text-white font-semibold "
+										onClick={() => {
+											setModalText('Rechazar');
+											openModal();
+										}}
+										// onClick={handleRechazar}
+									>
+										Rechazar
+									</Button>
+									<Button
+										type="button"
+										customClassName="bg-green-700 text-white font-semibold ml-2"
+										// onClick={openModal}
+										// onClick={handleAprobar}
+										onClick={() => {
+											setModalText('Aprobar');
+											openModal();
+										}}
+									>
+										Aprobar
+									</Button>
+								</div>
+							)}
+						{formularioSolicitudes.estatus === 'En Comite' &&
+							!formularioSolicitudes.excepcion && (
 								<div className="absolute end-2 gap-2 bg-gray-100">
 									<Button
 										type="button"
@@ -505,6 +537,7 @@ const VerSltComite = (): JSX.Element => {
 									</Button>
 								</div>
 							)}
+
 						{formularioSolicitudes.estatus === 'Aprobado' && (
 							<div className="absolute end-2 gap-2 bg-gray-100">
 								<Button

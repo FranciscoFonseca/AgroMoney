@@ -34,14 +34,18 @@ const setupAxiosInterceptors = () => {
 		},
 		(error) => {
 			if (error) {
-				console.log('error, ', error);
-				let errorMsg = error.message;
-				//check if error.response exist
+				console.log('error: ', error);
+
+				// Create a detailed error message
+				let errorMsg = 'An error occurred.';
+
+				// Check if error.response exists
 				if (error.response) {
 					if (error.response.data) {
-						errorMsg += ' /-/ ' + error.response.data;
+						errorMsg += ' Error data: ' + JSON.stringify(error.response.data);
 					}
 					if (error.response.status) {
+						errorMsg += ' Status code: ' + error.response.status;
 						if (error.response.status === 401) {
 							console.log('Unauthorized');
 							window.location.replace('/');
@@ -52,6 +56,13 @@ const setupAxiosInterceptors = () => {
 						} //api/Log_Error
 					}
 				}
+				if (error.config && error.config.url) {
+					errorMsg += ' Endpoint URL: ' + error.config.url;
+				  }
+				// Log the detailed error message
+				console.error(errorMsg);
+
+				// Send the detailed error message to the server for logging
 				axios.post(`${API_IP}/api/Log_Error`, {
 					LogMsg: errorMsg,
 					LogDate: new Date(),

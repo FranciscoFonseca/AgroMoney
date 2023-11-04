@@ -31,7 +31,7 @@ export interface BotonesAdjuntarProps {
 }
 
 export const arrayBotones: BotonesAdjuntarOptions[] = [
-	{ nombre: 'Cotizacion-O-Minuta', label: 'Cotizacion o Minuta' }, //0
+	{ nombre: 'Cotizacion-O-Minuta', label: 'Cotización o Minuta' }, //0
 	{ nombre: 'DNI', label: 'DNI' }, //1
 	{
 		nombre: 'Formulario-Banco',
@@ -41,11 +41,11 @@ export const arrayBotones: BotonesAdjuntarOptions[] = [
 	}, //2
 	{ nombre: 'Fotografia-Inmueble', label: 'Fotografia Inmueble' }, //3
 	{ nombre: 'Estados-De-Cuenta', label: 'Estados De Cuenta' }, //4
-	{ nombre: 'Cotizacion', label: 'Cotizacion' }, //5
-	{ nombre: 'Avaluo', label: 'Avaluo' }, //6
+	{ nombre: 'Cotizacion', label: 'Cotización' }, //5
+	{ nombre: 'Avaluo', label: 'Avalúo' }, //6
 	{ nombre: 'RTN', label: 'RTN' }, //7
-	{ nombre: 'Boleta-De-Revision', label: 'Boleta De Revision' }, //8
-	{ nombre: 'Lista-De-Utiles', label: 'Lista De Utiles' }, //9
+	{ nombre: 'Boleta-De-Revision', label: 'Boleta De Revisión' }, //8
+	{ nombre: 'Lista-De-Utiles', label: 'Lista De Útiles' }, //9
 	{ nombre: 'Receta', label: 'Receta/Orden' }, //10
 	{
 		nombre: 'Autorizacion-Persona-Juridica',

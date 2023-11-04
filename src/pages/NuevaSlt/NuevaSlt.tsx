@@ -743,9 +743,7 @@ const NuevaSlt2 = (): JSX.Element => {
 		}
 		return result;
 	}
-	const salvar = () => {
-		setStep(0);
-	};
+
 	const handleBotonAmortizarDisable = () => {
 		if (
 			watch('destino_Credito') === 'Seleccione un destino' ||
@@ -841,9 +839,7 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (tipoDePersonaWatch === 'Natural') {
 			const trigerdata = await trigger([
 				'nombre',
-				'segundoNombre',
 				'apellido',
-				'segundoApellido',
 				'dni',
 				'profesion',
 				'telefono',
@@ -1194,7 +1190,6 @@ const NuevaSlt2 = (): JSX.Element => {
 									<Controller
 										name="segundoNombre"
 										control={control}
-										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
 												label="Segundo Nombre"
@@ -1234,7 +1229,6 @@ const NuevaSlt2 = (): JSX.Element => {
 									<Controller
 										name="segundoApellido"
 										control={control}
-										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
 												disabled={step !== 1}
@@ -2106,17 +2100,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									/>
 								</div>
 							</div>
-							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
-								<div className="flex flex-col w-full">
-									<Button
-										type="button"
-										onClick={() => salvar()}
-										customClassName="bg-green-700 font-semibold text-white"
-									>
-										Salvar
-									</Button>
-								</div>
-							</div>
+
 							<BotonesAdjuntar
 								destino={watch('destino_Credito')}
 								selectedFiles={selectedFiles}
@@ -2148,7 +2132,7 @@ const NuevaSlt2 = (): JSX.Element => {
 						>
 							Enviar
 						</Button>
-						{getValues('estatus') === 'En Proceso' && (
+						{getValues('estatus') === 'Nueva' && (
 							<Button
 								type="button"
 								customClassName="bg-blue-700 font-semibold text-white"

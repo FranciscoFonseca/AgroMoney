@@ -11,6 +11,8 @@ interface ModalProps {
 	subtitleText?: string;
 	handler: (token: string) => void;
 	flagExepcion?: boolean;
+	comentarioVoto?: string;
+	setComentarioVoto: (comentario: string) => void;
 }
 
 const ModalRechazarAprobar: React.FC<ModalProps> = ({
@@ -19,6 +21,8 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 	titleText = 'Aprobar',
 	handler,
 	flagExepcion = false,
+	comentarioVoto = '',
+	setComentarioVoto,
 }) => {
 	const [token, setToken] = useState('');
 	return (
@@ -34,7 +38,7 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 					backgroundColor: '#fff',
 					margin: 'auto',
 					width: '550px',
-					height: '280px',
+					height: '380px',
 					border: '1px solid #ccc',
 					borderRadius: '4px',
 					outline: 'none',
@@ -79,6 +83,15 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 					onChange={(e) => setToken(e.target.value)}
 					label="Token"
 					placeholder="Token"
+				/>
+			</div>
+			<div className="flex flex-col">
+				<TextInput
+					id="motivo"
+					value={comentarioVoto}
+					onChange={(e) => setComentarioVoto(e.target.value)}
+					label="Comentario"
+					placeholder="Comentario"
 				/>
 			</div>
 			<div className="flex justify-end gap-2 mt-4">
