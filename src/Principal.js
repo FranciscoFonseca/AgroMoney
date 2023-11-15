@@ -64,8 +64,6 @@ function Principal() {
 		// 		? 'A'
 		// 		: usuariolog.perfil;
 		const url = `${API_IP}/api/Solicitudes/BuscarPorUsuario?idusuario=${usuariolog.idUsuario}&perfil=${usuariolog.perfil}`;
-		console.log('datadata', usuariolog.perfil);
-		console.log('datadataurl', url);
 		// fetch(url)
 		// 	.then((response) => response.json())
 		// 	.then((data) => {

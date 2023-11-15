@@ -13,6 +13,12 @@ interface ModalProps {
 	flagExepcion?: boolean;
 	comentarioVoto?: string;
 	setComentarioVoto: (comentario: string) => void;
+	monto: number;
+	setMonto: (monto: number) => void;
+	plazo: number;
+	setPlazo: (plazo: number) => void;
+	esLider: string;
+	tamaño?: string;
 }
 
 const ModalRechazarAprobar: React.FC<ModalProps> = ({
@@ -23,6 +29,12 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 	flagExepcion = false,
 	comentarioVoto = '',
 	setComentarioVoto,
+	monto,
+	setMonto,
+	plazo,
+	setPlazo,
+	tamaño = '400px',
+	esLider = 'false',
 }) => {
 	const [token, setToken] = useState('');
 	return (
@@ -38,7 +50,7 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 					backgroundColor: '#fff',
 					margin: 'auto',
 					width: '550px',
-					height: '380px',
+					height: tamaño,
 					border: '1px solid #ccc',
 					borderRadius: '4px',
 					outline: 'none',
@@ -75,6 +87,25 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 				</div>
 			</div>
 			{/* textbox with a state */}
+			{esLider && (
+				<>
+					<TextInput
+						id="monto"
+						value={monto}
+						onChange={(e) => setMonto(Number(e.target.value))}
+						label="Monto"
+						placeholder="Monto"
+					/>
+
+					<TextInput
+						id="plazo"
+						value={plazo}
+						onChange={(e) => setPlazo(Number(e.target.value))}
+						label="Plazo"
+						placeholder="Plazo"
+					/>
+				</>
+			)}
 
 			<div className="flex flex-col">
 				<TextInput

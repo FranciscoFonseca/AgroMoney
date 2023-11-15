@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button/Button';
-import imagenLogin from '../../images/agromoney.png';
+import imagenLogin from '../../images/agromoney2.png';
 import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import LoginComponent from './components/LoginComponent';

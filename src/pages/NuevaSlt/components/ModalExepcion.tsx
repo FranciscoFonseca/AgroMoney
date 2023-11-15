@@ -23,14 +23,16 @@ const ModalExepcion: React.FC<ModalProps> = ({
 	formMethods,
 	idSolicitud = 0,
 }) => {
-	const {
-		getValues,
-	} = formMethods;
+	const { getValues } = formMethods;
 
 	const [comment, setComment] = useState('');
 	const navigate = useNavigate();
 
 	const handleRechazar = async () => {
+		if (comment === '' || comment === null || comment === undefined) {
+			return toast.error('Debe agregar un comentario');
+		}
+
 		try {
 			const data = {
 				estatus: 'Rechazada',
@@ -42,25 +44,25 @@ const ModalExepcion: React.FC<ModalProps> = ({
 				...formData,
 				...data,
 			};
-			await axios.patch(
-				API_IP + '/api/Solicitudes/' + idSolicitud,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
+			await axios.patch(API_IP + '/api/Solicitudes/' + idSolicitud, formData, {
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
 			toast.success('Solicitud actualizada con exito');
 			setTimeout(() => {
-                navigate('/Principal');
-            }, 1000);
+				navigate('/Principal');
+			}, 1000);
 		} catch (error) {
 			toast.error('Error al actualizar la solicitud');
 			console.error(error);
 		}
 	};
 	const handleGuardar = async () => {
+		if (comment === '' || comment === null || comment === undefined) {
+			return toast.error('Debe agregar un comentario');
+		}
+
 		try {
 			const data = {
 				estatus: 'En Comite',
@@ -72,19 +74,15 @@ const ModalExepcion: React.FC<ModalProps> = ({
 				...formData,
 				...data,
 			};
-			await axios.patch(
-				API_IP + '/api/Solicitudes/' + idSolicitud,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
+			await axios.patch(API_IP + '/api/Solicitudes/' + idSolicitud, formData, {
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
 			toast.success('Solicitud actualizada con exito');
 			setTimeout(() => {
-                navigate('/Principal');
-            }, 1000);
+				navigate('/Principal');
+			}, 1000);
 		} catch (error) {
 			toast.error('Error al actualizar la solicitud');
 			console.error(error);

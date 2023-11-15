@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button/Button';
-import imagenLogin from '../../images/agromoney.png';
+import imagenLogin from '../../images/agromoney2.png';
 import { useEffect, useState } from 'react';
 import ModalSolicitud from './ModalSolicitud';
 import { ToastContainer } from 'react-toastify';
@@ -11,6 +11,7 @@ import {
 	arrayBotones,
 	optionMappings,
 } from '../NuevaSlt/components/BotonesAdjuntar';
+import { Tooltip } from 'react-tooltip';
 
 const HomeScreen = (): JSX.Element => {
 	const navigate = useNavigate();
@@ -50,6 +51,8 @@ const HomeScreen = (): JSX.Element => {
 	};
 	function getOptionsByList(listName: string): BotonesAdjuntarOptions[] {
 		const optionIndices = optionMappings[listName] || [];
+		optionIndices.push(12);
+		optionIndices.push(14);
 		return optionIndices.map((index) => arrayBotones[index]);
 	}
 
@@ -57,11 +60,14 @@ const HomeScreen = (): JSX.Element => {
 		<>
 			<ToastContainer />
 			<ModalSolicitud isOpen={isOpen} closeModal={toggleModal} />
+
 			<div className="flex flex-col justify-center items-center w-full h-[90vh] gap-y-8">
-				<img className="imagen-login" src={imagenLogin} alt="Imagen de login" />
+				<div className="bottom-0 p-2 bg-white border rounded-lg absolute right-0">v0.11.14.2023.2.58</div>
+				<div className="bottom-0 p-2 bg-white border rounded-lg absolute left-0">Para mas información comunicarse con Luis Martinez al numero 9436-2656</div>
+				<img className="imagen-login p-4" src={imagenLogin} alt="Imagen de login" />
 
 				<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap justify-center items-end">
-					<div className="flex flex-col w-60 bg-slate-100 h-48 rounded-lg p-2 absolute top-10 left-10">
+					<div className=" flex-col w-64 bg-slate-100 h-52 rounded-lg p-2 absolute top-10 left-10 hidden sm:flex">
 						<Select
 							options={destinos.map((item: any) => ({
 								label: item.destino,
@@ -77,8 +83,22 @@ const HomeScreen = (): JSX.Element => {
 							 */}
 
 							{getOptionsByList(selectedDestino).map((item) => (
-								<p className="text-xs mt-1 ml-2 text-red-600">{item.label}</p>
+								<p
+									key={item.label}
+									className="text-xs mt-1 ml-2 text-red-600"
+									data-tooltip-id="my-tooltip"
+									data-tooltip-content={item.tooltip}
+								>
+									{item.label}
+								</p>
 							))}
+							<Tooltip
+								id="my-tooltip"
+								className="w-48"
+								style={{
+									width: '300px',
+								}}
+							/>
 						</div>
 					</div>
 					<div className="flex flex-col w-48">

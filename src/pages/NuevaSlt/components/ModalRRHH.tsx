@@ -9,6 +9,7 @@ import API_IP from '../../../config';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { DataDeudasAnalista } from './TableDeudasAnalista';
+import InputMask from 'react-input-mask';
 
 Modal.setAppElement('#root');
 interface ModalProps {
@@ -124,6 +125,18 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		getDeudas();
 	}, []);
 	const handleGuardar = async () => {
+		if (
+			getValues('ComentariosRRHH') === '' ||
+			getValues('ComentariosRRHH') === null ||
+			getValues('ComentariosRRHH') === undefined
+		) {
+			return toast.error('Debe agregar un comentario');
+		}
+		// validate total if it is a number and not empty
+		if (isNaN(Number(total)) || total === '') {
+			return toast.error('Debe agregar un porcentaje');
+		}
+
 		try {
 			const newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
 			const data = {
@@ -133,6 +146,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 				ComentariosRRHH: getValues('ComentariosRRHH'),
 				estatus: newStatus,
 				pasoRRHH: true,
+				excepcion: true,
 			};
 			// axios.patch('http://localhost:3001/rrhh', data);
 			let formData = getValues();
@@ -283,6 +297,19 @@ const ModalRRHH: React.FC<ModalProps> = ({
 										onChange={(date) => {
 											onChange(date);
 										}}
+										customInput={
+											<InputMask
+												mask="99/99/9999"
+												// value={value.toDateString()}
+												// onChange={onChange}
+												value={value instanceof Date ? value.toDateString() : value}
+												onChange={(e) => {
+													onChange(e.target.value);
+												}}
+												placeholder="Token"
+												className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+											/>
+										}
 									/>
 								</>
 							)}

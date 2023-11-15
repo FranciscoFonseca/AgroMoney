@@ -4,7 +4,6 @@ import TextInput from '../../components/TextInput/TextInput';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import 'react-datepicker/dist/react-datepicker.css';
 import Button from '../../components/Button/Button';
-import { jsPDF } from 'jspdf';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import { Region, departm, munic, paises } from '../../constants/departamentos';
@@ -14,8 +13,6 @@ import {
 	FormularioSolicitudesDefault,
 } from '../../tipos/formularioSolicitudes';
 import html2canvas from 'html2canvas';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 import TableComponent, { DataAmortizar } from './components/TableComponent';
 
 import {
@@ -29,7 +26,6 @@ import {
 } from 'react-icons/fa';
 import Select from '../../components/Select/Select';
 import { tasaDeInteres } from '../../constants/dataConstants';
-import { debounce } from 'lodash';
 import SelectRango from './components/selectRango';
 import IngresarDeudas from './components/IngresarDeudas';
 import DatePicker from 'react-datepicker';
@@ -46,6 +42,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { formatNumber } from '../../functions';
 import clsx from 'clsx';
 import { Profesion } from './components/ModalProfesion';
+import InputMask from 'react-input-mask';
+import { Tooltip } from 'react-tooltip';
+import CurrencyInput from 'react-currency-input-field';
+import { get } from 'lodash';
 
 const NuevaSlt2 = (): JSX.Element => {
 	const {
@@ -98,6 +98,7 @@ const NuevaSlt2 = (): JSX.Element => {
 
 	useEffect(() => {
 		if (id) {
+			setStep(0);
 			axios
 				.get(`${API_IP}/api/Solicitudes/CompletarSolicitud/${id}`)
 				.then((response) => {
@@ -109,6 +110,7 @@ const NuevaSlt2 = (): JSX.Element => {
 					const selected = destinos.find(
 						(item: any) => item.destino === response.data.destino_Credito
 					);
+
 					if (selected) {
 						setValue('producto', selected.producto);
 						setMontoRange({
@@ -119,9 +121,10 @@ const NuevaSlt2 = (): JSX.Element => {
 							min: 1,
 							max: selected.plazo,
 						});
-						setValue('plazo', 1);
-						setValue('destino_Credito', selected.destino);
 					}
+					setValue('monto', response.data.monto);
+					setValue('destino_Credito', response.data.destino_Credito);
+					setValue('plazo', response.data.plazo);
 				});
 		}
 	}, [id]);
@@ -163,7 +166,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			)
 			.then((response) => {
 				toast.success('Solicitud Creada Exitosamente.');
-				navigate('/Principal');
+				navigate('/');
 			})
 			.catch((error) => {
 				console.error('API Error:', error);
@@ -223,7 +226,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			)
 			.then((response) => {
 				toast.success('Solicitud Creada Exitosamente.');
-				navigate('/Principal');
+				navigate('/');
 			})
 			.catch((error) => {
 				console.error('API Error:', error);
@@ -276,7 +279,6 @@ const NuevaSlt2 = (): JSX.Element => {
 			const cleancharsfromtelEmpresa = telEmpresa.replace(/[^0-9]/g, '');
 			const cleancharsfromdni = dni.replace(/[^0-9]/g, '');
 
-			console.log('cleancharsfromtelEmpresa', cleancharsfromtelEmpresa);
 			const newForm = {
 				...newForm2,
 				telefono: cleancharsfromtelefono,
@@ -286,27 +288,76 @@ const NuevaSlt2 = (): JSX.Element => {
 				estatus: 'En Proceso',
 			};
 
-			if (locStorage) {
-				//const usuariolog = JSON.parse(locStorage);
-				const usuariolog = JSON.parse(locStorage);
-				setValue('usuario_Registro', usuariolog.id);
-				setValue('idUsuario', usuariolog.id);
-				const usuariologtoken = localStorage.getItem('token');
-
-				const response = await axios.post(API_IP + '/api/Solicitudes/', newForm, {
+			const usuariologtoken = localStorage.getItem('token');
+			await axios
+				.get(`${API_IP}/api/Solicitudes/BuscarPorNumero/${newForm.telefono}`, {
 					headers: {
-						'Content-Type': 'application/json',
 						Authorization: `Bearer ${usuariologtoken}`,
 					},
+				})
+				.then(async (data: any) => {
+					if (data.status === 204) {
+						const response = await axios.post(API_IP + '/api/Solicitudes/', newForm, {
+							headers: {
+								'Content-Type': 'application/json',
+								Authorization: `Bearer ${usuariologtoken}`,
+							},
+						});
+						if (response.status === 201) {
+							toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+							handleUpload(response);
+							handleSolicitud(response);
+						}
+					} else {
+						return toast.error(
+							'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
+						);
+					}
 				});
-				if (response.status === 201) {
-					toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-					handleUpload(response);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+	const onSubmit: SubmitHandler<FormularioSolicitudes> = async (formData) => {
+		try {
+			trigger();
+			if (!(Object.keys(errors).length === 0)) {
+				return;
+			}
 
-					handleSolicitud(response);
-				}
+			setValue('tipoDePersona', 'Natural');
+			setValue('usuario_Registro', 1);
+			const telefono = formData.telefono;
+			const teljefe = formData.telJefeIn;
+			const telEmpresa = formData.telEmpresa;
+			const dni = formData.dni;
+			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
+			const newForm2 = getValues();
+			const cleancharsfromtelefono = telefono.replace(/[^0-9]/g, '');
+			const cleancharsfromteljefe = teljefe.replace(/[^0-9]/g, '');
+			const cleancharsfromtelEmpresa = telEmpresa.replace(/[^0-9]/g, '');
+			const cleancharsfromdni = dni.replace(/[^0-9]/g, '');
+			const newForm = {
+				...newForm2,
+				telefono: cleancharsfromtelefono,
+				telJefeIn: cleancharsfromteljefe,
+				telEmpresa: cleancharsfromtelEmpresa,
+				dni: cleancharsfromdni,
+			};
+
+			const usuariologtoken = localStorage.getItem('token');
+			if (newForm.estatus === 'En Proceso') {
+				const newForm3 = {
+					...newForm,
+					estatus: 'Nueva',
+				};
+				axios
+					.patch(`${API_IP}/api/Solicitudes/CompletarSolicitud/${id}`, newForm3)
+					.then((response) => {
+						handleUpload2(id);
+						handleSolicitud2(id);
+					});
 			} else {
-				const usuariologtoken = localStorage.getItem('token');
 				await axios
 					.get(`${API_IP}/api/Solicitudes/BuscarPorNumero/${newForm.telefono}`, {
 						headers: {
@@ -338,103 +389,6 @@ const NuevaSlt2 = (): JSX.Element => {
 					});
 			}
 		} catch (error) {
-			console.log(error);
-		}
-	};
-	const onSubmit: SubmitHandler<FormularioSolicitudes> = async (formData) => {
-		try {
-			trigger();
-			if (!(Object.keys(errors).length === 0)) {
-				return;
-			}
-
-			setValue('tipoDePersona', 'Natural');
-			setValue('usuario_Registro', 1);
-			const telefono = formData.telefono;
-			const teljefe = formData.telJefeIn;
-			const telEmpresa = formData.telEmpresa;
-			const dni = formData.dni;
-			toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-			const newForm2 = getValues();
-			const cleancharsfromtelefono = telefono.replace(/[^0-9]/g, '');
-			const cleancharsfromteljefe = teljefe.replace(/[^0-9]/g, '');
-			const cleancharsfromtelEmpresa = telEmpresa.replace(/[^0-9]/g, '');
-			const cleancharsfromdni = dni.replace(/[^0-9]/g, '');
-			console.log('cleancharsfromtelEmpresa', cleancharsfromtelEmpresa);
-			const newForm = {
-				...newForm2,
-				telefono: cleancharsfromtelefono,
-				telJefeIn: cleancharsfromteljefe,
-				telEmpresa: cleancharsfromtelEmpresa,
-				dni: cleancharsfromdni,
-			};
-
-			if (locStorage) {
-				//const usuariolog = JSON.parse(locStorage);
-				const usuariolog = JSON.parse(locStorage);
-				setValue('usuario_Registro', usuariolog.id);
-				setValue('idUsuario', usuariolog.id);
-				const usuariologtoken = localStorage.getItem('token');
-
-				const response = await axios.post(API_IP + '/api/Solicitudes/', newForm, {
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${usuariologtoken}`,
-					},
-				});
-				if (response.status === 201) {
-					toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-					handleUpload(response);
-
-					handleSolicitud(response);
-				}
-			} else {
-				const usuariologtoken = localStorage.getItem('token');
-				if (newForm.estatus === 'En Proceso') {
-					const newForm3 = {
-						...newForm,
-						estatus: 'Nueva',
-					};
-					axios
-						.patch(`${API_IP}/api/Solicitudes/CompletarSolicitud/${id}`, newForm3)
-						.then((response) => {
-							handleUpload2(id);
-							handleSolicitud2(id);
-						});
-				} else {
-					await axios
-						.get(`${API_IP}/api/Solicitudes/BuscarPorNumero/${newForm.telefono}`, {
-							headers: {
-								Authorization: `Bearer ${usuariologtoken}`,
-							},
-						})
-						.then(async (data: any) => {
-							if (data.status === 204) {
-								const response = await axios.post(
-									API_IP + '/api/Solicitudes/',
-									newForm,
-									{
-										headers: {
-											'Content-Type': 'application/json',
-											Authorization: `Bearer ${usuariologtoken}`,
-										},
-									}
-								);
-								if (response.status === 201) {
-									toast.warn('Creando su Solicitud, No Cierre esta Pantalla.');
-									handleUpload(response);
-									handleSolicitud(response);
-								}
-							} else {
-								return toast.error(
-									'Ya existe una solicitud con este numero, para crear mas de una solicitud con el mismo numero, por favor registre su cuenta'
-								);
-							}
-						});
-				}
-			}
-		} catch (error) {
-			console.log(error);
 			return toast.error('Ha ocurrido un error.');
 		}
 	};
@@ -518,42 +472,7 @@ const NuevaSlt2 = (): JSX.Element => {
 		}
 	};
 
-	const handleExportToPDF = () => {
-		const input = document.getElementById('table-to-export');
-		if (input) {
-			html2canvas(input).then((canvas) => {
-				const imgData = canvas.toDataURL('image/png');
-				const customPageSize = { width: 841, height: 1189 };
-				const pdf = new jsPDF({
-					unit: 'mm',
-					format: [customPageSize.width, customPageSize.height],
-				});
-				const pdfWidth = customPageSize.width;
-				const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-				const pdfHeight = customPageSize.height;
-				const pageHeight = pdfHeight - 35;
-				const totalPages = Math.ceil(imgHeight / pageHeight);
-				let currentPosition = 0;
-				for (let page = 0; page < totalPages; page++) {
-					pdf.addImage(
-						imgData,
-						'PNG',
-						20,
-						-currentPosition + 20,
-						pdfWidth - 40,
-						imgHeight,
-						undefined,
-						'FAST'
-					);
-					currentPosition += pageHeight;
-					if (page + 1 < totalPages) {
-						pdf.addPage([customPageSize.width, customPageSize.height], 'mm');
-					}
-				}
-				pdf.save('table.pdf');
-			});
-		}
-	};
+
 	const getProfesion = async () => {
 		try {
 			axios
@@ -636,20 +555,21 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (selected) {
 			setValue('producto', selected.producto);
 			setMontoRange({
-				min: selected.minimo,
+				min: 0,
 				max: selected.maximo,
 			});
 			setPlazoRange({
 				min: 1,
 				max: selected.plazo,
 			});
+			// setValue('monto', 0);
 			setValue('plazo', 1);
 			setValue('destino_Credito', selected.destino);
 		}
 	};
-	useEffect(() => {
-		setValue('monto', montoRange.min);
-	}, [montoRange]);
+	// useEffect(() => {
+	// 	setValue('monto', montoRange.min);
+	// }, [montoRange]);
 
 	function calcularPago(tasa: number, nper: number, pv: number): number {
 		const r = tasa / 12;
@@ -664,7 +584,6 @@ const NuevaSlt2 = (): JSX.Element => {
 				'El monto ingresado supera el monto maximo para este destino'
 			);
 		}
-
 		setStep(1);
 		const data: DataAmortizar[] = [];
 		let saldoInicial = Number(watchMonto);
@@ -703,8 +622,8 @@ const NuevaSlt2 = (): JSX.Element => {
 	const watchSalario = watch('salario');
 	const cuota = calcularPago(
 		tasaDeInteres / 100,
-		Number(watchPlazo),
-		Number(watchMonto)
+		Number(getValues('plazo')),
+		Number(getValues('monto'))
 	);
 	useEffect(() => {
 		setValue('cuota_Maxima', cuota);
@@ -713,7 +632,6 @@ const NuevaSlt2 = (): JSX.Element => {
 		//validate if valid date
 		//validate Cannot read properties of null (reading 'getTime')
 		const fromDate = new Date(fromDate2);
-		console.log('fromDate', fromDate);
 
 		if (!fromDate) return '';
 
@@ -763,42 +681,37 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (cuota / Number(watchSalario) > 0.3) {
 			return true;
 		}
+		//check if watchSalario is NAn
+		if (isNaN(Number(watchSalario))) {
+			return true;
+		}
+		if (isNaN(Number(watchMonto))) {
+			return true;
+		}
 		return false;
 	};
-	const debouncedOnChangeSalario = debounce((e: any) => {
-		setValue('salario', Number(e.target.value));
-		handlerTotalInteres();
-		handlerTotalPagar();
-		setAmortizarData([]);
-	}, 0);
-	const debouncedOnChangePlazo = debounce((e: any) => {
-		setValue('plazo', Number(e.target.value));
-		handlerTotalInteres();
-		handlerTotalPagar();
-		setAmortizarData([]);
-	}, 0);
-	const debouncedOnChangeMonto = debounce((e: any) => {
-		setValue('monto', Number(e.target.value));
-		handlerTotalInteres();
-		handlerTotalPagar();
-		setAmortizarData([]);
-	}, 0);
 
 	useEffect(() => {
 		handlerTotalInteres();
 		handlerTotalPagar();
-		setAmortizarData([]);
+		// setAmortizarData([]);
+		if (isNaN(Number(watchMonto))) {
+			setValue('monto', 0);
+		}
+		if (isNaN(Number(watchPlazo))) {
+			setValue('plazo', 0);
+		}
 	}, [watchMonto, watchSalario, watchPlazo]);
 	const handlerTotalInteres = () => {
 		const totalPago = cuota * Number(watchPlazo);
 		const totalInteres = totalPago - Number(watchMonto);
+		const totalPagar = totalInteres + Number(watchMonto);
+		setValue('total_Pagar', Number(totalPagar.toFixed(2)));
 		setValue('total_Interes', Number(totalInteres.toFixed(2)));
 	};
 	const handlerTotalPagar = () => {
 		const totalPago = cuota * Number(watchPlazo);
 		const totalInteres = totalPago - Number(watchMonto);
-		const totalPagar = totalInteres + Number(watchMonto);
-		setValue('total_Pagar', Number(totalPagar.toFixed(2)));
 	};
 
 	const handleAgregarDeuda = (data: DataDeudas) => {
@@ -814,17 +727,12 @@ const NuevaSlt2 = (): JSX.Element => {
 		setTableDeudas([...tableDeudas, data]);
 		// console.log([...tableDeudas, data]);
 	};
-	useEffect(() => {
-		// console.log(tableDeudas);
-	}, [tableDeudas]);
+
 	const handleEliminarDeuda = (id: string) => {
 		const newTableDeudas = tableDeudas.filter((item) => item.id !== id);
 		setTableDeudas(newTableDeudas);
 	};
 	const tipoDePersonaWatch = watch('tipoDePersona');
-	useEffect(() => {
-		console.log('tipoDePersonaWatch', tipoDePersonaWatch);
-	}, [tipoDePersonaWatch]);
 
 	useEffect(() => {
 		setValue('nombre', '');
@@ -832,6 +740,7 @@ const NuevaSlt2 = (): JSX.Element => {
 		setValue('apellido', '');
 		setValue('segundoApellido', '');
 		setValue('fechaNacimiento', new Date());
+		setValue('antiguedad', new Date());
 		setValue('direccion', '');
 		setValue('segundoApellido', '');
 	}, [tipoDePersonaWatch]);
@@ -889,11 +798,16 @@ const NuevaSlt2 = (): JSX.Element => {
 		const optionIndices = optionMappings[listName] || [];
 		return optionIndices.map((index) => arrayBotones[index]);
 	}
+
+	const onErrors = (errors: any) => {
+		console.log(errors);
+		return toast.error('Ha ocurrido un error.');
+	};
 	return (
 		<>
 			<LayoutCustom>
 				<form
-					onSubmit={handleSubmit(onSubmit)}
+					onSubmit={handleSubmit(onSubmit, onErrors)}
 					className="flex gap-y-2 flex-col items-center bg-gray-100 p-4 rounded-lg shadow-lg"
 				>
 					<div className="border-b-2 w-full flex justify-center border-black">
@@ -909,8 +823,16 @@ const NuevaSlt2 = (): JSX.Element => {
 								</b>
 
 								{getOptionsByList(watch('destino_Credito')).map((item) => (
-									<p className="text-xs mt-1 ml-2 text-red-600">{item.label}</p>
+									<p
+										className="text-xs mt-1 ml-2 text-red-600"
+										key={item.label}
+										data-tooltip-id="my-tooltip2"
+										data-tooltip-content={item.tooltip}
+									>
+										{item.label}
+									</p>
 								))}
+								<Tooltip id="my-tooltip2" />
 							</div>
 						)}
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
@@ -954,13 +876,25 @@ const NuevaSlt2 = (): JSX.Element => {
 								control={control}
 								rules={{ required: true }}
 								render={({ field: { value, onChange } }) => (
-									<TextInput
-										label="Monto"
-										type="number"
-										max={montoRange.max}
-										disabled={step !== 0}
-										{...register('monto')}
-									/>
+									<div className="flex flex-col gap-y-1 w-full">
+										<label className={clsx('ml-1 ')}>Monto</label>
+										<CurrencyInput
+											max={montoRange.max}
+											disabled={step !== 0}
+											{...register('monto')}
+											onValueChange={(value, name) => {
+												setValue('monto', Number(value));
+												handlerTotalInteres();
+												handlerTotalPagar();
+											}}
+											intlConfig={{ locale: 'es-HN', currency: 'HNL' }}
+											//check if watchmonto is n, if its nan put 0
+											min={0}
+											decimalScale={2}
+											prefix="L "
+											className="block h-12 w-full rounded-lg border border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+										/>
+									</div>
 								)}
 							/>
 							{montoRange && (
@@ -976,6 +910,8 @@ const NuevaSlt2 = (): JSX.Element => {
 								montoRange={plazoRange}
 								selectOnChange={(e) => {
 									setValue('plazo', Number(e.target.value));
+									handlerTotalInteres();
+									handlerTotalPagar();
 								}}
 								control={control}
 								step={1}
@@ -1004,13 +940,31 @@ const NuevaSlt2 = (): JSX.Element => {
 								name="salario"
 								control={control}
 								rules={{ required: true }}
+								// render={({ field: { value, onChange } }) => (
+								// 	<TextInput
+								// 		label="Salario"
+								// 		type="number"
+								// 		disabled={step !== 0}
+								// 		{...register('salario')}
+								// 	/>
+								// )}
 								render={({ field: { value, onChange } }) => (
-									<TextInput
-										label="Salario"
-										type="number"
-										disabled={step !== 0}
-										{...register('salario')}
-									/>
+									<div className="flex flex-col gap-y-1 w-full">
+										<label className={clsx('ml-1 ')}>Salario</label>
+										<CurrencyInput
+											disabled={step !== 0}
+											{...register('salario')}
+											onValueChange={(value, name) => {
+												setValue('salario', Number(value));
+												handlerTotalInteres();
+												handlerTotalPagar();
+											}}
+											intlConfig={{ locale: 'es-HN', currency: 'HNL' }}
+											decimalScale={2}
+											prefix="L "
+											className="block h-12 w-full rounded-lg border border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+										/>
+									</div>
 								)}
 							/>
 						</div>
@@ -1292,7 +1246,10 @@ const NuevaSlt2 = (): JSX.Element => {
 									<Controller
 										name="correoPersonal"
 										control={control}
-										rules={{ required: true }}
+										rules={{
+											required: true,
+											pattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+										}}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
 												disabled={step !== 1}
@@ -1307,31 +1264,50 @@ const NuevaSlt2 = (): JSX.Element => {
 										</p>
 									)}
 								</div>
-								{!locStorage && (
-									<>
-										<div className="flex flex-col w-full">
-											<Controller
-												name="telefono"
-												control={control}
-												rules={{
-													required: true,
-												}}
-												render={({ field: { value, onChange } }) => (
-													<TextInput
-														disabled={step !== 1}
-														label="Teléfono (91234567)"
-														{...register('telefono')}
-													/>
-												)}
-											/>
-											{errors.telefono && (
-												<p className="text-xs mt-2 ml-2 text-red-600">
-													El telefono es requerido
-												</p>
-											)}
-										</div>
-									</>
-								)}
+
+								<div className="flex flex-col gap-2 w-full justify-center items-end">
+									<Controller
+										name="telefono"
+										control={control}
+										rules={{
+											required: true,
+											pattern: /^[0-9]{8}$/,
+										}}
+										render={({ field: { value, onChange } }) => (
+											<div className="w-full">
+												<label className="ml-1">Teléfono</label>
+												<InputMask
+													mask="99999999"
+													disabled={step !== 1}
+													value={value}
+													placeholder="Teléfono"
+													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													{...register('telefono')}
+													onChange={onChange}
+												/>
+											</div>
+										)}
+									/>
+									{/* <Controller
+									name="telefono"
+									control={control}
+									rules={{
+										required: true,
+									}}
+									render={({ field: { value, onChange } }) => (
+										<TextInput
+											disabled={step !== 1}
+											label="Teléfono (91234567)"
+											{...register('telefono')}
+										/>
+									)}
+								/> */}
+									{errors.telefono && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											El telefono es requerido
+										</p>
+									)}
+								</div>
 							</div>
 							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 								<div className="flex flex-col w-full">
@@ -1400,6 +1376,32 @@ const NuevaSlt2 = (): JSX.Element => {
 									<Controller
 										name="telConyuge"
 										control={control}
+										rules={{
+											pattern: /^[0-9]{8}$/,
+										}}
+										render={({ field: { value, onChange } }) => (
+											<div className="w-full">
+												<label className="ml-1">Teléfono Cónyuge (91234567)</label>
+												<InputMask
+													mask="99999999"
+													value={value}
+													placeholder="Teléfono Cónyuge (91234567)"
+													disabled={
+														step !== 1 ||
+														watch('estadoCivil') === 'Soltero' ||
+														watch('estadoCivil') === 'Divorciado' ||
+														watch('estadoCivil') === 'Viudo'
+													}
+													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													{...register('telConyuge')}
+													onChange={onChange}
+												/>
+											</div>
+										)}
+									/>
+									{/* <Controller
+										name="telConyuge"
+										control={control}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
 												disabled={
@@ -1412,7 +1414,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												{...register('telConyuge')}
 											/>
 										)}
-									/>
+									/> */}
 								</div>
 								<div className="flex flex-col w-full">
 									<Controller
@@ -1509,17 +1511,30 @@ const NuevaSlt2 = (): JSX.Element => {
 										name="fechaNacimiento"
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
-											<DatePicker
-												className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
-												maxDate={new Date()}
-												dateFormat={'dd/MM/yyyy'}
-												showYearDropdown
-												selected={new Date(value)}
-												onChange={(date) => {
-													onChange(date);
-												}}
-												disabled={step !== 1}
-											/>
+											<>
+												<DatePicker
+													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													maxDate={new Date()}
+													dateFormat={'dd/MM/yyyy'}
+													showYearDropdown
+													selected={new Date(value)}
+													onChange={(date) => {
+														onChange(date);
+													}}
+													customInput={
+														<InputMask
+															mask="99/99/9999"
+															value={
+																value instanceof Date ? value.toLocaleDateString() : value
+															}
+															onChange={(e) => onChange(e.target.value)}
+															placeholder="Token"
+															className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+														/>
+													}
+													disabled={step !== 1}
+												/>
+											</>
 										)}
 									/>
 								</div>
@@ -1640,7 +1655,31 @@ const NuevaSlt2 = (): JSX.Element => {
 													onChange={(date) => {
 														onChange(date);
 													}}
-													disabled={step !== 1}
+													customInput={
+														<InputMask
+															mask="99/99/9999"
+															value={
+																value instanceof Date ? value.toLocaleDateString() : value
+															}
+															onChange={(e) => onChange(e.target.value)}
+															placeholder="Token"
+															className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+														/>
+													}
+													// customInput={
+													// 	<div className="flex flex-col w-full">
+													// 		<InputMask
+													// 			mask="99/99/9999"
+													// 			value={
+													// 				value instanceof Date ? value.toLocaleDateString() : value
+													// 			}
+													// 			onChange={(e) => onChange(e.target.value)}
+													// 			placeholder="Token"
+													// 			className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													// 		/>
+
+													// 	</div>
+													// }
 												/>
 												<p className="text-xs mt-2 ml-2">
 													{getYearsAndMonthsPassed(value)}
@@ -1670,6 +1709,28 @@ const NuevaSlt2 = (): JSX.Element => {
 								</div>
 								<div className="flex flex-col w-full">
 									<Controller
+										name="telEmpresa"
+										control={control}
+										rules={{
+											required: true,
+											pattern: /^[0-9]{8}$/,
+										}}
+										render={({ field: { value, onChange } }) => (
+											<div className="w-full">
+												<label className="ml-1">Telefono de Trabajo (91234567)</label>
+												<InputMask
+													mask="99999999"
+													value={value}
+													placeholder="Telefono de Trabajo (91234567)"
+													disabled={step !== 1}
+													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													{...register('telEmpresa')}
+													onChange={onChange}
+												/>
+											</div>
+										)}
+									/>
+									{/* <Controller
 										control={control}
 										name="telEmpresa"
 										rules={{ required: true }}
@@ -1680,7 +1741,7 @@ const NuevaSlt2 = (): JSX.Element => {
 												{...register('telEmpresa')}
 											/>
 										)}
-									/>
+									/> */}
 									{errors.telEmpresa && (
 										<p className="text-xs mt-2 ml-2 text-red-600">
 											El telefono de trabajo es requerido
@@ -1784,6 +1845,29 @@ const NuevaSlt2 = (): JSX.Element => {
 									<>
 										<div className="flex flex-col w-full">
 											<Controller
+												name="telJefeIn"
+												control={control}
+												rules={{
+													required: true,
+												}}
+												render={({ field: { value, onChange } }) => (
+													<div className="w-full">
+														<label className="ml-1">
+															Telefono de Jefe Inmediato (91234567)
+														</label>
+														<InputMask
+															mask="99999999"
+															value={value}
+															placeholder="Telefono de Jefe Inmediato (91234567)"
+															disabled={step !== 1}
+															className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+															{...register('telJefeIn')}
+															onChange={onChange}
+														/>
+													</div>
+												)}
+											/>
+											{/* <Controller
 												control={control}
 												name="telJefeIn"
 												rules={{
@@ -1796,7 +1880,7 @@ const NuevaSlt2 = (): JSX.Element => {
 														disabled={step !== 1}
 													/>
 												)}
-											/>
+											/> */}
 											{errors.telJefeIn && (
 												<p className="text-xs mt-2 ml-2 text-red-600">
 													El Telefono de jefe inmediato es requerido
@@ -1946,7 +2030,16 @@ const NuevaSlt2 = (): JSX.Element => {
 												className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 												maxDate={new Date()}
 												showYearDropdown
-												dateFormat={'dd/MM/yyyy'}
+												customInput={
+													<InputMask
+														mask="99/99/9999"
+														//fecha is stored like this 2019-10-01
+														value={value instanceof Date ? value.toLocaleDateString() : value}
+														onChange={(e) => onChange(e.target.value)}
+														placeholder="Token"
+														className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													/>
+												}
 												selected={new Date(value)}
 												onChange={(date) => {
 													onChange(date);
@@ -2026,6 +2119,11 @@ const NuevaSlt2 = (): JSX.Element => {
 											/>
 										)}
 									/>
+									{errors.referencia1 && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											El Nombre es requerido
+										</p>
+									)}
 								</div>
 								<div className="flex flex-col w-full">
 									<Controller
@@ -2034,12 +2132,17 @@ const NuevaSlt2 = (): JSX.Element => {
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												label="Numero de Referencia Personal"
+												label="Numero de Telefono Referencia Personal"
 												disabled={step >= 3}
 												{...register('noReferencia1')}
 											/>
 										)}
 									/>
+									{errors.noReferencia1 && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											El numero de telefono es requerido
+										</p>
+									)}
 								</div>
 								<div className="flex flex-col w-full">
 									<Controller
@@ -2054,6 +2157,11 @@ const NuevaSlt2 = (): JSX.Element => {
 											/>
 										)}
 									/>
+									{errors.relacionReferencia1 && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											La relacion es requerida
+										</p>
+									)}
 								</div>
 							</div>
 							<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
@@ -2070,6 +2178,11 @@ const NuevaSlt2 = (): JSX.Element => {
 											/>
 										)}
 									/>
+									{errors.referencia2 && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											El Nombre es requerido
+										</p>
+									)}
 								</div>
 								<div className="flex flex-col w-full">
 									<Controller
@@ -2078,12 +2191,17 @@ const NuevaSlt2 = (): JSX.Element => {
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
 											<TextInput
-												label="Numero de Referencia Familiar"
+												label="Numero de Telefono Referencia Personal"
 												disabled={step >= 3}
 												{...register('noReferencia2')}
 											/>
 										)}
 									/>
+									{errors.noReferencia2 && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											El numero de telefono es requerido
+										</p>
+									)}
 								</div>
 								<div className="flex flex-col w-full">
 									<Controller
@@ -2098,6 +2216,11 @@ const NuevaSlt2 = (): JSX.Element => {
 											/>
 										)}
 									/>
+									{errors.relacionReferencia2 && (
+										<p className="text-xs mt-2 ml-2 text-red-600">
+											La relacion es requerida
+										</p>
+									)}
 								</div>
 							</div>
 
@@ -2132,6 +2255,7 @@ const NuevaSlt2 = (): JSX.Element => {
 						>
 							Enviar
 						</Button>
+
 						{getValues('estatus') === 'Nueva' && (
 							<Button
 								type="button"
@@ -2148,7 +2272,7 @@ const NuevaSlt2 = (): JSX.Element => {
 							type="button"
 							customClassName="bg-green-700 font-semibold text-white"
 							onClick={() => {
-								navigate('/Principal');
+								navigate('/');
 							}}
 						>
 							Cancelar

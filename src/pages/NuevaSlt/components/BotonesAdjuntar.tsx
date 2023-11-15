@@ -13,11 +13,13 @@ import AddTextToPDF, {
 import Button from '../../../components/Button/Button';
 import clsx from 'clsx';
 import { toast } from 'react-toastify';
+import { Tooltip } from 'react-tooltip';
 
 export interface BotonesAdjuntarOptions {
 	nombre: string;
 	label: string;
 	adjunto?: (form: any) => Promise<void>;
+	tooltip: string;
 }
 
 export interface BotonesAdjuntarProps {
@@ -31,43 +33,96 @@ export interface BotonesAdjuntarProps {
 }
 
 export const arrayBotones: BotonesAdjuntarOptions[] = [
-	{ nombre: 'Cotizacion-O-Minuta', label: 'Cotización o Minuta' }, //0
-	{ nombre: 'DNI', label: 'DNI' }, //1
+	{
+		nombre: 'Cotizacion-O-Minuta',
+		label: 'Cotización o Minuta',
+		tooltip:
+			'Listado de materiales necesarios para hacer la mejora en la vivienda, debe incluir el precio de los materiales extendida por la ferretería quien venderá los materiales.',
+	}, //0
+	{
+		nombre: 'DNI',
+		label: 'DNI',
+		tooltip: 'Copia revés y derecho de su documento de identificación.',
+	}, //1
 	{
 		nombre: 'Formulario-Banco',
 		label: 'Formulario Banco',
 		adjunto: handleDownloadBac,
+		tooltip:
+			'Documento necesario para recibir la transferencia que hará AgroMoney a la cuenta del solicitante.',
 		// handleDownloadBac(),
 	}, //2
-	{ nombre: 'Fotografia-Inmueble', label: 'Fotografia Inmueble' }, //3
-	{ nombre: 'Estados-De-Cuenta', label: 'Estados De Cuenta' }, //4
-	{ nombre: 'Cotizacion', label: 'Cotización' }, //5
-	{ nombre: 'Avaluo', label: 'Avalúo' }, //6
-	{ nombre: 'RTN', label: 'RTN' }, //7
-	{ nombre: 'Boleta-De-Revision', label: 'Boleta De Revisión' }, //8
-	{ nombre: 'Lista-De-Utiles', label: 'Lista De Útiles' }, //9
-	{ nombre: 'Receta', label: 'Receta/Orden' }, //10
+	{
+		nombre: 'Fotografia-Inmueble',
+		label: 'Fotografia Inmueble',
+		tooltip:
+			'Fotos del inmueble al cual se le hará la mejora (Cuarto, Techo, Muro, Fachada, Baño o Cocina)',
+	}, //3
+	{
+		nombre: 'Estados-De-Cuenta',
+		label: 'Estados De Cuenta',
+		tooltip:
+			'Documento emitido por la institución a la cual le debemos y queremos cancelar esa deuda con el crédito AgroMoney, este documento debe ser reciente.',
+	}, //4
+	{
+		nombre: 'Cotizacion',
+		label: 'Cotización',
+		tooltip:
+			'Cotización o promesa de venta, la misma debe contener las descripciones generales del vehículo, así como, la información general del vendedor.',
+	}, //5
+	{
+		nombre: 'Avaluo',
+		label: 'Avalúo',
+		tooltip:
+			'Es el dictamen del estado actual del vehículo que se desea adquirir, el mismo debe ser expedido por Avalúos Gibson.',
+	}, //6
+	{ nombre: 'RTN', label: 'RTN', tooltip: 'Documento expedido por El SAR.' }, //7
+	{
+		nombre: 'Boleta-De-Revision',
+		label: 'Boleta De Revisión',
+		tooltip:
+			'Boleta de circulación del vehículo, la misma debe estar pagada antes de iniciar cualquier trámite con AgroMoney.',
+	}, //8
+	{
+		nombre: 'Lista-De-Utiles',
+		label: 'Lista De Útiles',
+		tooltip:
+			'Puede agregar una cotización del listado de útiles escolares que se necesitan comprar para la escuela de sus hijos o la lista de útiles que la escuela le brinda al padre, si lo que desea es pagar la matricula o mensualidades, agregar el estado de cuenta con los saldos a cancelar.',
+	}, //9
+	{
+		nombre: 'Receta',
+		label: 'Receta/Orden',
+		tooltip:
+			'Receta medica con los medicamentos que desea comprar, si tiene cotización de los medicamentos puede subir ese documento.',
+	}, //10
 	{
 		nombre: 'Autorizacion-Persona-Juridica',
 		label: 'Autorización Persona Juridica',
 		adjunto: handleDownloadJuridica,
+		tooltip: 'Autorización Persona Juridica',
 	}, //11
 	{
 		nombre: 'Autorizacion-Persona-natural',
 		label: 'Autorización Persona Natural',
 		adjunto: handleDownloadNatural,
+		tooltip: 'Autorización para revisar los buros de créditos.',
 	}, //12
 	{
 		nombre: 'Autorizacion-Debito',
 		label: 'Autorización Debito',
 		adjunto: handleDownloadAgroMoney,
+		tooltip:
+			'Es el visto bueno que el empleado da a RRHH, para poder hacer la retención de la cuota o abonos extraordinarios y que los mismos sean pagados a AgroMoney como abonos al prestamos que el cliente tiene en esta institución.',
 	}, //13
 	{
 		nombre: 'ACH-PRONTO',
 		label: 'ACH PRONTO',
 		adjunto: handleDownloadAchPronto,
+		tooltip:
+			'Documento necesario para que AgroMoney pueda enviar la transferencia del préstamo la cuenta del cliente no sea en Bac.',
 	}, //13
 ];
+
 export const optionMappings: { [key: string]: number[] } = {
 	'Compra de vehículo': [1, 2, 5, 6, 7, 8],
 	'Consolidación de deuda': [1, 2, 4],
@@ -93,7 +148,6 @@ const BotonesAdjuntar = ({
 	};
 	const [tieneBAC, setTieneBAC] = useState<boolean>(false);
 
-	
 	function getOptionsByList(listName: string): BotonesAdjuntarOptions[] {
 		const optionIndices = optionMappings[listName] || [];
 		return optionIndices.map((index) => arrayBotones[index]);
@@ -190,6 +244,8 @@ const BotonesAdjuntar = ({
 						step === 2 ? 'bg-green-700  text-white' : 'bg-gray-300 text-black'
 					)}
 					onClick={() => handleClick(boton)}
+					data-tooltip-id="my-tooltip"
+					data-tooltip-content={boton.tooltip}
 				>
 					{boton.label}
 				</span>
@@ -219,13 +275,52 @@ const BotonesAdjuntar = ({
 	const renderDownload = (boton: BotonesAdjuntarOptions) => {
 		if (boton.adjunto)
 			return (
-				<div
-					className="flex flex-col justify-end w-52 items-start underline text-blue-700 hover:cursor-pointer"
-					key={boton.nombre}
-				>
+				// <div
+				// 	className="flex flex-col justify-end w-52 items-start underline text-blue-700 hover:cursor-pointer"
+				// 	key={boton.nombre}
+				// >
+				// 	<button onClick={() => handleDownload(boton)} type="button">
+				// 		{boton.label}
+				// 	</button>
+				// </div>
+				<div className="flex flex-col justify-end w-52" key={boton.nombre}>
+					{/* {boton.adjunto && (
 					<button onClick={() => handleDownload(boton)} type="button">
-						{boton.label}
+						Descargar
 					</button>
+				)} */}
+					<span
+						className={clsx(
+							'inline-flex w-full h-12 text-center items-center justify-center gap-x-2 rounded-lg border px-4 text-2 focus:outline-none focus:ring-2 focus:ring-offset-2   font-semibold hover:cursor-pointer border-white ',
+							step === 2 ? 'bg-blue-700  text-white' : 'bg-gray-300 text-black'
+						)}
+						onClick={() => handleDownload(boton)}
+						data-tooltip-id="my-tooltip"
+						data-tooltip-content={boton.tooltip}
+					>
+						{boton.label}
+					</span>
+
+					{/* <input
+						type="file"
+						disabled={step !== 2}
+						ref={fileInputRef}
+						name={boton.nombre}
+						style={{ display: 'none' }}
+						onChange={handleFileChange}
+					/> */}
+					{/* {selectedFiles?.[boton.nombre]?.map((file, index) => (
+					<div
+						key={file.name}
+						className="flex items-center mx-2 gap-1 justify-between "
+					>
+						<p className="truncate">{file.name}</p>
+						<FaTrash
+							className="hover:cursor-pointer "
+							onClick={() => handleFileRemove(boton.nombre, index)}
+						/>
+					</div>
+				))} */}
 				</div>
 			);
 	};
@@ -244,40 +339,64 @@ const BotonesAdjuntar = ({
 	return (
 		<div className="flex gap-2 w-full flex-wrap justify-center">
 			<div className="mt-2 mb-2 border-b-2 w-full flex justify-center border-black">
-				<p className="text-xl font-semibold">Adjuntar Archivos</p>
+				<p className="text-xl font-semibold">Documentos</p>
 			</div>
-			<div className="w-11/12">
-				<p className="text-lg ">
-					<b>Instrucciones: </b>Primero, descarga los formularios necesarios. Una vez
-					descargados, firmalos y luego adjúntalos utilizando el botón
-					correspondiente. ¡Gracias!
-				</p>
-				<br />
-				<p className="text-lg ">
-					<b>Si no tienes cuenta en BAC: </b>Descarga el formulario ACH PRONTO y
-					Adjuntalo en el boton de Formulario Banco. ¡Gracias!
-				</p>
-			</div>
+
 			{step && step === 2 && (
-				<div className="flex w-full">
-					<div className="flex flex-col w-1/5  gap-2 justify-start">
-						<p className="font-bold">Formularios a Descargar</p>
-						{getOptionsByList(destino).map((boton) => renderDownload(boton))}
-						{esCadelga && <>{renderDownload(arrayBotones[13])}</>}
-						{form?.tipoDePersona === 'Juridica' ? (
-							<>{renderDownload(arrayBotones[11])}</>
-						) : (
-							<></>
-						)}
-						{form?.tipoDePersona === 'Natural' ? (
-							<>{renderDownload(arrayBotones[12])}</>
-						) : (
-							<></>
-						)}
-						{<>{renderDownload(arrayBotones[14])}</>}
+				<div className="flex w-full flex-col">
+					<div className="flex flex-col w-full  gap-2 justify-center items-center">
+						<div className="mt-2 mb-2 w-full flex justify-center border-black border-b-2">
+							<p className="text-xl font-semibold">Descargar documentos</p>
+						</div>
+						<div className="w-11/12">
+							<p className="text-lg ">
+								<b>Instrucciones: </b>Haz clic en cada botón azul de esta sección, esto
+								permitirá que el documento se descargue en tu dispositivo; una vez
+								realizado este paso debes imprimir cada documento descargado, realizado
+								este paso, firma cada uno de ellos.
+							</p>
+							<p className="text-lg ">
+								<b>Si no tienes cuenta en BAC: </b>Descarga el formulario ACH PRONTO y
+								Adjuntalo en el boton de Formulario Banco. ¡Gracias!
+							</p>
+							<br />
+						</div>
+						<div className="flex flex-row gap-2 w-full flex-wrap justify-center">
+							{getOptionsByList(destino).map((boton) => renderDownload(boton))}
+							{esCadelga && <>{renderDownload(arrayBotones[13])}</>}
+							{form?.tipoDePersona === 'Juridica' ? (
+								<>{renderDownload(arrayBotones[11])}</>
+							) : (
+								<></>
+							)}
+							{form?.tipoDePersona === 'Natural' ? (
+								<>{renderDownload(arrayBotones[12])}</>
+							) : (
+								<></>
+							)}
+							{<>{renderDownload(arrayBotones[14])}</>}
+						</div>
 					</div>
 
-					<div className="flex w-4/5">
+					<div className="flex flex-col w-full  gap-2 justify-center items-center">
+						<div className="mt-2 mb-2 w-full flex justify-center border-black border-b-2">
+							<p className="text-xl font-semibold">Cargar documentos</p>
+						</div>
+						<div className="w-11/12">
+							<p className="text-lg ">
+								<b>Instrucciones: </b>Para completar la solicitud de crédito, es
+								necesario que cargues los documentos que se describe en cada botón de
+								color verde.
+							</p>
+							<p className="text-lg ">
+								Presiona cada botón verde para cargar los documentos, selecciona el
+								archivo luego presiona ok, y el documento se habrá cargado.
+							</p>
+							<p className="text-lg ">
+								Repite esta acción por cada archivo que se solicita.
+							</p>
+							<br />
+						</div>
 						<div className="flex flex-row gap-2 w-full flex-wrap justify-center">
 							{getOptionsByList(destino).map((boton) => renderButton(boton))}
 
@@ -292,6 +411,13 @@ const BotonesAdjuntar = ({
 							) : (
 								<></>
 							)}
+							<Tooltip
+								id="my-tooltip"
+								className="w-48"
+								style={{
+									width: '300px',
+								}}
+							/>
 						</div>
 					</div>
 				</div>

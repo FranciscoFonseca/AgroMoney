@@ -4,7 +4,6 @@ import TextInput from '../../components/TextInput/TextInput';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import 'react-datepicker/dist/react-datepicker.css';
 import Button from '../../components/Button/Button';
-import { jsPDF } from 'jspdf';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import { Region, departm, munic, paises } from '../../constants/departamentos';
@@ -17,7 +16,6 @@ import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import TableComponent, { DataAmortizar } from './components/TableComponent';
-
 import {
 	FaEye,
 	FaFileDownload,
@@ -253,42 +251,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			'table.xlsx'
 		);
 	};
-	const handleExportToPDF = () => {
-		const input = document.getElementById('table-to-export');
-		if (input) {
-			html2canvas(input).then((canvas) => {
-				const imgData = canvas.toDataURL('image/png');
-				const customPageSize = { width: 841, height: 1189 };
-				const pdf = new jsPDF({
-					unit: 'mm',
-					format: [customPageSize.width, customPageSize.height],
-				});
-				const pdfWidth = customPageSize.width;
-				const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-				const pdfHeight = customPageSize.height;
-				const pageHeight = pdfHeight - 35;
-				const totalPages = Math.ceil(imgHeight / pageHeight);
-				let currentPosition = 0;
-				for (let page = 0; page < totalPages; page++) {
-					pdf.addImage(
-						imgData,
-						'PNG',
-						20,
-						-currentPosition + 20,
-						pdfWidth - 40,
-						imgHeight,
-						undefined,
-						'FAST'
-					);
-					currentPosition += pageHeight;
-					if (page + 1 < totalPages) {
-						pdf.addPage([customPageSize.width, customPageSize.height], 'mm');
-					}
-				}
-				pdf.save('table.pdf');
-			});
-		}
-	};
+
 
 	useEffect(() => {
 		const defaultDestino: any = {
@@ -615,7 +578,9 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (Object.keys(selectedFiles).length < 2) {
 			return toast.warn('Por favor adjunte los archivos solicitados');
 		}
-
+		if (getValues('comentariosAnalista') === '') {
+			return toast.warn('Por favor ingrese un comentario');
+		}
 		toast.warn('Su solicitud esta siendo guardada, por favor espere.');
 		try {
 			const idSolicitudValue = id;
@@ -676,7 +641,9 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (Object.keys(selectedFiles).length < 2) {
 			return toast.warn('Por favor adjunte los archivos solicitados');
 		}
-
+		if (getValues('comentariosAnalista') === '') {
+			return toast.warn('Por favor ingrese un comentario');
+		}
 		toast.warn('Su solicitud esta siendo guardada, por favor espere.');
 		try {
 			const idSolicitudValue = id;
@@ -999,13 +966,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									>
 										Exportar a Excel <FaFileExcel />
 									</Button>
-									<Button
-										onClick={handleExportToPDF}
-										type="button"
-										customClassName="bg-green-700 font-semibold text-white"
-									>
-										Exportar a PDF <FaFilePdf />
-									</Button>
+							
 								</div>
 							)}
 						</div>
@@ -1664,7 +1625,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								rules={{ required: true }}
 								render={({ field: { value, onChange } }) => (
 									<TextInput
-										label="Numero de Referencia Personal"
+										label="Numero de Telefono Referencia Personal"
 										disabled
 										{...register('noReferencia1')}
 									/>
@@ -1694,7 +1655,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								rules={{ required: true }}
 								render={({ field: { value, onChange } }) => (
 									<TextInput
-										label="Numero de Referencia Familiar"
+										label="Numero de Telefono Referencia Personal"
 										disabled
 										{...register('noReferencia2')}
 									/>
@@ -1704,7 +1665,7 @@ const NuevaSlt2 = (): JSX.Element => {
 					</div>
 					<div className="flex gap-2 w-full flex-wrap justify-center">
 						<div className="mt-2 mb-2 border-b-2 w-full flex justify-center border-black">
-							<p className="text-xl font-semibold">Adjuntar Archivos</p>
+							<p className="text-xl font-semibold">Documentos</p>
 						</div>
 
 						<div className="flex w-full mt-4 justify-center">

@@ -25,7 +25,7 @@ const ModalSolicitud: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
 				.get(`${API_IP}/api/Solicitudes/SolicitudByDNI/${token}`)
 				.then((res) => {
 					if (res.status === 404) {
-						return toast.error('Solictud no encontrada2');
+						return toast.error('Solictud no encontrada');
 					}
 					
                     navigate(`/nueva-solicitud/${res.data}`);
@@ -33,11 +33,11 @@ const ModalSolicitud: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
 				})
 				.catch((error) => {
 					console.log(error);
-					toast.error('Solictud no encontrada3');
+					toast.error('Solictud no encontrada');
 				});
 		} catch (error) {
 			console.log(error);
-			toast.error('Solictud no encontrada4');
+			toast.error('Solictud no encontrada');
 		}
 	};
 	return (

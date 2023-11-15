@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import API_IP from '../../config';
 import 'react-datepicker/dist/react-datepicker.css';
 import Button from '../../components/Button/Button';
-import { jsPDF } from 'jspdf';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import axios, { AxiosResponse } from 'axios';
@@ -27,6 +26,7 @@ import DisplayField from '../../components/DisplayField/DisplayField';
 import ModalRechazarAprobar from './components/ModalRechazarAprobar';
 import { handleDownloadReporteOficial } from '../../adjuntos/AddTextToPDF';
 import ModalHabilitar from './components/ModalHabilitar';
+import { tasaDeInteres } from '../../constants/dataConstants';
 
 const VerSltComite = (): JSX.Element => {
 	const { id } = useParams();
@@ -46,6 +46,8 @@ const VerSltComite = (): JSX.Element => {
 	const [usuariolog, setUsuariolog] = useState<Usuario>();
 	const [selectedFiles, setSelectedFiles] = useState<Record<string, File[]>>({});
 	const [comentarioVoto, setComentarioVoto] = useState<string>('');
+	const [plazo, setPlazo] = useState<number>(0);
+	const [monto, setMonto] = useState<number>(0);
 	const navigate = useNavigate();
 	useEffect(() => {
 		// console.log(locStorage);
@@ -141,42 +143,7 @@ const VerSltComite = (): JSX.Element => {
 			'table.xlsx'
 		);
 	};
-	const handleExportToPDF = () => {
-		const input = document.getElementById('table-to-export');
-		if (input) {
-			html2canvas(input).then((canvas) => {
-				const imgData = canvas.toDataURL('image/png');
-				const customPageSize = { width: 841, height: 1189 };
-				const pdf = new jsPDF({
-					unit: 'mm',
-					format: [customPageSize.width, customPageSize.height],
-				});
-				const pdfWidth = customPageSize.width;
-				const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-				const pdfHeight = customPageSize.height;
-				const pageHeight = pdfHeight - 35;
-				const totalPages = Math.ceil(imgHeight / pageHeight);
-				let currentPosition = 0;
-				for (let page = 0; page < totalPages; page++) {
-					pdf.addImage(
-						imgData,
-						'PNG',
-						20,
-						-currentPosition + 20,
-						pdfWidth - 40,
-						imgHeight,
-						undefined,
-						'FAST'
-					);
-					currentPosition += pageHeight;
-					if (page + 1 < totalPages) {
-						pdf.addPage([customPageSize.width, customPageSize.height], 'mm');
-					}
-				}
-				pdf.save('table.pdf');
-			});
-		}
-	};
+	
 
 	useEffect(() => {
 		const defaultDestino: any = {
@@ -283,7 +250,12 @@ const VerSltComite = (): JSX.Element => {
 		);
 		setTableDeudasAnalista(newTableDeudasAnalista);
 	};
-
+	function calcularPago(tasa: number, nper: number, pv: number): number {
+		const r = tasa / 12;
+		const pago = (pv * r) / (1 - Math.pow(1 + r, -nper));
+		if (!pago) return 0;
+		return pago;
+	}
 	const handleAprobar = () => {
 		let data = {
 			...formularioSolicitudes,
@@ -312,10 +284,23 @@ const VerSltComite = (): JSX.Element => {
 		});
 
 		//check if all users voted. it will be 3 numbers 99999999 88888888 77777777
+		//cuota_Maxima
+		//total a pagar
+		//total interes
+
+		const cuota = calcularPago(tasaDeInteres / 100, Number(plazo), Number(monto));
+
+		const totalPagar = cuota * Number(plazo);
+		const totalInteres = totalPagar - Number(monto);
 
 		data = {
 			...data,
+			monto: monto,
+			plazo: plazo,
 			votos: JSON.stringify(votos),
+			cuota_Maxima: cuota,
+			total_Pagar: totalPagar,
+			total_Interes: totalInteres,
 		};
 		axios
 			.patch(
@@ -354,10 +339,18 @@ const VerSltComite = (): JSX.Element => {
 			comentario: comentarioVoto,
 			fecha: moment().format('DD/MM/YYYY hh:mm'),
 		});
+		const cuota = calcularPago(tasaDeInteres / 100, Number(plazo), Number(monto));
 
+		const totalPagar = cuota * Number(plazo);
+		const totalInteres = totalPagar - Number(monto);
 		data = {
 			...data,
+			monto: monto,
+			plazo: plazo,
 			votos: JSON.stringify(votos),
+			cuota_Maxima: cuota,
+			total_Pagar: totalPagar,
+			total_Interes: totalInteres,
 		};
 		axios
 			.patch(
@@ -377,6 +370,8 @@ const VerSltComite = (): JSX.Element => {
 	const [modalIsOpen2, setModalIsOpen2] = useState(false);
 	const [modalText, setModalText] = useState('');
 	const openModal = () => {
+		setMonto(formularioSolicitudes.monto);
+		setPlazo(formularioSolicitudes.plazo);
 		setModalIsOpen(true);
 	};
 	const closeModal = () => {
@@ -390,6 +385,21 @@ const VerSltComite = (): JSX.Element => {
 	};
 	const handleModal = (token: string) => {
 		const user = usuariolog?.telefono;
+		if (
+			comentarioVoto === '' ||
+			comentarioVoto === null ||
+			comentarioVoto === undefined
+		) {
+			return toast.error('Debe agregar un comentario');
+		}
+		//comentarioVoto
+		if (
+			token === '' ||
+			token === null ||
+			token === undefined
+		) {
+			return toast.error('Coloque su Token');
+		}
 		axios
 			.post(`${API_IP}/api/Usuarios/FortiToken?telefono=${user}&token=${token}`)
 			.then((response) => {
@@ -449,6 +459,12 @@ const VerSltComite = (): JSX.Element => {
 				flagExepcion={formularioSolicitudes.excepcion}
 				comentarioVoto={comentarioVoto}
 				setComentarioVoto={setComentarioVoto}
+				monto={monto}
+				plazo={plazo}
+				setMonto={setMonto}
+				setPlazo={setPlazo}
+				esLider={esLider}
+				tamaño={esLider === 'True' ? '520px' : '400px'}
 			/>
 			<ModalHabilitar
 				isOpen={modalIsOpen2}
@@ -626,13 +642,7 @@ const VerSltComite = (): JSX.Element => {
 									>
 										Exportar a Excel <FaFileExcel />
 									</Button>
-									<Button
-										onClick={handleExportToPDF}
-										type="button"
-										customClassName="bg-green-700 font-semibold text-white"
-									>
-										Exportar a PDF <FaFilePdf />
-									</Button>
+							
 								</div>
 							)}
 						</div>
@@ -831,7 +841,7 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 						<div className="flex flex-row w-full">
 							<DisplayField
-								label="Numero de Referencia Personal"
+								label="Numero de Telefono Referencia Personal"
 								text={formularioSolicitudes.noReferencia1}
 							/>
 						</div>
@@ -851,7 +861,7 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 						<div className="flex flex-row w-full">
 							<DisplayField
-								label="Numero de Referencia Familiar"
+								label="Numero de Telefono Referencia Personal"
 								text={formularioSolicitudes.noReferencia2}
 							/>
 						</div>
@@ -865,7 +875,7 @@ const VerSltComite = (): JSX.Element => {
 
 					<div className="flex gap-2 w-full flex-wrap justify-center">
 						<div className="mt-2 mb-2 border-b-2 w-full flex justify-center border-black">
-							<p className="text-xl font-semibold">Adjuntar Archivos</p>
+							<p className="text-xl font-semibold">Documentos</p>
 						</div>
 
 						<div className="flex w-full mt-4 justify-center">
@@ -936,7 +946,7 @@ const VerSltComite = (): JSX.Element => {
 							<div className="flex flex-col w-full">
 								<DisplayField
 									label="Comentarios Analista"
-									text={formularioSolicitudes.comentariosAnalista}
+									text={formularioSolicitudes.comentariosAnalista || 'Sin comentarios'}
 								/>
 							</div>
 						</div>
@@ -950,7 +960,7 @@ const VerSltComite = (): JSX.Element => {
 							<div className="flex flex-col w-full">
 								<DisplayField
 									label="Comentarios RRHH"
-									text={formularioSolicitudes.comentariosRRHH}
+									text={formularioSolicitudes.comentariosRRHH || 'Sin comentarios'}
 								/>
 							</div>
 						</div>
@@ -959,7 +969,7 @@ const VerSltComite = (): JSX.Element => {
 								<div className="flex flex-col w-full">
 									<DisplayField
 										label="Comentarios Excepción"
-										text={formularioSolicitudes.comentariosExcepcion}
+										text={formularioSolicitudes.comentariosExcepcion || 'Sin comentarios'}
 									/>
 								</div>
 							</div>

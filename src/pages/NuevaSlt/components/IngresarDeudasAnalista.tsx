@@ -15,10 +15,9 @@ import clsx from 'clsx';
 import axios from 'axios';
 import API_IP from '../../../config';
 import { BotonesAdjuntarOptions } from './BotonesAdjuntar';
-import {
-	FaEye,
-	FaFileDownload,
-} from 'react-icons/fa';
+import { FaEye, FaFileDownload } from 'react-icons/fa';
+import InputMask from 'react-input-mask';
+
 interface IngresarDeudasAnalistaProps {
 	data: DataDeudasAnalista[];
 	id: string;
@@ -410,6 +409,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 								handleClick({
 									nombre: 'Buro-de-Credito',
 									label: 'Buro de Credito',
+									tooltip: 'Buro de Credito',
 								})
 							}
 						>
@@ -424,6 +424,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 								handleClick({
 									nombre: 'visto-bueno-jefe-inmediato',
 									label: 'Visto Bueno Jefe Inmediato',
+									tooltip: 'Visto Bueno Jefe Inmediato',
 								})
 							}
 						>
@@ -561,6 +562,33 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 								showYearDropdown
 								dateFormat={'dd/MM/yyyy'}
 								selected={new Date(deuda.fechaVencimiento)}
+								customInput={
+									<InputMask
+										mask="99/99/9999"
+										//value={value.toDateString()}
+										//onChange={onChange}
+										// value={deuda.fechaVencimiento}
+										value={
+											deuda.fechaVencimiento
+												? new Date(deuda.fechaVencimiento).toLocaleDateString()
+												: ''
+										}
+										// onChange={(e) => {
+										// 	setDeuda({
+										// 		...deuda,
+										// 		fechaVencimiento: e.target.value,
+										// 	});
+										// }}
+										onChange={(e) => {
+											setDeuda({
+												...deuda,
+												fechaVencimiento: e.target.value,
+											});
+										}}
+										placeholder="Token"
+										className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+									/>
+								}
 								onChange={(date) => {
 									if (date)
 										setDeuda({ ...deuda, fechaVencimiento: date?.toISOString() || '' });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import imagenLogin from '../../images/agromoney.png';
+import imagenLogin from '../../images/agromoney2.png';
 import { useNavigate } from 'react-router-dom';
 import { FaSignOutAlt } from 'react-icons/fa';
 import ModalProfesion from '../../pages/NuevaSlt/components/ModalProfesion';
