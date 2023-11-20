@@ -111,14 +111,14 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	// const totalSumValorCuota = sumValorCuotaSi + sumValorCuotaNo;
 
 	// Calculate the sum of saldoActual for debts with incluir set to 'Si'
-	const sumSaldoActualSi = data
-		.filter((debt) => debt.incluir === 'Si')
-		.reduce((sum, debt) => sum + debt.saldoActual, 0);
+	// const sumSaldoActualSi = data
+	// 	.filter((debt) => debt.incluir === 'Si')
+	// 	.reduce((sum, debt) => sum + debt.saldoActual, 0);
 
-	// Calculate the sum of saldoActual for debts with incluir set to 'No'
-	const sumSaldoActualNo = data
-		.filter((debt) => debt.incluir === 'No')
-		.reduce((sum, debt) => sum + debt.saldoActual, 0);
+	// // Calculate the sum of saldoActual for debts with incluir set to 'No'
+	// const sumSaldoActualNo = data
+	// 	.filter((debt) => debt.incluir === 'No')
+	// 	.reduce((sum, debt) => sum + debt.saldoActual, 0);
 
 	// Total sum of saldoActual for both 'Si' and 'No'
 	// const totalSumSaldoActual = sumSaldoActualSi + sumSaldoActualNo;
@@ -156,11 +156,11 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	const [countMoraCientoVeinteComercial, setCountMoraCientoVeinteComercial] =
 		useState(0);
 
-	const [countMoraTreintaInternos, setCountMoraTreintaInternos] = useState(0);
-	const [countMoraSesentaInternos, setCountMoraSesentaInternos] = useState(0);
-	const [countMoraNoventaInternos, setCountMoraNoventaInternos] = useState(0);
-	const [countMoraCientoVeinteInternos, setCountMoraCientoVeinteInternos] =
-		useState(0);
+	// const [countMoraTreintaInternos, setCountMoraTreintaInternos] = useState(0);
+	// const [countMoraSesentaInternos, setCountMoraSesentaInternos] = useState(0);
+	// const [countMoraNoventaInternos, setCountMoraNoventaInternos] = useState(0);
+	// const [countMoraCientoVeinteInternos, setCountMoraCientoVeinteInternos] =
+	// 	useState(0);
 
 	useEffect(() => {
 		setCountMoraTreintaInstitucion(0);
@@ -171,10 +171,10 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 		setCountMoraSesentaComercial(0);
 		setCountMoraNoventaComercial(0);
 		setCountMoraCientoVeinteComercial(0);
-		setCountMoraTreintaInternos(0);
-		setCountMoraSesentaInternos(0);
-		setCountMoraNoventaInternos(0);
-		setCountMoraCientoVeinteInternos(0);
+		// setCountMoraTreintaInternos(0);
+		// setCountMoraSesentaInternos(0);
+		// setCountMoraNoventaInternos(0);
+		// setCountMoraCientoVeinteInternos(0);
 
 		data.forEach((debt) => {
 			if (debt.tipo === 'Financiera') {
@@ -203,20 +203,21 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 				setCountMoraCientoVeinteComercial((prevCount) =>
 					debt.mora120 > 0 ? prevCount + 1 : prevCount
 				);
-			} else if (debt.tipo === 'Internos') {
-				setCountMoraTreintaInternos((prevCount) =>
-					debt.mora30 > 0 ? prevCount + 1 : prevCount
-				);
-				setCountMoraSesentaInternos((prevCount) =>
-					debt.mora60 > 0 ? prevCount + 1 : prevCount
-				);
-				setCountMoraNoventaInternos((prevCount) =>
-					debt.mora90 > 0 ? prevCount + 1 : prevCount
-				);
-				setCountMoraCientoVeinteInternos((prevCount) =>
-					debt.mora120 > 0 ? prevCount + 1 : prevCount
-				);
 			}
+			// else if (debt.tipo === 'Internos') {
+			// 	setCountMoraTreintaInternos((prevCount) =>
+			// 		debt.mora30 > 0 ? prevCount + 1 : prevCount
+			// 	);
+			// 	setCountMoraSesentaInternos((prevCount) =>
+			// 		debt.mora60 > 0 ? prevCount + 1 : prevCount
+			// 	);
+			// 	setCountMoraNoventaInternos((prevCount) =>
+			// 		debt.mora90 > 0 ? prevCount + 1 : prevCount
+			// 	);
+			// 	setCountMoraCientoVeinteInternos((prevCount) =>
+			// 		debt.mora120 > 0 ? prevCount + 1 : prevCount
+			// 	);
+			// }
 		});
 	}, [data]);
 
@@ -260,7 +261,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	};
 	const [documentMetadata, setDocumentMetadata] = useState([]);
 
-	const fetchDocumentMetadataByAssociatedId = async (associatedId: string) => {
+	const fetchDocumentMetadataByAssociatedId = async () => {
 		try {
 			const response = await axios.get(
 				`${API_IP}/api/AttachmentsDeudas/${solicitudId}`
@@ -272,7 +273,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 	};
 	useEffect(() => {
 		if (disabled) {
-			fetchDocumentMetadataByAssociatedId(id).then((documentMetadata) => {
+			fetchDocumentMetadataByAssociatedId().then((documentMetadata) => {
 				setDocumentMetadata(documentMetadata);
 			});
 		}
@@ -309,10 +310,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 			console.error('Error downloading document:', error);
 		}
 	};
-	const openDocumentInNewTab = async (
-		associatedId: number,
-		fileName: string
-	) => {
+	const openDocumentInNewTab = async (fileName: string) => {
 		const downloadLink = `${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${solicitudId}`;
@@ -330,7 +328,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 			const blobUrl = URL.createObjectURL(blob);
 
 			// Open the blob URL in a new tab
-			const newTab = window.open(blobUrl, '_blank');
+			window.open(blobUrl, '_blank');
 
 			// Clean up the URL
 			URL.revokeObjectURL(blobUrl);
@@ -374,11 +372,7 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 											<tr key={metadata.id}>
 												<td className="border p-2 truncate">{metadata.fileName}</td>
 												<td className="border p-2 text-center">
-													<button
-														onClick={() =>
-															openDocumentInNewTab(Number(id), metadata.fileName)
-														}
-													>
+													<button onClick={() => openDocumentInNewTab(metadata.fileName)}>
 														<FaEye />
 													</button>
 												</td>

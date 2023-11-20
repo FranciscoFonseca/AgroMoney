@@ -11,6 +11,8 @@ const Login = (): JSX.Element => {
 	const navigate = useNavigate();
 	const [activeTab, setActiveTab] = useState('login');
 	useEffect(() => {
+		localStorage.clear();
+
 		document.body.style.backgroundImage = 'url(/fondoAgro.jpg)';
 		document.body.style.backgroundSize = 'auto 100%';
 		document.body.style.backdropFilter = 'blur(8px)';

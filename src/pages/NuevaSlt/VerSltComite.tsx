@@ -98,7 +98,6 @@ const VerSltComite = (): JSX.Element => {
 		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
 			fileName
 		)}&associatedId=${associatedId}`;
-		console.log('usuarioToken', usuarioToken);
 		try {
 			//const usuariologtoken = localStorage.getItem('logtoken');
 			// const response = await fetch(downloadLink);
@@ -160,10 +159,10 @@ const VerSltComite = (): JSX.Element => {
 			.get(API_IP + '/api/Solicitudes/' + id)
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
 				if (data.status === 404) {
-					return navigate('/Login');
+					return navigate('/');
 				}
 				if (data.status === 401) {
-					return navigate('/Login');
+					return navigate('/');
 				}
 				const newFormulario: FormularioSolicitudes = {
 					...data.data,
@@ -421,7 +420,6 @@ const VerSltComite = (): JSX.Element => {
 		axios
 			.get(`${API_IP}/api/Solicitudes/EncryptNumber/${id}`)
 			.then((data: AxiosResponse<any>) => {
-				console.log(data.data.encryptedData);
 				handleDownloadReporteOficial(
 					formularioSolicitudes,
 					data.data.encryptedData

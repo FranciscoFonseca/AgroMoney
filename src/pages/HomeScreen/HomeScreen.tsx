@@ -23,6 +23,8 @@ const HomeScreen = (): JSX.Element => {
 	};
 
 	useEffect(() => {
+		//empty all storage and cookies
+		localStorage.clear();
 		const defaultDestino: any = {
 			idDestino: 0,
 			destino: 'Seleccione un destino',
@@ -62,7 +64,7 @@ const HomeScreen = (): JSX.Element => {
 			<ModalSolicitud isOpen={isOpen} closeModal={toggleModal} />
 
 			<div className="flex flex-col justify-center items-center w-full h-[90vh] gap-y-8">
-				<div className="bottom-0 p-2 bg-white border rounded-lg absolute right-0">v0.11.14.2023.2.58</div>
+				<div className="bottom-0 p-2 bg-white border rounded-lg absolute right-0">v0.11.20.2023.8.58</div>
 				<div className="bottom-0 p-2 bg-white border rounded-lg absolute left-0">Para mas información comunicarse con Luis Martinez al numero 9436-2656</div>
 				<img className="imagen-login p-4" src={imagenLogin} alt="Imagen de login" />
 

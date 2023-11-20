@@ -12,7 +12,6 @@ import {
 	FormularioSolicitudes,
 	FormularioSolicitudesDefault,
 } from '../../tipos/formularioSolicitudes';
-import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import TableComponent, { DataAmortizar } from './components/TableComponent';
@@ -26,13 +25,11 @@ import {
 import Select from '../../components/Select/Select';
 import { tasaDeInteres } from '../../constants/dataConstants';
 import { debounce, get } from 'lodash';
-import SelectRango from './components/selectRango';
 import IngresarDeudas from './components/IngresarDeudas';
 import DatePicker from 'react-datepicker';
 import { minMax } from '../../tipos/shared';
 import { DataDeudas } from './components/TableDeudas';
 import LayoutCustom from '../../components/Navbar/Layout';
-import BotonesAdjuntar from './components/BotonesAdjuntar';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
 import IngresarDeudasAnalista from './components/IngresarDeudasAnalista';
@@ -272,10 +269,10 @@ const NuevaSlt2 = (): JSX.Element => {
 			})
 			.then((data: AxiosResponse<FormularioSolicitudes>) => {
 				if (data.status === 404) {
-					return navigate('/Login');
+					return navigate('/');
 				}
 				if (data.status === 401) {
-					return navigate('/Login');
+					return navigate('/');
 				}
 				reset(data.data);
 				const selectedDepartamento = departm.find(
@@ -291,7 +288,7 @@ const NuevaSlt2 = (): JSX.Element => {
 					error.response?.status === 403 ||
 					error.response?.status === 404
 				) {
-					navigate('/Login');
+					navigate('/');
 				}
 			});
 		try {
@@ -1559,7 +1556,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									/>
 								)}
 							/>
-							Soy Empleado de "Grupo Cadelga"
+							Soy Empleado de &quot;Grupo Cadelga&quot;
 						</div>
 						{watch('esCadelga') ? (
 							<>

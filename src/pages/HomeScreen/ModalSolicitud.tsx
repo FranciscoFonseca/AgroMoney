@@ -27,9 +27,7 @@ const ModalSolicitud: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
 					if (res.status === 404) {
 						return toast.error('Solictud no encontrada');
 					}
-					
                     navigate(`/nueva-solicitud/${res.data}`);
-					console.log(res.data);
 				})
 				.catch((error) => {
 					console.log(error);

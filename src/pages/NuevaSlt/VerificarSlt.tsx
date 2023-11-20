@@ -13,7 +13,6 @@ const VerificarSlt = (): JSX.Element => {
 		axios
 			.get(`${API_IP}/api/solicitudes/verificar/${id}`)
 			.then((response) => {
-				console.log(response.data);
 				setSolicitud(response.data);
 			})
 			.catch((error) => {

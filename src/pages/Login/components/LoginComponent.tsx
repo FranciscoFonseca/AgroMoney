@@ -4,7 +4,7 @@ import { LoginFormDto } from '../../../tipos/login';
 import TextInput from '../../../components/TextInput/TextInput';
 import Button from '../../../components/Button/Button';
 import InputMask from 'react-input-mask';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_IP from '../../../config';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
@@ -47,6 +47,9 @@ const LoginComponent = (): JSX.Element => {
 		}
 		setIsLoading(false);
 	};
+	useEffect(() => {
+		localStorage.clear();
+	}, []);
 
 	return (
 		<div className="w-full gap-y-2">

@@ -87,7 +87,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 	const onSubmit = async (data: Usuario) => {
 		//json-stringify the array and add it to the data object
 		data.empresa = JSON.stringify(empresas);
-		
+
 		if (data.idUsuario !== 0) {
 			// const res = await axios.patch(
 			// 	`${API_IP}/api/Usuarios/${data.idUsuario}`,
@@ -117,7 +117,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 		}
 		closeModal();
 	};
-	 const companies = [
+	const companies = [
 		{ value: 'Cadelga', label: 'Cadelga' },
 		{ value: 'Fertica', label: 'Fertica' },
 		{ value: 'AgroMoney', label: 'AgroMoney' },
@@ -172,7 +172,10 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 					></path>
 				</svg>
 			) : (
-				<form className="flex flex-col h-full pb-4" onSubmit={handleSubmit(onSubmit)}>
+				<form
+					className="flex flex-col h-full pb-4"
+					onSubmit={handleSubmit(onSubmit)}
+				>
 					<div className="flex justify-between items-center">
 						<h2 className="text-2xl font-bold">Control de Usuario</h2>
 						<button onClick={closeModal} className="text-2xl font-bold">
@@ -349,10 +352,10 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 					</div>
 					{/* have a list of strings with a button to remove it*/}
 					<h1 className="text-xl font-bold mt-4 mb-2">Empresas</h1>
-					
+
 					<div className="flex flex-col gap-y-1 w-1/2">
 						{empresas.map((empresa) => (
-							<div className="flex justify-between" key={empresa}> 
+							<div className="flex justify-between" key={empresa}>
 								<p>{empresa}</p>
 								<button
 									// onClick={() => setEmpresas(empresas.filter((e) => e !== empresa))}

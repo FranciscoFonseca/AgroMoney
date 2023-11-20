@@ -16,24 +16,23 @@ interface SelectRangoProps
 	register: any;
 	step: number;
 	ignoreDecimals?: boolean;
-	meses?: boolean
+	meses?: boolean;
+	value: number;
 }
 
-const SelectRango = (
-	{
-		label,
-		montoRange,
-		selectOnChange,
-		control,
-		register,
-		step,
-		ignoreDecimals = false,
-		meses = false,
-		...props
-	}: SelectRangoProps,
-	ref: React.Ref<HTMLInputElement>
-) => {
-	const [watchMonto, setWatchMonto] = useState<number>(0);
+const SelectRango = ({
+	label,
+	montoRange,
+	selectOnChange,
+	control,
+	register,
+	step,
+	ignoreDecimals = false,
+	meses = false,
+	value = 0,
+	...props
+}: SelectRangoProps) => {
+	const [watchMonto, setWatchMonto] = useState<number>(value);
 	const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		ignoreDecimals
 			? setWatchMonto(Number(e.target.value))
@@ -48,18 +47,18 @@ const SelectRango = (
 	return (
 		<div className="flex flex-col w-full">
 			<label className="mb-2 inline-block text-neutral-700">
-				{label}: {watchMonto ? watchMonto : Number(0)}
-				{ignoreDecimals ? '' : '.00'}
-				{meses && ' meses' }
+				{label}: {value}
+				{meses && ' meses'}
 			</label>
 			<Controller
 				name="Monto"
 				control={control}
-				render={({ field: { value, onChange } }) => (
+				render={() => (
 					<input
 						{...props}
 						type="range"
 						step={step}
+						value={value}
 						min={montoRange.min}
 						max={montoRange.max}
 						{...register}

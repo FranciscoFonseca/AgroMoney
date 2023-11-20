@@ -16,7 +16,7 @@ const withCookieValidation = (WrappedComponent) => {
 
       // If the cookie does not exist, redirect to a login or unauthorized page
       // You can replace '/login' with any path that suits your application
-      return <Redirect to="/login" />;
+      return <Redirect to="/" />;
     }
   };
 };

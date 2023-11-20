@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Modal from 'react-modal';
-import TextInput from '../../../components/TextInput/TextInput';
 import Button from '../../../components/Button/Button';
 
 Modal.setAppElement('#root');
@@ -15,7 +14,6 @@ const ModalHabilitar: React.FC<ModalProps> = ({
 	closeModal,
 	handler,
 }) => {
-	const [token, setToken] = useState('');
 	return (
 		<Modal
 			isOpen={isOpen}

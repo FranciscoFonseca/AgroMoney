@@ -46,6 +46,7 @@ import InputMask from 'react-input-mask';
 import { Tooltip } from 'react-tooltip';
 import CurrencyInput from 'react-currency-input-field';
 import { get } from 'lodash';
+import ModalTyC from './components/ModalTyC';
 
 const NuevaSlt2 = (): JSX.Element => {
 	const {
@@ -80,14 +81,50 @@ const NuevaSlt2 = (): JSX.Element => {
 		min: 0,
 		max: 0,
 	});
+	const [aceptoTerminos, setAceptoTerminos] = useState<boolean>(false);
 	const companies = [
-		{ value: 'Cadelga', label: 'Cadelga' },
-		{ value: 'Fertica', label: 'Fertica' },
-		{ value: 'AgroMoney', label: 'AgroMoney' },
-		{ value: 'Chumbagua', label: 'Chumbagua' },
-		{ value: 'Fertiagrho', label: 'Fertiagrho' },
-		{ value: 'Tres Valles', label: 'Tres Valles' },
-		{ value: 'ADN', label: 'ADN' },
+		{
+			value: 'Cadelga',
+			label: 'Cadelga',
+			gerente: 'Mauricio Burgos',
+			correo: 'mauricio.burgos@grupocadelga.com',
+		},
+		{
+			value: 'Fertica',
+			label: 'Fertica',
+			gerente: 'Mauricio Burgos',
+			correo: 'mauricio.burgos@grupocadelga.com',
+		},
+		{
+			value: 'AgroMoney',
+			label: 'AgroMoney',
+			gerente: 'Mauricio Burgos',
+			correo: 'mauricio.burgos@grupocadelga.com',
+		},
+		{
+			value: 'Chumbagua',
+			label: 'Chumbagua',
+			gerente: 'Pablo Ardon',
+			correo: 'pablo.ardon@chumbagua.com',
+		},
+		{
+			value: 'Fertiagrho',
+			label: 'Fertiagrho',
+			gerente: 'Mauricio Burgos',
+			correo: 'mauricio.burgos@grupocadelga.com',
+		},
+		{
+			value: 'Tres Valles',
+			label: 'Tres Valles',
+			gerente: 'Magda Montoya',
+			correo: 'mmontoya@3valles.hn',
+		},
+		{
+			value: 'ADN',
+			label: 'ADN',
+			gerente: 'Magda Montoya',
+			correo: 'mmontoya@3valles.hn',
+		},
 	];
 	const salarioRange = {
 		min: 0,
@@ -107,24 +144,43 @@ const NuevaSlt2 = (): JSX.Element => {
 					reset(response.data);
 					//bookmark
 					setValue('tipoDePersona', 'Natural');
-					const selected = destinos.find(
-						(item: any) => item.destino === response.data.destino_Credito
+					fetch(API_IP + '/api/Destino')
+						.then((response) => response.json())
+						.then((data: any) => {
+							const selected = data.find(
+								(item: any) => item.destino === response.data.destino_Credito
+							);
+							if (selected) {
+								setValue('producto', selected.producto);
+								setMontoRange({
+									min: selected.minimo,
+									max: selected.maximo,
+								});
+								setPlazoRange({
+									min: 1,
+									max: selected.plazo,
+								});
+							}
+							setValue('plazo', response.data.plazo);
+						});
+
+					const selected = departm.find(
+						(item: Region) => item.nombre === response.data.departamento
 					);
 
 					if (selected) {
-						setValue('producto', selected.producto);
-						setMontoRange({
-							min: selected.minimo,
-							max: selected.maximo,
-						});
-						setPlazoRange({
-							min: 1,
-							max: selected.plazo,
-						});
+						setValue('departamento', selected.nombre);
+						changemunicipios(selected.id);
+					}
+
+					const selected2 = munic.find(
+						(item: any) => item.nombre === response.data.municipio
+					);
+					if (selected2) {
+						setValue('municipio', selected2.nombre);
 					}
 					setValue('monto', response.data.monto);
 					setValue('destino_Credito', response.data.destino_Credito);
-					setValue('plazo', response.data.plazo);
 				});
 		}
 	}, [id]);
@@ -472,7 +528,6 @@ const NuevaSlt2 = (): JSX.Element => {
 		}
 	};
 
-
 	const getProfesion = async () => {
 		try {
 			axios
@@ -583,6 +638,24 @@ const NuevaSlt2 = (): JSX.Element => {
 			return toast.warn(
 				'El monto ingresado supera el monto maximo para este destino'
 			);
+		}
+		if (watchMonto < montoRange.min) {
+			return toast.warn(
+				'El monto ingresado es menor al monto minimo para este destino'
+			);
+		}
+		if (watchPlazo > plazoRange.max) {
+			return toast.warn(
+				'El plazo ingresado supera el plazo maximo para este destino'
+			);
+		}
+		if (watchPlazo < plazoRange.min) {
+			return toast.warn(
+				'El plazo ingresado es menor al plazo minimo para este destino'
+			);
+		}
+		if (watchSalario && watchSalario <= 0) {
+			return toast.warn('El salario debe ser mayor a 0');
 		}
 		setStep(1);
 		const data: DataAmortizar[] = [];
@@ -701,6 +774,9 @@ const NuevaSlt2 = (): JSX.Element => {
 		if (isNaN(Number(watchPlazo))) {
 			setValue('plazo', 0);
 		}
+		if (isNaN(Number(watchSalario))) {
+			setValue('salario', 0);
+		}
 	}, [watchMonto, watchSalario, watchPlazo]);
 	const handlerTotalInteres = () => {
 		const totalPago = cuota * Number(watchPlazo);
@@ -803,9 +879,27 @@ const NuevaSlt2 = (): JSX.Element => {
 		console.log(errors);
 		return toast.error('Ha ocurrido un error.');
 	};
+	const handleEmpresaChange = (e: any) => {
+		console.log(e);
+		setValue('empresa', e.target.value);
+		const selectedCompanie = companies.find(
+			(item: any) => item.value === e.target.value
+		);
+		console.log(selectedCompanie);
+		setValue('gerenteRRHH', selectedCompanie?.gerente || '');
+	};
+	const [modalIsOpen, setModalIsOpen] = useState(false);
 	return (
 		<>
 			<LayoutCustom>
+				<ModalTyC
+					isOpen={modalIsOpen}
+					closeModal={() => setModalIsOpen(false)}
+					handler={() => {
+						setAceptoTerminos(true);
+						setModalIsOpen(false);
+					}}
+				/>
 				<form
 					onSubmit={handleSubmit(onSubmit, onErrors)}
 					className="flex gap-y-2 flex-col items-center bg-gray-100 p-4 rounded-lg shadow-lg"
@@ -882,6 +976,7 @@ const NuevaSlt2 = (): JSX.Element => {
 											max={montoRange.max}
 											disabled={step !== 0}
 											{...register('monto')}
+											value={value}
 											onValueChange={(value, name) => {
 												setValue('monto', Number(value));
 												handlerTotalInteres();
@@ -890,7 +985,6 @@ const NuevaSlt2 = (): JSX.Element => {
 											intlConfig={{ locale: 'es-HN', currency: 'HNL' }}
 											//check if watchmonto is n, if its nan put 0
 											min={0}
-											decimalScale={2}
 											prefix="L "
 											className="block h-12 w-full rounded-lg border border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 										/>
@@ -917,6 +1011,7 @@ const NuevaSlt2 = (): JSX.Element => {
 								step={1}
 								register={register('plazo')}
 								ignoreDecimals
+								value={watchPlazo}
 								meses
 								disabled={step !== 0}
 							/>
@@ -954,13 +1049,14 @@ const NuevaSlt2 = (): JSX.Element => {
 										<CurrencyInput
 											disabled={step !== 0}
 											{...register('salario')}
+											value={value}
 											onValueChange={(value, name) => {
 												setValue('salario', Number(value));
 												handlerTotalInteres();
 												handlerTotalPagar();
 											}}
 											intlConfig={{ locale: 'es-HN', currency: 'HNL' }}
-											decimalScale={2}
+											min={0}
 											prefix="L "
 											className="block h-12 w-full rounded-lg border border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
 										/>
@@ -1628,6 +1724,8 @@ const NuevaSlt2 = (): JSX.Element => {
 												options={companies}
 												label="Empresa para la cual trabaja"
 												{...register('empresa')}
+												//onchange handle the controller onchange and a console.log
+												onChange={handleEmpresaChange}
 												disabled={step !== 1}
 											/>
 										)}
@@ -2131,11 +2229,24 @@ const NuevaSlt2 = (): JSX.Element => {
 										control={control}
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
-											<TextInput
-												label="Numero de Telefono Referencia Personal"
-												disabled={step >= 3}
-												{...register('noReferencia1')}
-											/>
+											// <TextInput
+											// 	label="Numero de Telefono Referencia Personal"
+											// 	disabled={step >= 3}
+											// 	{...register('noReferencia1')}
+											// />
+											<div className="w-full">
+												<label className="ml-1">
+													Numero de Telefono Referencia Personal
+												</label>
+												<InputMask
+													mask="99999999"
+													disabled={step >= 3}
+													value={value}
+													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													{...register('noReferencia1')}
+													onChange={onChange}
+												/>
+											</div>
 										)}
 									/>
 									{errors.noReferencia1 && (
@@ -2190,11 +2301,24 @@ const NuevaSlt2 = (): JSX.Element => {
 										control={control}
 										rules={{ required: true }}
 										render={({ field: { value, onChange } }) => (
-											<TextInput
-												label="Numero de Telefono Referencia Personal"
-												disabled={step >= 3}
-												{...register('noReferencia2')}
-											/>
+											// <TextInput
+											// 	label="Numero de Telefono Referencia Personal"
+											// 	disabled={step >= 3}
+											// 	{...register('noReferencia2')}
+											// />
+											<div className="w-full">
+												<label className="ml-1">
+													Numero de Telefono Referencia Familiar
+												</label>
+												<InputMask
+													mask="99999999"
+													disabled={step >= 3}
+													value={value}
+													className="block h-12 w-full rounded-lg border-gray-15  px-4 py-3 text-1 leading-none text-dark shadow-sm placeholder:text-gray-60 focus:border-yellow-100 focus:ring-yellow-100"
+													{...register('noReferencia2')}
+													onChange={onChange}
+												/>
+											</div>
 										)}
 									/>
 									{errors.noReferencia2 && (
@@ -2243,11 +2367,33 @@ const NuevaSlt2 = (): JSX.Element => {
 							handleEliminarDeuda={handleEliminarDeuda}
 						/>
 					)}
-
+					<div
+						className="flex flex-row gap-2 w-full justify-center flex-wrap sm:flex-nowrap"
+						onClick={
+							!aceptoTerminos
+								? () => {
+										setModalIsOpen(true);
+								  }
+								: () => {
+										console.log();
+								  }
+						}
+					>
+						<input
+							className="w-6 h-6 mr-1 cursor-not-allowed"
+							type="checkbox"
+							checked={aceptoTerminos}
+							disabled={!aceptoTerminos}
+							onChange={() => {
+								setAceptoTerminos(!aceptoTerminos);
+							}}
+						/>
+						<p className="underline cursor-pointer">Terminos y Condiciones</p>
+					</div>
 					<div className="flex flex-row gap-2 w-full justify-center flex-wrap sm:flex-nowrap">
 						<Button
 							type="submit"
-							disabled={step !== 3}
+							disabled={step !== 3 || !aceptoTerminos}
 							customClassName={clsx(
 								' font-semibold text-white',
 								step !== 3 ? 'cursor-not-allowed bg-gray-300' : 'bg-green-700 '

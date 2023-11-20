@@ -58,7 +58,7 @@ const setupAxiosInterceptors = () => {
 				}
 				if (error.config && error.config.url) {
 					errorMsg += ' Endpoint URL: ' + error.config.url;
-				  }
+				}
 				// Log the detailed error message
 				console.error(errorMsg);
 

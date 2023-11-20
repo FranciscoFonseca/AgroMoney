@@ -73,14 +73,14 @@ export interface FormularioSolicitudes {
 	excepcion?: boolean;
 	habilitadoExcepcion?: boolean;
 }
-const estatusSolicitud = [
-	{ value: 'Nueva', label: 'Nueva' },
-	{ value: 'En Proceso', label: 'En Proceso' },
-	{ value: 'Aprobada', label: 'Aprobada' },
-	{ value: 'Rechazada', label: 'Rechazada' },
-	{ value: 'Cancelada', label: 'Cancelada' },
-	{ value: 'Finalizada', label: 'Finalizada' },
-];
+// const estatusSolicitud = [
+// 	{ value: 'Nueva', label: 'Nueva' },
+// 	{ value: 'En Proceso', label: 'En Proceso' },
+// 	{ value: 'Aprobada', label: 'Aprobada' },
+// 	{ value: 'Rechazada', label: 'Rechazada' },
+// 	{ value: 'Cancelada', label: 'Cancelada' },
+// 	{ value: 'Finalizada', label: 'Finalizada' },
+// ];
 
 export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	idSolicitud: 0,
@@ -127,7 +127,7 @@ export const FormularioSolicitudesDefault: FormularioSolicitudes = {
 	correoJefeIn: '',
 	lugarNacimiento: '',
 	producto: '',
-	esCadelga: false,
+	esCadelga: true,
 	tipoDePersona: 'Natural',
 	///////
 	estadoCivil: '',
