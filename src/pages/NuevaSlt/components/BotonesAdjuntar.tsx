@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaCaretRight, FaSyncAlt, FaTrash } from 'react-icons/fa';
-import { generatePdf } from '../../../adjuntos/FuncionesAdjuntos';
-import { Font, PDFDownloadLink } from '@react-pdf/renderer';
-import MyDocument from '../../../adjuntos/PDFFormularioAgromoney';
-import AddTextToPDF, {
+import {
 	handleDownloadAchPronto,
 	handleDownloadAgroMoney,
 	handleDownloadBac,
@@ -146,17 +143,13 @@ const BotonesAdjuntar = ({
 			await boton.adjunto(form); // Now you can use await because handleDownload is declared as async
 		}
 	};
-	const [tieneBAC, setTieneBAC] = useState<boolean>(false);
-
 	function getOptionsByList(listName: string): BotonesAdjuntarOptions[] {
 		const optionIndices = optionMappings[listName] || [];
 		return optionIndices.map((index) => arrayBotones[index]);
 	}
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
-	// const [selectedFiles, setSelectedFiles] = useState<Record<string, File[]>>({});
 	const [selectedButton, setSelectedButton] =
 		useState<BotonesAdjuntarOptions | null>(null);
-	const [usuariolog, setUsuariolog] = useState<any>(null);
 	const handleClick = (button: BotonesAdjuntarOptions) => {
 		if (fileInputRef.current) {
 			setSelectedButton(button);
@@ -165,13 +158,6 @@ const BotonesAdjuntar = ({
 	};
 	const checkFilesSelectedForCategory = (listName: string): boolean => {
 		let optionIndices = optionMappings[listName] || [];
-
-		// {esCadelga && <>{renderButton(arrayBotones[13])}</>}
-		// 					{form?.tipoDePersona === 'Juridica' ? (
-		// 						<>{renderButton(arrayBotones[11])}</>
-		// 					) : (
-		// 						<></>
-		// 					)}
 
 		if (esCadelga) {
 			optionIndices = [...optionIndices, 13];
@@ -197,11 +183,6 @@ const BotonesAdjuntar = ({
 			);
 			return false;
 		}
-		// return optionIndices.every((index) => {
-		// 	const buttonName = arrayBotones[index].nombre;
-		// 	const filesForButton = selectedFiles[buttonName];
-		// 	return filesForButton && filesForButton.length > 0;
-		// });
 	};
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,27 +198,25 @@ const BotonesAdjuntar = ({
 		}
 	};
 	const handleFileRemove = (buttonName: string, index: number) => {
-		setSelectedFiles((prevSelectedFiles) => ({
-			...prevSelectedFiles,
-			[buttonName]: prevSelectedFiles[buttonName].filter((_, i) => i !== index),
-		}));
+		setSelectedFiles((prevSelectedFiles) => {
+			const updatedFiles = {
+				...prevSelectedFiles,
+				[buttonName]: prevSelectedFiles[buttonName].filter((_, i) => i !== index),
+			};
+	
+			// Clear the file input value after removing the file
+			if (fileInputRef.current) {
+				fileInputRef.current.value = ''; // You may also try setting it to null
+			}
+	
+			return updatedFiles;
+		});
 	};
-
-	useEffect(() => {
-		const locStorage = localStorage.getItem('logusuario');
-		if (locStorage) {
-			setUsuariolog(JSON.parse(locStorage));
-		}
-	}, [destino]);
+	
 
 	const renderButton = (boton: BotonesAdjuntarOptions) => {
 		return (
 			<div className="flex flex-col justify-end w-52" key={boton.nombre}>
-				{/* {boton.adjunto && (
-					<button onClick={() => handleDownload(boton)} type="button">
-						Descargar
-					</button>
-				)} */}
 				<span
 					className={clsx(
 						'inline-flex w-full h-12 text-center items-center justify-center gap-x-2 rounded-lg border px-4 text-2 focus:outline-none focus:ring-2 focus:ring-offset-2   font-semibold hover:cursor-pointer',
@@ -253,42 +232,17 @@ const BotonesAdjuntar = ({
 					type="file"
 					disabled={step !== 2}
 					ref={fileInputRef}
-					name={boton.nombre}
+					name={`${boton.nombre}-v2`}
 					style={{ display: 'none' }}
 					onChange={handleFileChange}
 				/>
-				{/* {selectedFiles?.[boton.nombre]?.map((file, index) => (
-					<div
-						key={file.name}
-						className="flex items-center mx-2 gap-1 justify-between "
-					>
-						<p className="truncate">{file.name}</p>
-						<FaTrash
-							className="hover:cursor-pointer "
-							onClick={() => handleFileRemove(boton.nombre, index)}
-						/>
-					</div>
-				))} */}
 			</div>
 		);
 	};
 	const renderDownload = (boton: BotonesAdjuntarOptions) => {
 		if (boton.adjunto)
 			return (
-				// <div
-				// 	className="flex flex-col justify-end w-52 items-start underline text-blue-700 hover:cursor-pointer"
-				// 	key={boton.nombre}
-				// >
-				// 	<button onClick={() => handleDownload(boton)} type="button">
-				// 		{boton.label}
-				// 	</button>
-				// </div>
 				<div className="flex flex-col justify-end w-52" key={boton.nombre}>
-					{/* {boton.adjunto && (
-					<button onClick={() => handleDownload(boton)} type="button">
-						Descargar
-					</button>
-				)} */}
 					<span
 						className={clsx(
 							'inline-flex w-full h-12 text-center items-center justify-center gap-x-2 rounded-lg border px-4 text-2 focus:outline-none focus:ring-2 focus:ring-offset-2   font-semibold hover:cursor-pointer border-white ',
@@ -300,27 +254,6 @@ const BotonesAdjuntar = ({
 					>
 						{boton.label}
 					</span>
-
-					{/* <input
-						type="file"
-						disabled={step !== 2}
-						ref={fileInputRef}
-						name={boton.nombre}
-						style={{ display: 'none' }}
-						onChange={handleFileChange}
-					/> */}
-					{/* {selectedFiles?.[boton.nombre]?.map((file, index) => (
-					<div
-						key={file.name}
-						className="flex items-center mx-2 gap-1 justify-between "
-					>
-						<p className="truncate">{file.name}</p>
-						<FaTrash
-							className="hover:cursor-pointer "
-							onClick={() => handleFileRemove(boton.nombre, index)}
-						/>
-					</div>
-				))} */}
 				</div>
 			);
 	};
