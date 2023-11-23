@@ -117,7 +117,7 @@ export const arrayBotones: BotonesAdjuntarOptions[] = [
 		adjunto: handleDownloadAchPronto,
 		tooltip:
 			'Documento necesario para que AgroMoney pueda enviar la transferencia del préstamo la cuenta del cliente no sea en Bac.',
-	}, //13
+	}, //14
 ];
 
 export const optionMappings: { [key: string]: number[] } = {
@@ -159,9 +159,9 @@ const BotonesAdjuntar = ({
 	const checkFilesSelectedForCategory = (listName: string): boolean => {
 		let optionIndices = optionMappings[listName] || [];
 
-		if (esCadelga) {
-			optionIndices = [...optionIndices, 13];
-		}
+		// if (esCadelga) {
+		// 	optionIndices = [...optionIndices, 13];
+		// }
 		if (form?.tipoDePersona === 'Juridica') {
 			optionIndices = [...optionIndices, 11];
 		}
@@ -296,7 +296,7 @@ const BotonesAdjuntar = ({
 						</div>
 						<div className="flex flex-row gap-2 w-full flex-wrap justify-center">
 							{getOptionsByList(destino).map((boton) => renderDownload(boton))}
-							{esCadelga && <>{renderDownload(arrayBotones[13])}</>}
+							{/* {esCadelga && <>{renderDownload(arrayBotones[13])}</>} */}
 							{form?.tipoDePersona === 'Juridica' ? (
 								<>{renderDownload(arrayBotones[11])}</>
 							) : (
@@ -333,7 +333,7 @@ const BotonesAdjuntar = ({
 						<div className="flex flex-row gap-2 w-full flex-wrap justify-center">
 							{getOptionsByList(destino).map((boton) => renderButton(boton))}
 
-							{esCadelga && <>{renderButton(arrayBotones[13])}</>}
+							{/* {esCadelga && <>{renderButton(arrayBotones[13])}</>} */}
 							{form?.tipoDePersona === 'Juridica' ? (
 								<>{renderButton(arrayBotones[11])}</>
 							) : (

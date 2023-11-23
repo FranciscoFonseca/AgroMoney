@@ -36,5 +36,6 @@ module.exports = {
 		'@typescript-eslint/no-unused-vars': 'off', // Ignore the '@typescript-eslint/no-unused-vars' warning
 		'@typescript-eslint/no-explicit-any': 'off', // Ignore the '@typescript-eslint/no-explicit-any' warning
 		'@typescript-eslint/ban-ts-comment': 'off', // Ignore the '@typescript-eslint/ban-ts-comment' warning
+		'prefer-const': 'off',
 	},
 };

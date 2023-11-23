@@ -12,7 +12,6 @@ import {
 	FormularioSolicitudes,
 	FormularioSolicitudesDefault,
 } from '../../tipos/formularioSolicitudes';
-import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import TableComponent, { DataAmortizar } from './components/TableComponent';
 import {
@@ -235,20 +234,6 @@ const NuevaSlt2 = (): JSX.Element => {
 			return [];
 		}
 	};
-	const handleExportToExcel = () => {
-		const worksheet = XLSX.utils.json_to_sheet(amortizarData);
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-		const excelBuffer = XLSX.write(workbook, {
-			bookType: 'xlsx',
-			type: 'array',
-		});
-		saveAs(
-			new Blob([excelBuffer], { type: 'application/octet-stream' }),
-			'table.xlsx'
-		);
-	};
-
 
 	useEffect(() => {
 		const defaultDestino: any = {
@@ -954,18 +939,6 @@ const NuevaSlt2 = (): JSX.Element => {
 									Amortizar <FaMoneyBill />
 								</Button>
 							</div>
-							{amortizarData && amortizarData.length > 0 && (
-								<div className="flex flex-row justify-end">
-									<Button
-										onClick={handleExportToExcel}
-										type="button"
-										customClassName="bg-green-700 font-semibold text-white"
-									>
-										Exportar a Excel <FaFileExcel />
-									</Button>
-							
-								</div>
-							)}
 						</div>
 						{amortizarData && amortizarData.length > 0 && (
 							<TableComponent data={amortizarData} id="table-to-export" />

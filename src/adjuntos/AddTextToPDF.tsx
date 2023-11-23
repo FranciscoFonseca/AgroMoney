@@ -3,7 +3,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import moment from 'moment';
 import 'moment/locale/es';
 import { FormularioSolicitudes } from '../tipos/formularioSolicitudes';
-import { formatCurrency } from '../functions';
+import { NumeroALetras, formatCurrency, numeroATexto } from '../functions';
 import QRCode from 'qrcode';
 export const handleDownloadAgroMoney = async (form: any) => {
 	// Load the existing PDF
@@ -28,9 +28,25 @@ export const handleDownloadAgroMoney = async (form: any) => {
 		}
 	);
 
+	page.drawText(
+		`Solicitud No. ${form?.idSolicitud || ''}`,
+		{
+			x: 390,
+			y: page.getHeight() - 65,
+			size: 16,
+			color: rgb(0, 0, 0),
+		}
+	);
+
 	page.drawText(`${form?.dni || ''}`, {
 		x: 155,
 		y: page.getHeight() - 215,
+		size: 16,
+		color: rgb(0, 0, 0),
+	});
+	page.drawText(`${form?.dni || ''}`, {
+		x: 250,
+		y: page.getHeight() - 710,
 		size: 16,
 		color: rgb(0, 0, 0),
 	});
@@ -42,9 +58,16 @@ export const handleDownloadAgroMoney = async (form: any) => {
 		color: rgb(0, 0, 0),
 	});
 
+	page.drawText(`${NumeroALetras(form.monto)}`, {
+		x: 90,
+		y: page.getHeight() - 300,
+		size: 12,
+		color: rgb(0, 0, 0),
+	});
+
 	page.drawText(`${formatCurrency(form.monto)}`, {
 		x: 120,
-		y: page.getHeight() - 300,
+		y: page.getHeight() - 325,
 		size: 16,
 		color: rgb(0, 0, 0),
 	});

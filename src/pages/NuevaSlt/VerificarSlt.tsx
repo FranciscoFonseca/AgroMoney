@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import API_IP from '../../config';
 import { useEffect, useState } from 'react';
 import { FormularioSolicitudes } from '../../tipos/formularioSolicitudes';
-import { set } from 'lodash';
 import { formatCurrency } from '../../functions';
 
 const VerificarSlt = (): JSX.Element => {
