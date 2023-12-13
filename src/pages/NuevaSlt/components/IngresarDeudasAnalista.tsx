@@ -278,31 +278,31 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 			});
 		}
 	}, [disabled]);
-	const downloadDocument = async (associatedId: number, fileName: string) => {
-		const downloadLink = `${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
-			fileName
-		)}&associatedId=${solicitudId}`;
+	const downloadDocument = async (
+		associatedId: number,
+		fileName: string,
+		uniqueId: string
+	) => {
+		const downloadLink = `${API_IP}/api/AttachmentsDeudas/DownloadDocument?uniqueId=${encodeURIComponent(
+			uniqueId
+		)}`;
 
 		try {
-			const usuariologtoken = localStorage.getItem('token') || '';
+			const usuariologtoken = localStorage.getItem('token');
 			const response = await fetch(downloadLink, {
 				headers: {
 					Authorization: `Bearer ${usuariologtoken}`,
 				},
 			});
 			const blob = await response.blob();
-
 			// Create a URL for the blob
 			const blobUrl = URL.createObjectURL(blob);
-
 			// Create a temporary anchor element
 			const anchor = document.createElement('a');
 			anchor.href = blobUrl;
 			anchor.download = fileName;
-
 			// Simulate a click event on the anchor element
 			anchor.click();
-
 			// Clean up the URL and anchor element
 			URL.revokeObjectURL(blobUrl);
 			anchor.remove();
@@ -310,30 +310,32 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 			console.error('Error downloading document:', error);
 		}
 	};
-	const openDocumentInNewTab = async (fileName: string) => {
-		const downloadLink = `${API_IP}/api/AttachmentsDeudas/DownloadDocument?fileName=${encodeURIComponent(
-			fileName
-		)}&associatedId=${solicitudId}`;
+	const openDocumentInNewTab = async (
+		associatedId: number,
+		fileName: string,
+		uniqueId: string
+	) => {
+		const downloadLink = `${API_IP}/api/AttachmentsDeudas/DownloadDocument2?uniqueId=${encodeURIComponent(
+			uniqueId
+		)}`;
 
 		try {
-			const usuariologtoken = localStorage.getItem('token') || '';
-			const response = await fetch(downloadLink, {
-				headers: {
-					Authorization: `Bearer ${usuariologtoken}`,
-				},
+			const usuariologtoken = localStorage.getItem('token');
+
+			const response = await axios.get(downloadLink, {
+				method: 'GET',
+				responseType: 'blob',
 			});
-			const blob = await response.blob();
 
-			// Create a URL for the blob
-			const blobUrl = URL.createObjectURL(blob);
+			const file = new Blob([response.data], {
+				type: 'application/pdf',
+			});
 
-			// Open the blob URL in a new tab
-			window.open(blobUrl, '_blank');
-
-			// Clean up the URL
-			URL.revokeObjectURL(blobUrl);
+			const fileURL = URL.createObjectURL(file);
+			window.open(fileURL);
 		} catch (error) {
-			console.error('Error opening document:', error);
+			console.error('Error:', error);
+			// Handle the error as needed
 		}
 	};
 	return (
@@ -372,13 +374,27 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 											<tr key={metadata.id}>
 												<td className="border p-2 truncate">{metadata.fileName}</td>
 												<td className="border p-2 text-center">
-													<button onClick={() => openDocumentInNewTab(metadata.fileName)}>
+													<button
+														onClick={() =>
+															openDocumentInNewTab(
+																Number(id),
+																metadata.fileName,
+																metadata.filePath
+															)
+														}
+													>
 														<FaEye />
 													</button>
 												</td>
 												<td className="border p-2 text-center">
 													<button
-														onClick={() => downloadDocument(Number(id), metadata.fileName)}
+														onClick={() =>
+															downloadDocument(
+																Number(id),
+																metadata.fileName,
+																metadata.filePath
+															)
+														}
 													>
 														<FaFileDownload />
 													</button>

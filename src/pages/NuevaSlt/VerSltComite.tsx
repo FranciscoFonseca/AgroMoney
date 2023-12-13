@@ -64,16 +64,20 @@ const VerSltComite = (): JSX.Element => {
 		}
 	}, [usuariologtoken]);
 
-	const downloadDocument = async (associatedId: number, fileName: string) => {
-		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
-			fileName
-		)}&associatedId=${associatedId}`;
+	const downloadDocument = async (
+		associatedId: number,
+		fileName: string,
+		uniqueId: string
+	) => {
+		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?uniqueId=${encodeURIComponent(
+			uniqueId
+		)}`;
+
 		try {
-			//	const usuariologtoken = localStorage.getItem('logtoken');
-			// const response = await fetch(downloadLink);
+			const usuariologtoken = localStorage.getItem('token');
 			const response = await fetch(downloadLink, {
 				headers: {
-					Authorization: `Bearer ${usuarioToken}`,
+					Authorization: `Bearer ${usuariologtoken}`,
 				},
 			});
 			const blob = await response.blob();
@@ -94,28 +98,30 @@ const VerSltComite = (): JSX.Element => {
 	};
 	const openDocumentInNewTab = async (
 		associatedId: number,
-		fileName: string
+		fileName: string,
+		uniqueId: string
 	) => {
-		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument?fileName=${encodeURIComponent(
-			fileName
-		)}&associatedId=${associatedId}`;
+		const downloadLink = `${API_IP}/api/Attachments/DownloadDocument2?uniqueId=${encodeURIComponent(
+			uniqueId
+		)}`;
+
 		try {
-			//const usuariologtoken = localStorage.getItem('logtoken');
-			// const response = await fetch(downloadLink);
-			const response = await fetch(downloadLink, {
-				headers: {
-					Authorization: `Bearer ${usuarioToken}`,
-				},
+			const usuariologtoken = localStorage.getItem('token');
+			
+			const response = await axios.get(downloadLink, {
+				method: 'GET',
+				responseType: 'blob',
 			});
-			const blob = await response.blob();
-			// Create a URL for the blob
-			const blobUrl = URL.createObjectURL(blob);
-			// Open the blob URL in a new tab
-			const newTab = window.open(blobUrl, '_blank');
-			// Clean up the URL
-			URL.revokeObjectURL(blobUrl);
+
+			const file = new Blob([response.data], {
+				type: 'application/pdf',
+			});
+
+			const fileURL = URL.createObjectURL(file);
+			window.open(fileURL);
 		} catch (error) {
-			console.error('Error opening document:', error);
+			console.error('Error:', error);
+			// Handle the error as needed
 		}
 	};
 
@@ -879,7 +885,11 @@ const VerSltComite = (): JSX.Element => {
 												<td className="border p-2 text-center">
 													<button
 														onClick={() =>
-															openDocumentInNewTab(Number(id), metadata.fileName)
+															openDocumentInNewTab(
+																Number(id),
+																metadata.fileName,
+																metadata.filePath
+															)
 														}
 													>
 														<FaEye />
@@ -887,7 +897,11 @@ const VerSltComite = (): JSX.Element => {
 												</td>
 												<td className="border p-2 text-center">
 													<button
-														onClick={() => downloadDocument(Number(id), metadata.fileName)}
+														onClick={() => downloadDocument(
+															Number(id),
+															metadata.fileName,
+															metadata.filePath
+														)}
 													>
 														<FaFileDownload />
 													</button>

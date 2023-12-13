@@ -70,7 +70,7 @@ const NuevaSlt2 = (): JSX.Element => {
 
 	const [municipios, setMunicipios] = useState<any[]>([]);
 	const [tableDeudas, setTableDeudas] = useState<DataDeudas[]>([]);
-	const [step, setStep] = useState<number>(3);
+	const [step, setStep] = useState<number>(0);
 	const [diferenciaAnos, setDiferenciaAnos] = useState<number>(0);
 	const [montoRange, setMontoRange] = useState<minMax>({
 		min: 0,
