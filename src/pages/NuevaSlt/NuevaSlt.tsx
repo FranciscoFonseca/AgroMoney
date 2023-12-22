@@ -844,6 +844,13 @@ const NuevaSlt2 = (): JSX.Element => {
 				'telJefeIn',
 				'correoJefeIn',
 			]);
+			const currentDate = new Date();
+			const fechaDeNacimiento = getValues('fechaNacimiento');
+			let yearsDiff = currentDate.getFullYear() - fechaDeNacimiento.getFullYear();
+			if (yearsDiff < 18){
+				toast.warn('Debe tener al menos 18 años para realizar una solicitud.');
+				return;
+			}
 			if (diferenciaAnos < 1) {
 				toast.warn('Debe tener al menos 1 año de antiguedad laboral.');
 				return;

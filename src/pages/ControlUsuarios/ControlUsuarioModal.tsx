@@ -121,7 +121,7 @@ const ControlUsuarioModal: React.FC<ModalProps> = ({
 		{ value: 'Cadelga', label: 'Cadelga' },
 		{ value: 'Fertica', label: 'Fertica' },
 		{ value: 'AgroMoney', label: 'AgroMoney' },
-		{ value: 'CATV', label: 'CATV' },
+		// { value: 'CATV', label: 'CATV' },
 		{ value: 'Chumbagua', label: 'Chumbagua' },
 		{ value: 'Fertiagrho', label: 'Fertiagrho' },
 		{ value: 'Tres Valles', label: 'Tres Valles' },

@@ -846,7 +846,7 @@ const VerSltComite = (): JSX.Element => {
 						</div>
 						<div className="flex flex-row w-full">
 							<DisplayField
-								label="Numero de Telefono Referencia Personal"
+								label="Numero de Telefono Referencia Familiar"
 								text={formularioSolicitudes.noReferencia2}
 							/>
 						</div>

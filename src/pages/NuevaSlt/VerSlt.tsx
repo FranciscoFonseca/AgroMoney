@@ -1585,6 +1585,20 @@ const NuevaSlt2 = (): JSX.Element => {
 								)}
 							/>
 						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="relacionReferencia1"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Relación Referencia Personal"
+										disabled
+										{...register('relacionReferencia1')}
+									/>
+								)}
+							/>
+						</div>
 					</div>
 					<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-col w-full">
@@ -1608,9 +1622,23 @@ const NuevaSlt2 = (): JSX.Element => {
 								rules={{ required: true }}
 								render={({ field: { value, onChange } }) => (
 									<TextInput
-										label="Numero de Telefono Referencia Personal"
+										label="Numero de Telefono Referencia Familiar"
 										disabled
 										{...register('noReferencia2')}
+									/>
+								)}
+							/>
+						</div>
+						<div className="flex flex-col w-full">
+							<Controller
+								name="relacionReferencia2"
+								control={control}
+								rules={{ required: true }}
+								render={({ field: { value, onChange } }) => (
+									<TextInput
+										label="Relación Referencia Familiar"
+										disabled
+										{...register('relacionReferencia2')}
 									/>
 								)}
 							/>

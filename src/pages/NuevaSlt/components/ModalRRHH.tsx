@@ -138,6 +138,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		}
 
 		try {
+			const isExcepcion = Number(total) > 30
 			const newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
 			const data = {
 				empresa: getValues('empresa'),
@@ -146,7 +147,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 				ComentariosRRHH: getValues('ComentariosRRHH'),
 				estatus: newStatus,
 				pasoRRHH: true,
-				excepcion: true,
+				excepcion: isExcepcion,
 			};
 			// axios.patch('http://localhost:3001/rrhh', data);
 			let formData = getValues();
