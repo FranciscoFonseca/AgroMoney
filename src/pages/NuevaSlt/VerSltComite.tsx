@@ -28,6 +28,7 @@ import {
 } from '../../adjuntos/AddTextToPDF';
 import ModalHabilitar from './components/ModalHabilitar';
 import { tasaDeInteres } from '../../constants/dataConstants';
+import { getMimeType } from '../../tipos/shared';
 
 const VerSltComite = (): JSX.Element => {
 	const { id } = useParams();
@@ -107,14 +108,21 @@ const VerSltComite = (): JSX.Element => {
 
 		try {
 			const usuariologtoken = localStorage.getItem('token');
-			
+
 			const response = await axios.get(downloadLink, {
 				method: 'GET',
 				responseType: 'blob',
 			});
 
+			const contentType = response.headers['content-type'];
+			const fileExtension = fileName.split('.').pop(); // Get the file extension from the filename
+
+			// Determine the MIME type based on the file extension
+			const mimeType =
+				getMimeType(fileExtension || '') || 'application/octet-stream'; // Provide a default MIME type
+
 			const file = new Blob([response.data], {
-				type: 'application/pdf',
+				type: mimeType,
 			});
 
 			const fileURL = URL.createObjectURL(file);
@@ -619,6 +627,31 @@ const VerSltComite = (): JSX.Element => {
 							/>
 						</div>
 					</div>
+					{formularioSolicitudes.votos && (
+						<div className="border-b-2 w-full flex justify-between items-center border-black">
+							<p className="text-xl font-semibold flex-grow text-center">Votos</p>
+						</div>
+					)}
+					{formularioSolicitudes.votos &&
+						JSON.parse(formularioSolicitudes.votos).map((item: any) => {
+							console.log(item);
+							return (
+								<div className="flex flex-row gap-2 w-full flex-wrap sm:flex-nowrap">
+									<div className="flex flex-col w-1/6">
+										<DisplayField label="Nombre" text={item.nombre} />
+									</div>
+									<div className="flex flex-col w-1/6 ">
+										<DisplayField label="Voto" text={item.voto} />
+									</div>
+									<div className="flex flex-col w-1/6">
+										<DisplayField label="Fecha" text={item.fecha} />
+									</div>
+									<div className="flex flex-col w-3/6">
+										<DisplayField label="Fecha" text={item.comentario} />
+									</div>
+								</div>
+							);
+						})}
 					<div className="flex flex-col gap-2 w-full flex-wrap sm:flex-nowrap">
 						<div className="flex flex-row w-full justify-between gap-x-2">
 							{/* <div className="flex flex-col ">
@@ -897,11 +930,13 @@ const VerSltComite = (): JSX.Element => {
 												</td>
 												<td className="border p-2 text-center">
 													<button
-														onClick={() => downloadDocument(
-															Number(id),
-															metadata.fileName,
-															metadata.filePath
-														)}
+														onClick={() =>
+															downloadDocument(
+																Number(id),
+																metadata.fileName,
+																metadata.filePath
+															)
+														}
 													>
 														<FaFileDownload />
 													</button>

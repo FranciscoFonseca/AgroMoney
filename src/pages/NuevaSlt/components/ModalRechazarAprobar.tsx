@@ -106,16 +106,6 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 					/>
 				</>
 			)}
-
-			<div className="flex flex-col">
-				<TextInput
-					id="motivo"
-					value={token}
-					onChange={(e) => setToken(e.target.value)}
-					label="Token"
-					placeholder="Token"
-				/>
-			</div>
 			<div className="flex flex-col">
 				<TextInput
 					id="motivo"
@@ -125,6 +115,16 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 					placeholder="Comentario"
 				/>
 			</div>
+			<div className="flex flex-col">
+				<TextInput
+					id="motivo"
+					value={token}
+					onChange={(e) => setToken(e.target.value)}
+					label="Token"
+					placeholder="Token"
+				/>
+			</div>
+
 			<div className="flex justify-end gap-2 mt-4">
 				<Button
 					type="button"

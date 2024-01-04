@@ -26,7 +26,7 @@ import { tasaDeInteres } from '../../constants/dataConstants';
 import { debounce, get } from 'lodash';
 import IngresarDeudas from './components/IngresarDeudas';
 import DatePicker from 'react-datepicker';
-import { minMax } from '../../tipos/shared';
+import { getMimeType, minMax } from '../../tipos/shared';
 import { DataDeudas } from './components/TableDeudas';
 import LayoutCustom from '../../components/Navbar/Layout';
 import { toast } from 'react-toastify';
@@ -171,6 +171,7 @@ const NuevaSlt2 = (): JSX.Element => {
 			console.error('Error downloading document:', error);
 		}
 	};
+	// Helper function to map file extensions to MIME types
 	const openDocumentInNewTab = async (
 		associatedId: number,
 		fileName: string,
@@ -188,8 +189,15 @@ const NuevaSlt2 = (): JSX.Element => {
 				responseType: 'blob',
 			});
 
+			const contentType = response.headers['content-type'];
+			const fileExtension = fileName.split('.').pop(); // Get the file extension from the filename
+
+			// Determine the MIME type based on the file extension
+			const mimeType =
+				getMimeType(fileExtension || '') || 'application/octet-stream'; // Provide a default MIME type
+
 			const file = new Blob([response.data], {
-				type: 'application/pdf',
+				type: mimeType,
 			});
 
 			const fileURL = URL.createObjectURL(file);
@@ -199,6 +207,8 @@ const NuevaSlt2 = (): JSX.Element => {
 			// Handle the error as needed
 		}
 	};
+
+	// Helper function to map file extensions to MIME types
 
 	const fetchDocumentMetadataByAssociatedId = async (associatedId: number) => {
 		try {
@@ -663,6 +673,34 @@ const NuevaSlt2 = (): JSX.Element => {
 			console.log(error);
 		}
 	};
+
+	const handleSubmitDeudasAnalistaRechazar = () => {
+		//check  selected files
+
+		toast.warn('Su solicitud esta siendo guardada, por favor espere.');
+		try {
+			const usuariologtoken = localStorage.getItem('token');
+			const newStatus = 'Rechazado';
+			let formData = getValues();
+			formData = {
+				...formData,
+				estatus: newStatus,
+			};
+			axios
+				.patch(API_IP + '/api/Solicitudes/' + id, formData, {
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${usuariologtoken}`,
+					},
+				})
+				.then((response) => {
+					// handleUpload2();
+				});
+		} catch (error) {
+			toast.error('Error al guardar la solicitud, por favor intente de nuevo.');
+			console.log(error);
+		}
+	};
 	const handleUpload2 = () => {
 		const formData = new FormData();
 
@@ -765,6 +803,7 @@ const NuevaSlt2 = (): JSX.Element => {
 									</Button>
 								</>
 							)}
+
 						{usuariolog?.perfil === 'M' && getValues('estatus') === 'Excepción' && (
 							<>
 								<Button
@@ -1756,12 +1795,19 @@ const NuevaSlt2 = (): JSX.Element => {
 									</Button>
 									<Button
 										type="button"
+										customClassName="bg-red-700 font-semibold text-white"
+										onClick={() => handleSubmitDeudasAnalistaRechazar()}
+									>
+										Rechazar
+									</Button>
+									<Button
+										type="button"
 										customClassName="bg-green-700 font-semibold text-white"
 										onClick={() => {
 											navigate('/Principal');
 										}}
 									>
-										Cancelar
+										Atras
 									</Button>
 								</div>
 							</>

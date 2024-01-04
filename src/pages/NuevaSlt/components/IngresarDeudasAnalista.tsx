@@ -17,6 +17,7 @@ import API_IP from '../../../config';
 import { BotonesAdjuntarOptions } from './BotonesAdjuntar';
 import { FaEye, FaFileDownload } from 'react-icons/fa';
 import InputMask from 'react-input-mask';
+import { getMimeType } from '../../../tipos/shared';
 
 interface IngresarDeudasAnalistaProps {
 	data: DataDeudasAnalista[];
@@ -327,8 +328,15 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 				responseType: 'blob',
 			});
 
+			const contentType = response.headers['content-type'];
+			const fileExtension = fileName.split('.').pop(); // Get the file extension from the filename
+
+			// Determine the MIME type based on the file extension
+			const mimeType =
+				getMimeType(fileExtension || '') || 'application/octet-stream'; // Provide a default MIME type
+
 			const file = new Blob([response.data], {
-				type: 'application/pdf',
+				type: mimeType,
 			});
 
 			const fileURL = URL.createObjectURL(file);
