@@ -400,6 +400,9 @@ const VerSltComite = (): JSX.Element => {
 			.post(`${API_IP}/api/Usuarios/FortiToken?telefono=${user}&token=${token}`)
 			.then((response) => {
 				if (response.status === 200) {
+					if (modalText === 'Reunion') {
+						handleReunion();
+					}
 					if (modalText === 'Aprobar') {
 						handleAprobar();
 					} else {
@@ -421,6 +424,29 @@ const VerSltComite = (): JSX.Element => {
 					formularioSolicitudes,
 					data.data.encryptedData
 				);
+			});
+	};
+	const handleReunion = () => {
+		const data = {
+			...formularioSolicitudes,
+			habilitadoExcepcion: false,
+			excepcion: true,
+			votos: null,
+		};
+		axios
+			.patch(
+				`${API_IP}/api/Solicitudes/${formularioSolicitudes.idSolicitud}`,
+				data
+			)
+			.then((response) => {
+				// navigate('/Principal');
+				//location.reload();
+				toast.success('Solicitud Llamada a Reunion');
+				location.reload();
+			})
+			.catch((error) => {
+				console.log(error);
+				toast.error('Error al habilitar la solicitud');
 			});
 	};
 	const handleHabilitar = () => {
@@ -500,11 +526,34 @@ const VerSltComite = (): JSX.Element => {
 									>
 										Aprobar
 									</Button>
+									<Button
+										type="button"
+										customClassName="bg-green-700 text-white font-semibold ml-2"
+										// onClick={openModal}
+										// onClick={handleAprobar}
+										onClick={() => {
+											setModalText('Reunion');
+											openModal();
+										}}
+									>
+										LLamar a Reunión
+									</Button>
 								</div>
 							)}
 						{formularioSolicitudes.estatus === 'En Comite' &&
 							!formularioSolicitudes.excepcion && (
 								<div className="absolute end-2 gap-2 bg-gray-100">
+									{/* <Button
+										type="button"
+										customClassName="bg-blue-700 text-white font-semibold "
+										onClick={() => {
+											setModalText('Solicitar Reunión ');
+											openModal();
+										}}
+										// onClick={handleRechazar}
+									>
+										Solicitar Reunion
+									</Button> */}
 									<Button
 										type="button"
 										customClassName="bg-red-700 text-white font-semibold "
@@ -527,6 +576,18 @@ const VerSltComite = (): JSX.Element => {
 										}}
 									>
 										Aprobar
+									</Button>
+									<Button
+										type="button"
+										customClassName="bg-green-700 text-white font-semibold ml-2"
+										// onClick={openModal}
+										// onClick={handleAprobar}
+										onClick={() => {
+											setModalText('Reunion');
+											openModal();
+										}}
+									>
+										LLamar a Reunión
 									</Button>
 								</div>
 							)}
@@ -647,7 +708,7 @@ const VerSltComite = (): JSX.Element => {
 										<DisplayField label="Fecha" text={item.fecha} />
 									</div>
 									<div className="flex flex-col w-3/6">
-										<DisplayField label="Fecha" text={item.comentario} />
+										<DisplayField label="Comentario" text={item.comentario} />
 									</div>
 								</div>
 							);

@@ -138,7 +138,7 @@ const ModalRRHH: React.FC<ModalProps> = ({
 		}
 
 		try {
-			const isExcepcion = Number(total) > 30
+			const isExcepcion = Number(total) > 40
 			const newStatus = getValues('pasoAgroMoney') ? 'En Comite' : 'En Analisis';
 			const data = {
 				empresa: getValues('empresa'),

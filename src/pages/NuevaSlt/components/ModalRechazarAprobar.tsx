@@ -67,7 +67,9 @@ const ModalRechazarAprobar: React.FC<ModalProps> = ({
 		>
 			<div className="w-full flex justify-between">
 				<div className="flex items-center">
-					<h1 className="text-3xl">{titleText} Solicitud</h1>
+					<h1 className="text-3xl">
+						{titleText === 'Reunion' ? 'LLamar a Reunion' : titleText} Solicitud
+					</h1>
 				</div>
 				<button onClick={closeModal} className="text-lg">
 					X

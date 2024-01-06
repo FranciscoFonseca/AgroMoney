@@ -448,6 +448,21 @@ const IngresarDeudasAnalista: React.FC<IngresarDeudasAnalistaProps> = ({
 						>
 							Visto Bueno Jefe Inmediato
 						</span>
+						<span
+							className={clsx(
+								'inline-flex w-38 h-12 text-center items-center justify-center gap-x-2 rounded-lg border px-4 text-2 focus:outline-none focus:ring-2 focus:ring-offset-2   font-semibold hover:cursor-pointer',
+								'bg-green-700  text-white'
+							)}
+							onClick={() =>
+								handleClick({
+									nombre: 'otros-adjuntos',
+									label: 'Otros Adjuntos',
+									tooltip: 'Otros Adjuntos',
+								})
+							}
+						>
+							Otros Adjuntos
+						</span>
 						<input
 							type="file"
 							ref={fileInputRef}
